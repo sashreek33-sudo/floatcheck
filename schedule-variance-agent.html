@@ -33,6 +33,8 @@
   .dz-hint{font-size:12px;color:var(--muted2);margin-top:4px;}
   input[type=file]{display:none;}
 
+  .parse-warning{border:1px solid var(--warn);background:var(--warn-bg);color:var(--warn);border-radius:3px;padding:10px 14px;font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1.6;margin-bottom:16px;}
+
   .actions{display:flex;gap:10px;align-items:center;margin-bottom:30px;flex-wrap:wrap;}
   button{font-family:'Inter',sans-serif;font-weight:600;font-size:13px;border-radius:3px;border:1px solid var(--line);background:var(--panel-raised);color:var(--text);padding:10px 16px;cursor:pointer;transition:all .15s;}
   button:hover:not(:disabled){border-color:var(--accent);}
@@ -158,6 +160,8 @@
       <input type="file" id="fileCurr" accept=".xer">
     </div>
   </div>
+
+  <div id="parseWarnings" class="parse-warning" style="display:none;"></div>
 
   <div class="actions">
     <button class="primary" id="runBtn" disabled onclick="runAnalysis()">Run Variance Analysis</button>
@@ -449,7 +453,6 @@ function parseXER(text){
   const lines = text.split(/\r?\n/);
   const data = { header:{}, project:{}, wbs:{}, tasks:[], notes:{}, preds:{} };
   let currentTable = null, headers = [];
-  const taskIdIndex = {}; // task_id -> task object (for note attachment)
 
   for(const raw of lines){
     if(!raw) continue;
@@ -467,7 +470,7 @@ function parseXER(text){
       headers.forEach((h,i)=> row[h]=vals[i] !== undefined ? vals[i] : '');
       if(currentTable === 'PROJECT'){ data.project = row; }
       else if(currentTable === 'PROJWBS'){ data.wbs[row.wbs_id] = row.wbs_short_name; }
-      else if(currentTable === 'TASK'){ data.tasks.push(row); taskIdIndex[row.task_id]=row; }
+      else if(currentTable === 'TASK'){ data.tasks.push(row); }
       else if(currentTable === 'TASKNOTE'){
         if(!data.notes[row.task_id]) data.notes[row.task_id] = [];
         data.notes[row.task_id].push(row.task_memo);
@@ -478,6 +481,14 @@ function parseXER(text){
       }
     }
   }
+  // Duplicate task_code detection: every downstream lookup (prevMap/currMap/byCode etc.)
+  // is keyed by task_code, so a duplicate silently lets the later row clobber the earlier
+  // one. Surfaced as a UI warning (updateParseWarnings) rather than fixed by re-keying,
+  // which would ripple through every rendering function - see README known limitations.
+  const codeCounts = {};
+  data.tasks.forEach(t=> { codeCounts[t.task_code] = (codeCounts[t.task_code]||0) + 1; });
+  data.duplicateCodes = Object.keys(codeCounts).filter(c=> codeCounts[c] > 1);
+
   // attach wbs name + notes + predecessor codes + duration (days) to each task
   const idToCode = {}; data.tasks.forEach(t=> idToCode[t.task_id]=t.task_code);
   data.tasks.forEach(t=>{
@@ -486,7 +497,15 @@ function parseXER(text){
     const rawEdges = data.preds[t.task_id] || [];
     t.pred_edges = rawEdges.map(e=> ({ code: idToCode[e.pred_task_id], lag_hr: e.lag_hr, pred_type: e.pred_type })).filter(e=>e.code);
     t.pred_codes = t.pred_edges.map(e=>e.code);
-    t.dur_days = Math.round((parseFloat(t.target_drtn_hr_cnt)||0)/8);
+    // For an in-progress activity, remaining duration (what's actually left to do) is the
+    // correct driver for forward-pass dates - not the original planned duration. This is a
+    // partial fix: it doesn't use act_start_date or retained-logic/progress-override
+    // semantics, so it's not full data-date awareness - see README known limitations.
+    // remain_drtn_hr_cnt isn't in every XER export (e.g. neither demo file here carries it),
+    // so this falls back to target_drtn_hr_cnt whenever it's absent.
+    const useRemaining = t.status_code === 'TK_Active' && t.remain_drtn_hr_cnt !== undefined && t.remain_drtn_hr_cnt !== '';
+    const durHrs = useRemaining ? t.remain_drtn_hr_cnt : t.target_drtn_hr_cnt;
+    t.dur_days = Math.round((parseFloat(durHrs)||0)/8);
   });
   // successor count per task (for open-end / missing-logic checks)
   const succCount = {}; data.tasks.forEach(t=> succCount[t.task_code]=0);
@@ -527,38 +546,60 @@ function subWorkdays(end, days){
   while(removed<days){ d.setUTCDate(d.getUTCDate()-1); const wd=d.getUTCDay(); if(wd!==0&&wd!==6) removed++; }
   return d;
 }
+function offsetWorkdays(date, signedDays){
+  if(signedDays>0) return addWorkdays(date, signedDays);
+  if(signedDays<0) return subWorkdays(date, -signedDays);
+  return date;
+}
 
 // CPM forward/backward pass. durOverride: optional map code->duration days (used during crash iterations)
+// Lag (FS relationships only - SS/FF/SF are not modelled, see README known limitations)
+// is applied here: each predecessor edge carries lag_hr from the XER, converted to
+// workdays with the same 8hr/day assumption used for durations elsewhere.
 function runCPM(tasks, projectStart, durOverride){
   const byCode = {}; tasks.forEach(t=> byCode[t.task_code]=t);
-  const visited={}, order=[];
+  const visited={}, inProgress={}, order=[];
   function visit(code){
-    if(visited[code]) return; visited[code]=true;
-    const t = byCode[code]; if(!t) return;
+    if(visited[code]) return;
+    if(inProgress[code]) throw new Error(`Circular logic detected in predecessor chain at activity ${code} - this schedule's logic is not a valid network and cannot be scheduled.`);
+    inProgress[code] = true;
+    const t = byCode[code];
+    if(!t){ inProgress[code]=false; return; }
     t.pred_codes.forEach(p=> visit(p));
+    inProgress[code] = false;
+    visited[code]=true;
     order.push(code);
   }
   tasks.forEach(t=> visit(t.task_code));
 
   const dur = code => (durOverride && durOverride[code]!==undefined) ? durOverride[code] : byCode[code].dur_days;
+  const lagWorkdays = lag_hr => Math.round((lag_hr||0)/8);
   const ES={}, EF={};
   order.forEach(code=>{
     const t = byCode[code];
-    if(t.pred_codes.length===0){ ES[code]=new Date(projectStart); }
-    else { ES[code] = t.pred_codes.reduce((m,p)=> (!m||(EF[p] && EF[p]>m)) ? EF[p] : m, null); }
+    if(t.pred_edges.length===0){ ES[code]=new Date(projectStart); }
+    else { ES[code] = t.pred_edges.reduce((m,e)=>{
+      const efp = EF[e.code]; if(!efp) return m;
+      const constraint = offsetWorkdays(efp, lagWorkdays(e.lag_hr));
+      return (!m||constraint>m) ? constraint : m;
+    }, null); }
     EF[code] = addWorkdays(ES[code], dur(code));
   });
   const projFinish = order.reduce((m,c)=> !m||EF[c]>m?EF[c]:m, null);
 
   const succ = {}; tasks.forEach(t=> succ[t.task_code]=[]);
-  tasks.forEach(t=> t.pred_codes.forEach(p=> { (succ[p] ||= []).push(t.task_code); }));
+  tasks.forEach(t=> t.pred_edges.forEach(e=> { (succ[e.code] ||= []).push({ code: t.task_code, lag_hr: e.lag_hr }); }));
 
   const LF={}, LS={};
   for(let i=order.length-1;i>=0;i--){
     const code = order[i];
     const s = succ[code]||[];
     if(s.length===0){ LF[code]=projFinish; }
-    else { LF[code] = s.reduce((m,sc)=> (!m||(LS[sc] && LS[sc]<m)) ? LS[sc] : m, null); }
+    else { LF[code] = s.reduce((m,se)=>{
+      const lsSc = LS[se.code]; if(!lsSc) return m;
+      const constraint = offsetWorkdays(lsSc, -lagWorkdays(se.lag_hr));
+      return (!m||constraint<m) ? constraint : m;
+    }, null); }
     LS[code] = subWorkdays(LF[code], dur(code));
   }
   const TF = {};
@@ -577,6 +618,11 @@ function crashProject(tasks, projectStart, crashParams, targetRecoveryDays){
   tasks.forEach(t=> durOverride[t.task_code] = t.dur_days);
   const crashedSoFar = {};
   tasks.forEach(t=> crashedSoFar[t.task_code]=0);
+  // Work already done or in progress isn't compressible - crashing only applies to
+  // not-yet-started activities. Partially-crashing an active task would require
+  // knowing how much of it is actually built (data-date/actuals awareness), which
+  // this pass doesn't implement - see README known limitations.
+  const statusByCode = {}; tasks.forEach(t=> statusByCode[t.task_code] = t.status_code);
 
   let cpm = runCPM(tasks, projectStart, durOverride);
   const originalFinish = cpm.projFinish;
@@ -586,7 +632,8 @@ function crashProject(tasks, projectStart, crashParams, targetRecoveryDays){
   while(recovered < targetRecoveryDays && guard < 300){
     guard++;
     const critical = cpm.order.filter(c=> cpm.TF[c]<=0);
-    const candidates = critical.filter(c=> crashParams[c] && crashedSoFar[c] < crashParams[c].maxCrash);
+    const candidates = critical.filter(c=> crashParams[c] && crashedSoFar[c] < crashParams[c].maxCrash
+      && statusByCode[c] !== 'TK_Complete' && statusByCode[c] !== 'TK_Active');
     if(candidates.length===0) break;
     candidates.sort((a,b)=> crashParams[a].costPerDay - crashParams[b].costPerDay);
     const pick = candidates[0];
@@ -626,6 +673,7 @@ function handleFile(file, which){
       if(which==='prev'){ prevData=parsed; document.getElementById('dzPrevText').textContent=file.name; document.getElementById('dzPrev').classList.add('filled'); }
       else { currData=parsed; document.getElementById('dzCurrText').textContent=file.name; document.getElementById('dzCurr').classList.add('filled'); }
       updateRunButton();
+      updateParseWarnings();
     }catch(err){
       alert('Could not parse this XER file: '+err.message);
     }
@@ -642,10 +690,28 @@ function loadDemo(){
   document.getElementById('dzPrev').classList.add('filled');
   document.getElementById('dzCurr').classList.add('filled');
   updateRunButton();
+  updateParseWarnings();
 }
 
 function updateRunButton(){
   document.getElementById('runBtn').disabled = !(prevData && currData);
+}
+
+function updateParseWarnings(){
+  const el = document.getElementById('parseWarnings');
+  const msgs = [];
+  if(prevData && prevData.duplicateCodes && prevData.duplicateCodes.length){
+    msgs.push(`Previous update file has duplicate activity codes (the later row silently overrides the earlier one in every calculation): ${prevData.duplicateCodes.join(', ')}`);
+  }
+  if(currData && currData.duplicateCodes && currData.duplicateCodes.length){
+    msgs.push(`Current update file has duplicate activity codes (the later row silently overrides the earlier one in every calculation): ${currData.duplicateCodes.join(', ')}`);
+  }
+  if(msgs.length){
+    el.innerHTML = msgs.map(m=> `&#9888; ${m}`).join('<br>');
+    el.style.display = 'block';
+  } else {
+    el.style.display = 'none';
+  }
 }
 
 // ---------- Analysis ----------
@@ -968,7 +1034,7 @@ function populateCrashWorkbench(){
   const byCode = cpm.byCode;
   const rows = cpm.order.map(code=>({
     code, tf: cpm.TF[code], dur: byCode[code].dur_days,
-    name: byCode[code].task_name, wbs: byCode[code].wbs_name
+    name: byCode[code].task_name, wbs: byCode[code].wbs_name, status: byCode[code].status_code
   })).filter(r=> r.tf <= 10).sort((a,b)=> a.tf - b.tf);
 
   const demoDefaults = { A2050:{max:3,cost:4200}, A2070:{max:4,cost:3100}, A3000:{max:2,cost:5000}, A3020:{max:5,cost:6500}, A3040:{max:5,cost:8800}, A3050:{max:5,cost:8800} };
@@ -978,13 +1044,16 @@ function populateCrashWorkbench(){
     const tr = document.createElement('tr');
     if(r.tf<=0) tr.classList.add('crit-row');
     const dv = window._isDemo && demoDefaults[r.code] ? demoDefaults[r.code] : null;
+    const notCrashable = r.status==='TK_Complete' || r.status==='TK_Active';
+    const disabledAttr = notCrashable ? 'disabled' : '';
+    const durCell = notCrashable ? `${r.dur}d <span style="color:var(--muted2);">(${r.status==='TK_Complete'?'complete':'in progress'} - not crashable)</span>` : `${r.dur}d`;
     tr.innerHTML = `
       <td><div class="act-code">${r.code}</div><div class="act-name">${r.name}</div></td>
       <td class="mono">${r.wbs}</td>
-      <td class="mono">${r.dur}d</td>
+      <td class="mono">${durCell}</td>
       <td class="mono">${r.tf<=0 ? '<span class="crit-tag">0 (critical)</span>' : r.tf+'d'}</td>
-      <td><input type="number" min="0" max="${Math.max(r.dur-1,0)}" id="maxcrash-${r.code}" value="${dv?dv.max:''}" placeholder="0"></td>
-      <td><input type="number" min="0" id="costday-${r.code}" value="${dv?dv.cost:''}" placeholder="$"></td>
+      <td><input type="number" min="0" max="${Math.max(r.dur-1,0)}" id="maxcrash-${r.code}" value="${dv?dv.max:''}" placeholder="0" ${disabledAttr}></td>
+      <td><input type="number" min="0" id="costday-${r.code}" value="${dv?dv.cost:''}" placeholder="$" ${disabledAttr}></td>
     `;
     tbody.appendChild(tr);
   });
