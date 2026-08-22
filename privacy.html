@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Privacy Notice — FloatCheck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#14171A; --panel:#1B1F23; --line:#333B44;
+    --text:#EDE9DE; --muted:#93897A; --muted2:#5F5A50; --accent:#C9862E;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;background-color:var(--bg);color:var(--text);
+    font-family:'IBM Plex Sans',sans-serif;-webkit-font-smoothing:antialiased;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(147,137,122,0.05) 0 1px, transparent 1px 32px),
+      repeating-linear-gradient(90deg, rgba(147,137,122,0.05) 0 1px, transparent 1px 32px);
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:40px 20px 80px;}
+  .back-link{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);text-decoration:underline;margin-bottom:20px;}
+  .back-link:hover{color:var(--accent);}
+
+  .doc-panel{border:1px solid var(--line);background:var(--panel);padding:36px 40px;position:relative;}
+  .doc-panel::before, .doc-panel::after{content:'';position:absolute;width:9px;height:9px;pointer-events:none;}
+  .doc-panel::before{top:-1px;left:-1px;border-top:1px solid var(--accent);border-left:1px solid var(--accent);}
+  .doc-panel::after{bottom:-1px;right:-1px;border-bottom:1px solid var(--accent);border-right:1px solid var(--accent);}
+
+  h1{font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;margin:0 0 8px;}
+  .updated{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--line);}
+  h2{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:700;letter-spacing:0.3px;text-transform:uppercase;margin:26px 0 10px;padding-left:10px;border-left:2px solid var(--accent);}
+  h2:first-of-type{margin-top:0;}
+  p{font-size:14px;line-height:1.7;color:var(--muted);margin:0 0 14px;}
+  strong{color:var(--text);}
+  a{color:var(--accent);}
+  a:hover{color:var(--text);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back-link" href="floatcheck.html">&larr; Back to FloatCheck</a>
+
+  <div class="doc-panel">
+    <h1>Privacy &amp; Data Notice</h1>
+    <div class="updated">Last updated: 2026-08-23</div>
+
+    <p>FloatCheck is a free, independent student-built tool. This notice explains plainly what happens to your data.</p>
+
+    <h2>Your Schedule File</h2>
+    <p>Your uploaded P6 (.xer) file is read and processed entirely in your own browser. It is never uploaded to any server, and we never see it.</p>
+
+    <h2>What Does Leave Your Browser</h2>
+    <p>If you use an AI-powered feature (Progress Report Narrative, Full Report), a <strong>summary of the calculated results</strong> &mdash; not your raw file &mdash; is sent to Anthropic's Claude API to generate the written explanation. This includes things like activity codes, dates, float values, and any Notebook text you're asking it to summarise. Anthropic's own privacy policy governs how they handle that request: <a href="https://www.anthropic.com/legal/privacy" target="_blank" rel="noopener">anthropic.com/legal/privacy</a>.</p>
+    <p>If you do not use an AI feature, nothing about your project ever leaves your browser.</p>
+
+    <h2>What We Don't Do</h2>
+    <p>We don't sell data. We don't share your project information with third parties beyond what's described above. We don't use your data to train any AI model.</p>
+
+    <h2>Your Responsibility</h2>
+    <p>This tool is provided as-is, for informational and portfolio purposes. Always review AI-generated content before issuing it externally, and verify any contractual, EOT, or delay-claim commentary independently &mdash; this is not a substitute for professional judgement or legal advice.</p>
+
+    <h2>Questions</h2>
+    <p>Contact: <a href="mailto:sashreek33@gmail.com">sashreek33@gmail.com</a></p>
+  </div>
+</div>
+</body>
+</html>
