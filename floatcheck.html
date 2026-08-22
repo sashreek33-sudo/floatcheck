@@ -141,7 +141,19 @@
   .legend-swatch.legend-crit{background:repeating-linear-gradient(45deg, var(--crit) 0 3px, #14171A 3px 6px);}
   .legend-swatch.legend-warn{background:var(--warn);}
   .legend-swatch.legend-ok{background:var(--ok);}
+  .legend-spacer{flex:1;}
+  .color-legend button{font-size:11px;padding:6px 12px;}
+  .table-actions{display:flex;justify-content:flex-end;margin-bottom:12px;}
+  .table-actions button{font-size:11px;padding:6px 12px;}
   .print-only-meta{display:none;}
+
+  /* Data-completeness snapshot - an honesty check shown before the detailed
+     results, not a status/KPI strip, so it's styled quieter than .kpis. */
+  .data-snapshot{display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start;border:1px solid var(--line);background:var(--panel);padding:12px 16px;margin-bottom:18px;}
+  .snapshot-item{display:flex;flex-direction:column;gap:3px;font-family:'IBM Plex Mono',monospace;}
+  .snapshot-label{text-transform:uppercase;letter-spacing:0.5px;font-size:10px;color:var(--muted2);}
+  .snapshot-value{color:var(--text);font-size:12.5px;}
+  .snapshot-item.snapshot-warn .snapshot-value{color:var(--warn);max-width:420px;line-height:1.5;}
 
   /* App shell - entered from the landing page, not just scrolled to */
   #appShell{opacity:0;transform:translateY(10px);}
@@ -306,6 +318,12 @@
     tr.wbs-band td{background:#eee !important;color:#333 !important;border-color:#999;}
     tr.crit-row td{background:#fbe9e8 !important;}
     tr.warn-row td{background:#fbf1e1 !important;}
+
+    /* Site Brief: the tab's own framing (title/intro/print button) is app
+       chrome, not part of the printed brief - its two real section headings
+       (Newly Critical, Look-ahead) stay visible. */
+    .brief-intro{display:none !important;}
+    .data-snapshot{display:none !important;}
   }
 </style>
 </head>
@@ -412,12 +430,14 @@
   </div>
 
   <div id="results">
+    <div id="dataSnapshot" class="data-snapshot"></div>
     <div class="tabbar" id="tabbar">
       <button class="tab-btn active" data-tab="comparison" onclick="switchTab('comparison')">Update Comparison</button>
       <button class="tab-btn" data-tab="health" onclick="switchTab('health')">Schedule Health Check</button>
       <button class="tab-btn" data-tab="lookahead" onclick="switchTab('lookahead')">3-Week Look-ahead</button>
       <button class="tab-btn" data-tab="timeline" onclick="switchTab('timeline')">Critical Path Timeline</button>
       <button class="tab-btn" data-tab="report" onclick="switchTab('report')">Full Report</button>
+      <button class="tab-btn" data-tab="brief" onclick="switchTab('brief')">Site Brief</button>
     </div>
 
     <div class="tab-panel" id="tab-comparison">
@@ -438,6 +458,8 @@
       <span class="legend-item"><span class="legend-swatch legend-crit"></span>Critical</span>
       <span class="legend-item"><span class="legend-swatch legend-warn"></span>Near-critical</span>
       <span class="legend-item"><span class="legend-swatch legend-ok"></span>Stable / healthy</span>
+      <span class="legend-spacer"></span>
+      <button onclick="exportVarianceToExcel()">Export to Excel</button>
     </div>
     <table>
       <thead><tr>
@@ -493,6 +515,7 @@
     <div class="tab-panel" id="tab-health" style="display:none;">
       <div class="section-title">DCMA 14-Point Schedule Health Check</div>
       <p class="crash-intro">Industry-standard schedule quality audit, run against the current update. Four checks require data this XER export doesn't carry (constraints, resources, baseline performance indices) and are marked accordingly &mdash; that's an honest gap, not a bug.</p>
+      <div class="table-actions"><button onclick="exportHealthCheckToExcel()">Export to Excel</button></div>
       <div id="healthSummary" class="kpis"></div>
       <table>
         <thead><tr><th style="width:26px;">#</th><th>Check</th><th>Result</th><th>Threshold</th><th>Status</th></tr></thead>
@@ -513,6 +536,7 @@
         </label>
         <span class="crash-intro" style="margin:0;">Activities starting or already active within the window from the current data date, ordered by start date.</span>
         <button onclick="printCurrentTab()">Print this list</button>
+        <button onclick="exportLookaheadToExcel()">Export to Excel</button>
       </div>
       <div id="lookaheadPrintMeta" class="print-only-meta"></div>
       <table>
@@ -549,6 +573,28 @@
         </div>
         <div class="disclaimer">Generated from schedule data, notebook entries, and look-ahead results only. Verify contractual/EOT commentary and site facts before issuing externally.</div>
       </div>
+    </div>
+
+    <div class="tab-panel" id="tab-brief" style="display:none;">
+      <div class="brief-intro">
+        <div class="section-title">Site Meeting Brief</div>
+        <p class="crash-intro">One printable page for the next site meeting: what's newly critical, and what's starting or already running in the next three weeks. Weather risk flagging isn't built yet, so it isn't included here.</p>
+        <div class="table-actions"><button onclick="printCurrentTab()">Print this brief</button></div>
+      </div>
+
+      <div id="briefHeader" class="report-header-block"></div>
+
+      <div class="section-title">Newly Critical &amp; Near-Critical</div>
+      <table>
+        <thead><tr><th>Activity</th><th>WBS</th><th>Curr. Finish</th><th>Curr. TF</th><th>Flag</th></tr></thead>
+        <tbody id="briefCriticalBody"></tbody>
+      </table>
+
+      <div class="section-title">Look-ahead &mdash; Next 3 Weeks</div>
+      <table>
+        <thead><tr><th>Start</th><th>Activity</th><th>Duration</th><th>Finish</th><th>Float</th><th>Predecessor Status</th></tr></thead>
+        <tbody id="briefLookaheadBody"></tbody>
+      </table>
     </div>
   </div>
   </div><!-- /appShell -->
@@ -728,7 +774,7 @@ ERMHDR	18.8	2026-06-15	Project	Update 15-Jun-2026 (Current)	sashreek720@gmail.co
 // ---------- XER Parser ----------
 function parseXER(text){
   const lines = text.split(/\r?\n/);
-  const data = { header:{}, project:{}, wbs:{}, tasks:[], notes:{}, preds:{} };
+  const data = { header:{}, project:{}, wbs:{}, tasks:[], notes:{}, preds:{}, calendars:{} };
   let currentTable = null, headers = [];
 
   for(const raw of lines){
@@ -747,6 +793,7 @@ function parseXER(text){
       headers.forEach((h,i)=> row[h]=vals[i] !== undefined ? vals[i] : '');
       if(currentTable === 'PROJECT'){ data.project = row; }
       else if(currentTable === 'PROJWBS'){ data.wbs[row.wbs_id] = row.wbs_short_name; }
+      else if(currentTable === 'CALENDAR'){ data.calendars[row.clndr_id] = row.clndr_name; }
       else if(currentTable === 'TASK'){ data.tasks.push(row); }
       else if(currentTable === 'TASKNOTE'){
         if(!data.notes[row.task_id]) data.notes[row.task_id] = [];
@@ -1107,6 +1154,7 @@ function renderResults(diff){
   document.getElementById('kpiSlip').className = 'k-val ' + (diff.netSlip>0?'crit':(diff.netSlip<0?'':''));
   document.getElementById('kpiCritCount').textContent = diff.newlyCritical;
 
+  renderDataSnapshot();
   renderDimline(diff);
   renderTable(diff);
   populateCrashWorkbench();
@@ -1117,6 +1165,7 @@ function renderResults(diff){
   renderHealthCheck();
   renderLookahead();
   renderTimeline();
+  renderSiteBrief();
 
   document.getElementById('results').style.display='block';
   document.getElementById('watermark').style.display='flex'; // matches .watermark's own flex centering; report output is visible now, so this is where the draft watermark belongs
@@ -1125,6 +1174,27 @@ function renderResults(diff){
   document.getElementById('reportActions').style.display='none';
   const scrollTarget = (window._selectedTool === 'crash') ? document.querySelector('.crash-panel') : document.getElementById('results');
   scrollTarget.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+// Honesty check shown before the detailed results: how complete is this
+// file, really? Missing dates and multi-calendar detection both bear
+// directly on how much to trust the CPM figures that follow.
+function renderDataSnapshot(){
+  const total = currData.tasks.length;
+  const missingDates = currData.tasks.filter(t=> !t.early_start_date || !t.early_end_date).length;
+  const noteCount = Object.values(currData.notes||{}).reduce((s,arr)=> s+arr.length, 0);
+  const calCount = Object.keys(currData.calendars||{}).length;
+
+  const calWarn = calCount > 1;
+  const calValue = calWarn
+    ? `${calCount} calendars detected &mdash; this engine assumes one calendar for all date math; float/finish dates may not match P6 exactly where multiple calendars are actually in use.`
+    : `${calCount || 0} calendar detected`;
+
+  document.getElementById('dataSnapshot').innerHTML = `
+    <div class="snapshot-item"><span class="snapshot-label">Missing Dates</span><span class="snapshot-value">${missingDates} / ${total} activities</span></div>
+    <div class="snapshot-item"><span class="snapshot-label">Notebook Entries</span><span class="snapshot-value">${noteCount} found</span></div>
+    <div class="snapshot-item ${calWarn?'snapshot-warn':''}"><span class="snapshot-label">Calendars</span><span class="snapshot-value">${calValue}</span></div>
+  `;
 }
 
 function renderDimline(diff){
@@ -1270,6 +1340,8 @@ function renderHealthCheck(){
   checks.push({ n:13, name:'CPLI (Critical Path Length Index)', value:'Not assessable', threshold:'\u2265 0.95', status:'na' });
   checks.push({ n:14, name:'BEI (Baseline Execution Index)', value:'Not assessable', threshold:'\u2265 0.95', status:'na' });
 
+  window._lastHealthChecks = checks; // for exportHealthCheckToExcel()
+
   const passCount = checks.filter(c=>c.status==='pass').length;
   const failCount = checks.filter(c=>c.status==='fail').length;
   const naCount = checks.filter(c=>c.status==='na').length;
@@ -1357,6 +1429,56 @@ function renderLookahead(){
       tbody.appendChild(tr);
     });
   });
+}
+
+// ---------- Site Meeting Brief ----------
+// Deliberately reuses lastDiff.rows and computeLookaheadRows() rather than
+// recomputing anything - this is a print-friendly combination of two views
+// that already exist, not a new calculation.
+function renderSiteBrief(){
+  const diff = lastDiff;
+  document.getElementById('briefHeader').innerHTML = `
+    <div class="report-header-row"><span class="report-header-label">Project</span><span class="report-header-value">${diff.projName || '—'}</span></div>
+    <div class="report-header-row"><span class="report-header-label">Data Date</span><span class="report-header-value">${currData.header.date || '—'}</span></div>
+  `;
+
+  const criticalNow = diff.rows.filter(r=> r.flag !== 'ok');
+  const critBody = document.getElementById('briefCriticalBody');
+  if(criticalNow.length===0){
+    critBody.innerHTML = '<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:16px;">No newly critical or near-critical activities.</td></tr>';
+  }else{
+    critBody.innerHTML = criticalNow.map(r=>{
+      const flagLabel = r.flag==='crit' ? 'CRITICAL' : 'NEAR-CRIT';
+      return `<tr class="${r.flag==='crit'?'crit-row':'warn-row'}">
+        <td class="act-cell"><div class="act-code">${r.code}</div><div class="act-name">${r.name}</div></td>
+        <td class="mono">${r.wbs}</td>
+        <td class="mono">${fmtDate(r.cEnd)}</td>
+        <td class="mono">${r.cFloat}d</td>
+        <td><span class="flag ${r.flag}">${flagLabel}</span></td>
+      </tr>`;
+    }).join('');
+  }
+
+  const lookaheadRows = computeLookaheadRows(3);
+  const laBody = document.getElementById('briefLookaheadBody');
+  if(lookaheadRows.length===0){
+    laBody.innerHTML = '<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:16px;">No activities start or are active within the next 3 weeks.</td></tr>';
+  }else{
+    laBody.innerHTML = lookaheadRows.map(r=>{
+      const cls = r.float<=0 ? 'crit-row' : r.float<=5 ? 'warn-row' : '';
+      const logic = r.predsIncomplete.length>0
+        ? `<span class="logic-risk">${r.predsIncomplete.join(', ')} not yet complete</span>`
+        : `<span class="logic-ok">Clear</span>`;
+      return `<tr class="${cls}">
+        <td class="mono">${fmtDate(r.es)}</td>
+        <td class="act-cell"><div class="act-code">${r.code}</div><div class="act-name">${r.name}</div></td>
+        <td class="mono">${r.dur}d</td>
+        <td class="mono">${fmtDate(r.ef)}</td>
+        <td class="mono">${r.float}d</td>
+        <td>${logic}</td>
+      </tr>`;
+    }).join('');
+  }
 }
 
 // ---------- Critical Path Timeline (Gantt) ----------
@@ -1561,6 +1683,76 @@ async function generateNarrative(){
 // Shared "not wired up" state for every AI-backed feature (Narrative, Full
 // Report, and Meeting Actions if/when built) - one message, one place, so
 // they can never drift into differently-worded duplicates.
+// ---------- Excel export ----------
+// No spreadsheet library - Excel (and Sheets/Numbers) will open an HTML
+// table saved as .xls, and Excel's own XML namespace extensions inside an
+// HTML-comment block give real AutoFilter without needing a true .xlsx
+// writer. Colours are hardcoded hex here rather than CSS variables, since
+// this file is downloaded standalone and won't see the page's stylesheet.
+function exportToExcel(headers, rows, filename, sheetName){
+  // Activity names routinely contain "&" (e.g. "TBM delivery & assembly") -
+  // escaped here since these values are inserted into HTML, not just text.
+  const esc = v => String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const range = `A1:${String.fromCharCode(65 + headers.length - 1)}${rows.length + 1}`;
+  const cellStyle = 'border:1px solid #CCCCCC;padding:4px 8px;font-family:Calibri,Arial,sans-serif;font-size:10.5pt;';
+  const headHtml = headers.map(h=>
+    `<th style="background:#242A31;color:#FFFFFF;border:1px solid #333B44;padding:5px 8px;font-family:Calibri,Arial,sans-serif;font-size:11pt;font-weight:bold;text-align:left;">${esc(h)}</th>`
+  ).join('');
+  const bodyHtml = rows.map(r=>{
+    const bg = r.bgColor ? `background:${r.bgColor};` : '';
+    const cells = r.cells.map(c=> `<td style="${bg}${cellStyle}">${c===null||c===undefined?'':esc(c)}</td>`).join('');
+    return `<tr>${cells}</tr>`;
+  }).join('');
+  const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="UTF-8">
+<!--[if gte mso 9]><xml>
+<x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>
+<x:Name>${sheetName}</x:Name>
+<x:WorksheetOptions><x:AutoFilter>${range}</x:AutoFilter></x:WorksheetOptions>
+</x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook>
+</xml><![endif]-->
+<style>table{border-collapse:collapse;}</style>
+</head>
+<body><table><thead><tr>${headHtml}</tr></thead><tbody>${bodyHtml}</tbody></table></body></html>`;
+  const blob = new Blob(['﻿' + html], {type:'application/vnd.ms-excel'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=> URL.revokeObjectURL(url), 1000);
+}
+
+function exportVarianceToExcel(){
+  const headers = ['Activity Code','Activity Name','WBS','Prior Finish','Curr. Finish','Variance (wd)','Prior TF (d)','Curr. TF (d)','Flag'];
+  const rows = lastDiff.rows.map(r=>({
+    cells: [r.code, r.name, r.wbs, fmtDate(r.pEnd), fmtDate(r.cEnd), r.variance, r.pFloat, r.cFloat, r.flag==='crit'?'CRITICAL':r.flag==='warn'?'NEAR-CRIT':'STABLE'],
+    bgColor: r.flag==='crit' ? '#FBE9E8' : r.flag==='warn' ? '#FBF1E1' : null
+  }));
+  exportToExcel(headers, rows, 'floatcheck-activity-variance-register.xls', 'Variance Register');
+}
+
+function exportLookaheadToExcel(){
+  const weeks = parseInt(document.getElementById('lookaheadWindow').value || '3');
+  const rows = computeLookaheadRows(weeks);
+  const headers = ['Start','Activity Code','Activity Name','WBS','Duration (d)','Finish','Float (d)','Predecessor Status'];
+  const excelRows = rows.map(r=>({
+    cells: [fmtDate(r.es), r.code, r.name, r.wbs, r.dur, fmtDate(r.ef), r.float, r.predsIncomplete.length ? r.predsIncomplete.join(', ')+' not yet complete' : 'Clear'],
+    bgColor: r.float<=0 ? '#FBE9E8' : r.float<=5 ? '#FBF1E1' : null
+  }));
+  exportToExcel(headers, excelRows, 'floatcheck-3-week-lookahead.xls', 'Look-ahead');
+}
+
+function exportHealthCheckToExcel(){
+  const checks = window._lastHealthChecks || [];
+  const statusColor = { pass:'#E5F3EC', warn:'#FBF1E1', fail:'#FBE9E8', na:'#EEEEEE' };
+  const headers = ['#','Check','Result','Threshold','Status'];
+  const rows = checks.map(c=>({
+    cells: [c.n, c.name, c.value, c.threshold, c.status.toUpperCase()],
+    bgColor: statusColor[c.status] || null
+  }));
+  exportToExcel(headers, rows, 'floatcheck-dcma-health-check.xls', 'DCMA Health Check');
+}
+
 function aiUnavailableHTML(){
   return `
     <div class="narrative-unavailable">
