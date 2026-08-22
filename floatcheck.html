@@ -187,19 +187,29 @@
   .report-panel{border:1px solid var(--line);padding:24px 26px;background:var(--panel);}
   .report-panel h2{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;margin:0 0 4px;letter-spacing:0.5px;text-transform:uppercase;}
   .report-meta{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:18px;}
-  #reportBody{font-size:14px;line-height:1.65;color:var(--text);}
-  #reportBody h3{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;color:var(--text);margin:20px 0 8px;text-transform:uppercase;letter-spacing:0.5px;}
-  #reportBody h3:first-child{margin-top:0;}
-  #reportBody p{margin:0 0 12px;}
-  #reportBody ul{margin:0 0 12px;padding-left:20px;}
-  #reportBody li{margin-bottom:6px;}
-  #reportBody strong{color:var(--text);}
-  .report-actions{display:flex;justify-content:flex-end;margin-bottom:10px;}
+  #reportBody, #fullReportBody{font-size:14px;line-height:1.65;color:var(--text);}
+  #reportBody h3, #fullReportBody h3{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;color:var(--text);margin:20px 0 8px;text-transform:uppercase;letter-spacing:0.5px;}
+  #reportBody h3:first-child, #fullReportBody h3:first-child{margin-top:0;}
+  #reportBody p, #fullReportBody p{margin:0 0 12px;}
+  #reportBody ul, #fullReportBody ul{margin:0 0 12px;padding-left:20px;}
+  #reportBody li, #fullReportBody li{margin-bottom:6px;}
+  #reportBody strong, #fullReportBody strong{color:var(--text);}
+  .report-actions{display:flex;justify-content:flex-end;gap:10px;margin-bottom:10px;}
   .loading-line{display:flex;align-items:center;gap:8px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:12px;}
   .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 1.1s infinite ease-in-out;}
   .dot:nth-child(2){animation-delay:.15s;} .dot:nth-child(3){animation-delay:.3s;}
   @keyframes pulse{0%,80%,100%{opacity:0.25;}40%{opacity:1;}}
   .disclaimer{font-size:11px;color:var(--muted2);margin-top:16px;border-top:1px solid var(--line);padding-top:12px;}
+
+  /* Full Report - deterministic header (reused title-block data) and sign-off,
+     both rendered by code so they're accurate regardless of whether the AI
+     section below them succeeds. */
+  .report-header-block{margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--line);}
+  .report-header-row{display:flex;gap:10px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);margin-bottom:5px;}
+  .report-header-label{width:140px;flex-shrink:0;text-transform:uppercase;letter-spacing:0.5px;}
+  .report-header-value{color:var(--text);}
+  .signoff{display:flex;gap:48px;margin-top:24px;padding-top:16px;border-top:1px solid var(--line);font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);flex-wrap:wrap;}
+  .signoff-blank{display:inline-block;min-width:160px;border-bottom:1px solid var(--line);margin-left:8px;}
   .narrative-unavailable{border:1px solid var(--line);background:var(--panel-raised);padding:14px 16px;font-size:13px;line-height:1.6;color:var(--muted);}
   .narrative-unavailable p{margin:0 0 10px;}
   .narrative-unavailable p:last-child{margin-bottom:0;}
@@ -239,6 +249,43 @@
 
   /* Timeline */
   .tl-row-label{font-family:'IBM Plex Mono',monospace;}
+
+  /* Print - only the currently-active tab panel prints (see printCurrentTab()),
+     with UI chrome stripped out and colours flattened to plain ink-on-paper. */
+  @media print{
+    body{background:#fff !important;background-image:none !important;color:#111;}
+    .watermark, .titleblock, .tabbar, .back-link, .app-shell-context,
+    .uploads, #parseWarnings, .actions, button{display:none !important;}
+    .tab-panel{display:none !important;}
+    .tab-panel.print-target{display:block !important;}
+    /* The tab's own section-title/intro paragraph are app navigation chrome
+       explaining what the button does - not part of the document itself. */
+    #tab-report .section-title, #tab-report .crash-intro{display:none !important;}
+    .wrap{max-width:100%;padding:0;margin:0;}
+    .report-panel, .dimline-panel, .crash-panel{border:none;padding:0;background:#fff;}
+    .report-panel::before, .report-panel::after,
+    .dimline-panel::before, .dimline-panel::after,
+    .crash-panel::before, .crash-panel::after{display:none !important;}
+    .section-title{color:#111;border-left-color:#111;}
+    #reportBody, #fullReportBody{color:#111;}
+    #reportBody h3, #fullReportBody h3{color:#111;margin:12px 0 6px;}
+    #reportBody strong, #fullReportBody strong{color:#111;}
+    #reportBody h3:first-child, #fullReportBody h3:first-child{margin-top:0;}
+    table{width:100%;font-size:11px;border-collapse:collapse;}
+    th{color:#333;border-bottom-color:#333;}
+    td{border-bottom-color:#ccc;color:#111;}
+    tr{page-break-inside:avoid;}
+    .flag, .status-pill{background:none !important;color:#111 !important;border-color:#111 !important;}
+    a{color:#111;text-decoration:underline;}
+    .report-header-block{border-bottom-color:#333;margin-bottom:10px;padding-bottom:8px;}
+    .report-header-label, .report-header-value{color:#111;}
+    .report-panel h2{margin:0 0 2px;}
+    .report-meta{margin-bottom:10px;}
+    .signoff{color:#111;border-top-color:#333;margin-top:14px;padding-top:10px;page-break-inside:avoid;}
+    .signoff-blank{border-bottom-color:#111;}
+    .disclaimer{color:#444;border-top-color:#ccc;margin-top:8px;padding-top:6px;page-break-before:avoid;page-break-inside:avoid;}
+    .crash-intro{color:#333;}
+  }
 </style>
 </head>
 <body>
@@ -349,6 +396,7 @@
       <button class="tab-btn" data-tab="health" onclick="switchTab('health')">Schedule Health Check</button>
       <button class="tab-btn" data-tab="lookahead" onclick="switchTab('lookahead')">3-Week Look-ahead</button>
       <button class="tab-btn" data-tab="timeline" onclick="switchTab('timeline')">Critical Path Timeline</button>
+      <button class="tab-btn" data-tab="report" onclick="switchTab('report')">Full Report</button>
     </div>
 
     <div class="tab-panel" id="tab-comparison">
@@ -448,6 +496,29 @@
       <div class="section-title">Critical Path Timeline</div>
       <p class="crash-intro">Recomputed via CPM from current schedule logic and durations. Red bars are critical (zero float).</p>
       <div id="timelineSvgWrap"></div>
+    </div>
+
+    <div class="tab-panel" id="tab-report" style="display:none;">
+      <div class="section-title">Full Report</div>
+      <p class="crash-intro">Assembles everything already calculated &mdash; variance, notebook-logged causes, recommended actions, and the next-period look-ahead &mdash; into one structured progress report, in the order a contractor's report actually follows.</p>
+
+      <div class="report-panel">
+        <div id="fullReportHeader"></div>
+        <h2>Fortnightly Schedule Progress Report</h2>
+        <div class="report-meta">Drafted by Claude &mdash; review before issuing</div>
+        <div class="report-actions" id="fullReportActions" style="display:none;">
+          <button onclick="copyFullReport()">Copy to clipboard</button>
+          <button onclick="printCurrentTab()">Print / Export PDF</button>
+        </div>
+        <div id="fullReportBody">
+          <button class="primary" id="genFullReportBtn" onclick="generateFullReport()">Generate Full Report</button>
+        </div>
+        <div id="fullReportSignoff" class="signoff" style="display:none;">
+          <span class="signoff-item">Reviewed by:<span class="signoff-blank"></span></span>
+          <span class="signoff-item">Date:<span class="signoff-blank"></span></span>
+        </div>
+        <div class="disclaimer">Generated from schedule data, notebook entries, and look-ahead results only. Verify contractual/EOT commentary and site facts before issuing externally.</div>
+      </div>
     </div>
   </div>
   </div><!-- /appShell -->
@@ -970,6 +1041,19 @@ function switchTab(name){
   document.querySelector(`.tab-btn[data-tab="${name}"]`).classList.add('active');
 }
 
+// Marks whichever tab is currently active as the print target (see the
+// @media print rules) and hands off to the browser's own print dialog -
+// no PDF library needed, and it's the same mechanism the Look-ahead tab's
+// print button uses.
+function printCurrentTab(){
+  document.querySelectorAll('.tab-panel').forEach(el=> el.classList.remove('print-target'));
+  const activeBtn = document.querySelector('.tab-btn.active');
+  const tabId = activeBtn ? 'tab-' + activeBtn.dataset.tab : null;
+  const el = tabId && document.getElementById(tabId);
+  if(el) el.classList.add('print-target');
+  window.print();
+}
+
 function renderResults(diff){
   document.getElementById('titleblock').style.display = 'block'; // real project data exists now - this is where the title block belongs
   document.getElementById('tbProject').textContent = diff.projName || '—';
@@ -1169,15 +1253,14 @@ function renderHealthCheck(){
 }
 
 // ---------- 3-Week Look-ahead Generator ----------
-function renderLookahead(){
-  if(!currData) return;
-  const weeks = parseInt(document.getElementById('lookaheadWindow').value || '3');
+// Shared by renderLookahead() and the Full Report's Planned Work section -
+// one computation, not two copies that could drift apart.
+function computeLookaheadRows(weeks){
   const dataDate = parseDate(currData.header.date);
   const windowEnd = addWorkdays(dataDate, weeks*5); // approx calendar window via workdays
   const cpm = window._currentCPM || runCPM(currData.tasks, parseDate(currData.project.plan_start_date));
-  const byCode = cpm.byCode;
 
-  const rows = currData.tasks.filter(t=>{
+  return currData.tasks.filter(t=>{
     const es = parseDate(t.early_start_date), ef = parseDate(t.early_end_date);
     if(!es || !ef) return false;
     const isActiveNow = t.status_code==='TK_Active';
@@ -1192,6 +1275,12 @@ function renderLookahead(){
     return { code:t.task_code, name:t.task_name, wbs:t.wbs_name, es, ef, dur:t.dur_days,
       float: cpm.TF[t.task_code], predsIncomplete };
   }).sort((a,b)=> a.es - b.es);
+}
+
+function renderLookahead(){
+  if(!currData) return;
+  const weeks = parseInt(document.getElementById('lookaheadWindow').value || '3');
+  const rows = computeLookaheadRows(weeks);
 
   const tbody = document.getElementById('lookaheadTableBody');
   tbody.innerHTML='';
@@ -1426,19 +1515,118 @@ async function generateNarrative(){
     reportBody.innerHTML = html;
     document.getElementById('reportActions').style.display='flex';
   }catch(err){
-    reportBody.innerHTML = `
-      <div class="narrative-unavailable">
-        <p><strong>AI narrative generation isn't wired up in this version.</strong> Turning this analysis into report prose means sending it to the Anthropic API, which needs an API key held server-side. This is a static, no-backend build, so there's nowhere secure to keep that key yet &mdash; the request can't complete here. That's a known, tracked gap (a small backend proxy would close it), not a fault in what's on this page.</p>
-        <p>Everything else &mdash; the variance analysis, DCMA-14 health check, 3-week look-ahead, and crashing workbench &mdash; runs entirely in your browser and is fully functional.</p>
-      </div>
-    `;
+    reportBody.innerHTML = aiUnavailableHTML();
   }
+}
+
+// Shared "not wired up" state for every AI-backed feature (Narrative, Full
+// Report, and Meeting Actions if/when built) - one message, one place, so
+// they can never drift into differently-worded duplicates.
+function aiUnavailableHTML(){
+  return `
+    <div class="narrative-unavailable">
+      <p><strong>This feature isn't wired up in this version.</strong> It needs to send data to the Anthropic API, which needs an API key held server-side. This is a static, no-backend build, so there's nowhere secure to keep that key yet &mdash; the request can't complete here. That's a known, tracked gap (a small backend proxy would close it), not a fault in what's on this page.</p>
+      <p>Everything else on this page runs entirely in your browser and is fully functional.</p>
+    </div>
+  `;
 }
 
 function copyReport(){
   const text = document.getElementById('reportBody').innerText;
   navigator.clipboard.writeText(text).then(()=>{
     const btn = document.querySelector('#reportActions button');
+    const orig = btn.textContent;
+    btn.textContent = 'Copied';
+    setTimeout(()=> btn.textContent = orig, 1400);
+  });
+}
+
+// ---------- Full Report ----------
+async function generateFullReport(){
+  const diff = lastDiff;
+
+  // Header is rendered from data we already have, deterministically - it's
+  // accurate regardless of whether the AI section below it succeeds.
+  document.getElementById('fullReportHeader').innerHTML = `
+    <div class="report-header-block">
+      <div class="report-header-row"><span class="report-header-label">Project</span><span class="report-header-value">${diff.projName || '—'}</span></div>
+      <div class="report-header-row"><span class="report-header-label">Reporting Period</span><span class="report-header-value">${prevData.header.date} &rarr; ${currData.header.date}</span></div>
+      <div class="report-header-row"><span class="report-header-label">Report</span><span class="report-header-value">Fortnightly Schedule Progress Report</span></div>
+    </div>
+  `;
+
+  const reportBody = document.getElementById('fullReportBody');
+  reportBody.innerHTML = `<div class="loading-line"><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;Assembling full report from variance, notebook entries, and look-ahead&hellip;</div>`;
+  document.getElementById('fullReportActions').style.display = 'none';
+  document.getElementById('fullReportSignoff').style.display = 'none';
+
+  const slipped = diff.rows.filter(r=>r.variance>0);
+  const withNotes = diff.rows.filter(r=>r.notes.length>0);
+  const criticalNow = diff.rows.filter(r=>r.flag!=='ok');
+  const lookaheadRows = computeLookaheadRows(3);
+
+  const payload = {
+    project: diff.projName,
+    prev_data_date: prevData.header.date,
+    curr_data_date: currData.header.date,
+    prior_finish: fmtDate(diff.prevFinish),
+    current_finish: fmtDate(diff.currFinish),
+    net_slip_working_days: diff.netSlip,
+    activities_with_delay_notes: withNotes.map(r=>({ activity: r.code+' - '+r.name, variance_days: r.variance, notebook_entries: r.notes })),
+    slipped_activities: slipped.map(r=>({ activity:r.code+' - '+r.name, wbs:r.wbs, variance_days:r.variance, prior_float_days:r.pFloat, current_float_days:r.cFloat })),
+    newly_critical_or_near_critical: criticalNow.map(r=>({ activity:r.code+' - '+r.name, current_float_days:r.cFloat, flag:r.flag })),
+    crash_analysis: window._lastCrashResult ? {
+      target_recovery_days: window._lastCrashResult.target,
+      recovered_days: window._lastCrashResult.recovered,
+      target_fully_reached: window._lastCrashResult.targetReached,
+      total_crash_cost_aud: window._lastCrashResult.totalCost,
+      new_finish_after_crashing: fmtDate(window._lastCrashResult.finalFinish),
+      activities_crashed: Object.entries(window._lastCrashResult.crashedSoFar).filter(([,d])=>d>0).map(([code,d])=>({activity:code, days_crashed:d}))
+    } : null,
+    lookahead_next_3_weeks: lookaheadRows.map(r=>({ activity: r.code+' - '+r.name, wbs:r.wbs, start:fmtDate(r.es), finish:fmtDate(r.ef), float_days:r.float, predecessors_incomplete: r.predsIncomplete }))
+  };
+
+  const systemPrompt = `You are drafting a formal fortnightly Schedule Progress Report for a planning engineer on an Australian civil infrastructure project (station box / TBM works), following the structure and conventions of a real contractor progress report - not a generic AI summary. Write in a professional, factual, restrained tone: state bad news plainly and early, do not soften or bury a variance, and do not pad a section that has little to report. Structure your response as clean HTML using only these tags: <h3> <p> <ul> <li> <strong> - no other tags, no markdown, no code fences, and do not write a header or title (the header is rendered separately from live data, not by you). Sections, in this exact order:
+
+"Executive Summary" - 2-3 sentences, leading immediately with the net program movement (slip in working days) and current status - this must be the very first thing stated, before any other context.
+
+"Schedule Status & Variance" - summarise the finish-date movement, then a bullet list of the specific activities most responsible for the variance, drawn from slipped_activities and newly_critical_or_near_critical.
+
+"Issues Driving Variance" - bullet list, using ONLY facts from activities_with_delay_notes - do not invent a cause for any slipped or critical activity that has no notebook entry; state plainly that the cause is under investigation instead.
+
+"Decisions/Actions Needed" - bullet list of concrete next steps a planning engineer would actually take. Where the data supports real urgency (an activity at or near zero float, or a variance materially threatening the finish date), state a needed-by timeframe grounded in that data (e.g. "before the next update cycle") - never invent a specific calendar date the data doesn't support. Flag EOT entitlement only where a notebook entry explicitly supports a principal-caused or unforeseen risk event.
+
+"Planned Work - Next Period" - summarise lookahead_next_3_weeks: what's starting or already running in the next reporting window, and flag any activity with predecessors_incomplete.
+
+Do not fabricate any fact, date, or number beyond what is given in the JSON. If a section's underlying data is sparse, say so briefly rather than padding it.`;
+
+  try{
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1800,
+        system: systemPrompt,
+        messages: [{ role:"user", content: "Here is the schedule data for this reporting period:\n\n" + JSON.stringify(payload, null, 2) }]
+      })
+    });
+    const data = await response.json();
+    const textBlock = (data.content||[]).find(c=>c.type==='text');
+    let html = textBlock ? textBlock.text : '<p>No response generated.</p>';
+    html = html.replace(/```html|```/g,'').trim();
+    reportBody.innerHTML = html;
+    document.getElementById('fullReportActions').style.display = 'flex';
+    document.getElementById('fullReportSignoff').style.display = 'flex';
+  }catch(err){
+    reportBody.innerHTML = aiUnavailableHTML();
+  }
+}
+
+function copyFullReport(){
+  const text = document.getElementById('fullReportHeader').innerText + '\n\n' + document.getElementById('fullReportBody').innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn = document.querySelector('#fullReportActions button');
     const orig = btn.textContent;
     btn.textContent = 'Copied';
     setTimeout(()=> btn.textContent = orig, 1400);
