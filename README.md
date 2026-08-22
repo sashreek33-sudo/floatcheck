@@ -1,5 +1,7 @@
 # FloatCheck
 
+**Live: https://sashreek33-sudo.github.io/floatcheck/floatcheck.html**
+
 A single-file HTML web app for construction schedule analysis. No backend, no build step, no dependencies beyond two Google Fonts — open `floatcheck.html` in a browser and it runs. It reads Primavera P6 XER exports (P6's tab-delimited schedule interchange format) entirely client-side; the file never leaves the browser except for the one step described under "AI narrative" below.
 
 ## What it does
