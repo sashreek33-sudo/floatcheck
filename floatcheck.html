@@ -169,6 +169,10 @@
   .dot:nth-child(2){animation-delay:.15s;} .dot:nth-child(3){animation-delay:.3s;}
   @keyframes pulse{0%,80%,100%{opacity:0.25;}40%{opacity:1;}}
   .disclaimer{font-size:11px;color:var(--muted2);margin-top:16px;border-top:1px solid var(--line);padding-top:12px;}
+  .narrative-unavailable{border:1px solid var(--line);background:var(--panel-raised);padding:14px 16px;font-size:13px;line-height:1.6;color:var(--muted);}
+  .narrative-unavailable p{margin:0 0 10px;}
+  .narrative-unavailable p:last-child{margin-bottom:0;}
+  .narrative-unavailable strong{color:var(--text);}
 
   /* Crashing workbench */
   .crash-panel{border:1px solid var(--line);padding:20px 22px;background:var(--panel);margin-bottom:28px;}
@@ -1130,8 +1134,8 @@ function renderTimeline(){
   let gridDate = new Date(minDate);
   while(gridDate <= maxDate){
     const x = xScale(gridDate);
-    svg += `<line x1="${x}" y1="${padTop-10}" x2="${x}" y2="${h-10}" stroke="#22262E" stroke-width="1"/>`;
-    svg += `<text x="${x}" y="${padTop-16}" fill="#5D6472" font-size="9" text-anchor="middle">${gridDate.toLocaleDateString('en-AU',{month:'short',year:'2-digit',timeZone:'UTC'})}</text>`;
+    svg += `<line x1="${x}" y1="${padTop-10}" x2="${x}" y2="${h-10}" stroke="#242A31" stroke-width="1"/>`;
+    svg += `<text x="${x}" y="${padTop-16}" fill="#5F5A50" font-size="9" text-anchor="middle">${gridDate.toLocaleDateString('en-AU',{month:'short',year:'2-digit',timeZone:'UTC'})}</text>`;
     gridDate = new Date(gridDate); gridDate.setUTCDate(gridDate.getUTCDate()+30);
   }
   rows.forEach((r,i)=>{
@@ -1302,7 +1306,12 @@ async function generateNarrative(){
     reportBody.innerHTML = html;
     document.getElementById('reportActions').style.display='flex';
   }catch(err){
-    reportBody.innerHTML = `<p style="color:var(--crit)">Could not generate narrative: ${err.message}. You can retry.</p><button class="primary" onclick="generateNarrative()">Retry</button>`;
+    reportBody.innerHTML = `
+      <div class="narrative-unavailable">
+        <p><strong>AI narrative generation isn't wired up in this version.</strong> Turning this analysis into report prose means sending it to the Anthropic API, which needs an API key held server-side. This is a static, no-backend build, so there's nowhere secure to keep that key yet &mdash; the request can't complete here. That's a known, tracked gap (a small backend proxy would close it), not a fault in what's on this page.</p>
+        <p>Everything else &mdash; the variance analysis, DCMA-14 health check, 3-week look-ahead, and crashing workbench &mdash; runs entirely in your browser and is fully functional.</p>
+      </div>
+    `;
   }
 }
 
