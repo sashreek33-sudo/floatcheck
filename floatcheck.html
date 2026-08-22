@@ -2,30 +2,98 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Schedule Variance Agent</title>
+<title>FloatCheck</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+  /*
+    Palette: graphite ground + copper/amber accent, named as drafting materials
+    rather than generic UI roles - this is a drawing sheet, not a dashboard.
+      --bg / --panel / --panel-raised / --line   graphite (the sheet + its rules)
+      --text                                     parchment (warm near-white ink)
+      --muted / --muted2                         pencil (faded graphite line)
+      --accent                                   copper (drafting-pen ochre - interactive only)
+      --crit / --warn / --ok                     status ink, kept distinct from accent
+  */
   :root{
-    --bg:#14171C; --panel:#1B1F26; --panel-raised:#20242C; --line:#2A2F38;
-    --text:#E7E9ED; --muted:#8A93A3; --muted2:#5D6472;
-    --crit:#E5484D; --warn:#F2A93C; --ok:#3FC88B; --accent:#5B8CFF;
-    --crit-bg:rgba(229,72,77,0.12); --warn-bg:rgba(242,169,60,0.12); --ok-bg:rgba(63,200,139,0.12);
+    --bg:#14171A; --panel:#1B1F23; --panel-raised:#242A31; --line:#333B44;
+    --text:#EDE9DE; --muted:#93897A; --muted2:#5F5A50;
+    --crit:#D1544C; --warn:#D6A23C; --ok:#6FA285; --accent:#C9862E; --accent-hi:#E0A050;
+    --crit-bg:rgba(209,84,76,0.12); --warn-bg:rgba(214,162,60,0.12); --ok-bg:rgba(111,162,133,0.12);
   }
   *{box-sizing:border-box;}
-  body{margin:0;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;}
+  body{
+    margin:0;background-color:var(--bg);color:var(--text);
+    font-family:'IBM Plex Sans',sans-serif;-webkit-font-smoothing:antialiased;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(147,137,122,0.05) 0 1px, transparent 1px 32px),
+      repeating-linear-gradient(90deg, rgba(147,137,122,0.05) 0 1px, transparent 1px 32px);
+  }
   .wrap{max-width:1100px;margin:0 auto;padding:28px 20px 80px;}
+  .mono{font-family:'IBM Plex Mono',monospace;font-size:12px;font-variant-numeric:tabular-nums;}
 
-  /* Title block */
-  .titleblock{border:1px solid var(--line);border-radius:2px;padding:18px 22px;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:14px;margin-bottom:26px;background:linear-gradient(180deg,var(--panel-raised),var(--panel));}
-  .titleblock h1{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;margin:0 0 4px;letter-spacing:0.2px;}
+  /* Corner registration marks - the recurring "drawing sheet" motif, applied to the
+     major panels only so it reads as a signature detail, not decoration everywhere. */
+  .titleblock, .dimline-panel, .report-panel, .crash-panel{position:relative;}
+  .titleblock::before, .titleblock::after,
+  .dimline-panel::before, .dimline-panel::after,
+  .report-panel::before, .report-panel::after,
+  .crash-panel::before, .crash-panel::after{
+    content:'';position:absolute;width:9px;height:9px;pointer-events:none;
+  }
+  .titleblock::before, .dimline-panel::before, .report-panel::before, .crash-panel::before{
+    top:-1px;left:-1px;border-top:1px solid var(--accent);border-left:1px solid var(--accent);
+  }
+  .titleblock::after, .dimline-panel::after, .report-panel::after, .crash-panel::after{
+    bottom:-1px;right:-1px;border-bottom:1px solid var(--accent);border-right:1px solid var(--accent);
+  }
+
+  /* Title block - modelled on a real ANSI/ISO drawing sheet's title block: an
+     identity band (document + project) over a field grid (signatures, dates,
+     drawing no./scale/revision) - the layout a printed progress report would
+     actually carry, not just a themed app header. */
+  .titleblock{border:1px solid var(--line);margin-bottom:26px;background:var(--panel);}
+  .tb-row-top{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:14px;padding:18px 22px;border-bottom:1px solid var(--line);}
+  .titleblock h1{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:700;margin:0 0 4px;letter-spacing:1px;text-transform:uppercase;}
   .titleblock .sub{color:var(--muted);font-size:13px;font-family:'IBM Plex Mono',monospace;}
-  .tb-meta{display:flex;gap:22px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);text-align:right;}
-  .tb-meta div span{display:block;color:var(--text);font-size:13px;margin-top:2px;}
+  .tb-grid{display:grid;grid-template-columns:repeat(4,1fr);}
+  .tb-field{padding:8px 16px;border-left:1px solid var(--line);}
+  .tb-field:nth-child(4n+1){border-left:none;}
+  .tb-field:nth-child(n+5){border-top:1px solid var(--line);}
+  .tb-field-label{display:block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;}
+  .tb-field-value{display:block;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--text);}
+  .tb-field-value.tb-blank{color:var(--muted2);border-bottom:1px dotted var(--line);}
+  .tb-field-rev .tb-field-value{color:var(--accent);font-weight:700;}
+  .tb-topfield{text-align:right;padding:0 16px;border-left:1px solid var(--line);}
+  .tb-topfield .tb-field-label{letter-spacing:0.5px;}
+  .tb-topfield .tb-field-value{font-size:13px;}
+
+  /* Revision stamp - a separate ink-stamp accent over the sheet's top-right corner,
+     distinct from the formal REV field in the grid below, the way a real reviewed
+     document carries both a printed form field and a stamped annotation. */
+  .rev-stamp{
+    position:absolute;top:-13px;right:24px;z-index:2;
+    font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:12px;letter-spacing:2px;
+    color:var(--crit);background:var(--bg);
+    border:2px solid var(--crit);padding:3px 10px;
+    transform:rotate(-5deg);
+    box-shadow:inset 0 0 0 1px rgba(209,84,76,0.35);
+  }
+
+  /* Draft watermark - fixed so it stays put while the page scrolls, sits behind
+     .wrap via z-index, and is built from plain repeated text rather than an SVG
+     data URI to avoid any encoding fragility. */
+  .watermark{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+  .watermark-inner{
+    width:170vw;transform:rotate(-30deg);text-align:center;
+    color:rgba(147,137,122,0.07);font-family:'IBM Plex Mono',monospace;font-weight:700;
+    font-size:22px;letter-spacing:3px;line-height:4.4;white-space:pre;
+  }
+  .wrap{position:relative;z-index:1;}
 
   /* Upload row */
   .uploads{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;}
-  .dropzone{border:1px dashed var(--line);border-radius:3px;padding:22px 16px;text-align:center;cursor:pointer;transition:border-color .15s, background .15s;position:relative;background:var(--panel);}
+  .dropzone{border:1px dashed var(--line);padding:22px 16px;text-align:center;cursor:pointer;transition:border-color .15s, background .15s;position:relative;background:var(--panel);}
   .dropzone:hover{border-color:var(--accent);background:var(--panel-raised);}
   .dropzone.filled{border-style:solid;border-color:var(--ok);background:var(--ok-bg);}
   .dz-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:8px;}
@@ -33,56 +101,63 @@
   .dz-hint{font-size:12px;color:var(--muted2);margin-top:4px;}
   input[type=file]{display:none;}
 
-  .parse-warning{border:1px solid var(--warn);background:var(--warn-bg);color:var(--warn);border-radius:3px;padding:10px 14px;font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1.6;margin-bottom:16px;}
+  .parse-warning{border:1px solid var(--warn);background:var(--warn-bg);color:var(--warn);padding:10px 14px;font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1.6;margin-bottom:16px;}
 
   .actions{display:flex;gap:10px;align-items:center;margin-bottom:30px;flex-wrap:wrap;}
-  button{font-family:'Inter',sans-serif;font-weight:600;font-size:13px;border-radius:3px;border:1px solid var(--line);background:var(--panel-raised);color:var(--text);padding:10px 16px;cursor:pointer;transition:all .15s;}
-  button:hover:not(:disabled){border-color:var(--accent);}
-  button.primary{background:var(--accent);border-color:var(--accent);color:#0B0F14;}
-  button.primary:hover:not(:disabled){background:#7BA2FF;}
+  button{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:12px;letter-spacing:0.5px;text-transform:uppercase;border-radius:0;border:1px solid var(--line);background:var(--panel-raised);color:var(--text);padding:10px 18px;cursor:pointer;transition:border-color .15s, background .15s, color .15s;}
+  button:hover:not(:disabled){border-color:var(--accent);color:var(--accent);}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#14171A;}
+  button.primary:hover:not(:disabled){background:var(--accent-hi);border-color:var(--accent-hi);color:#14171A;}
   button:disabled{opacity:0.4;cursor:not-allowed;}
-  .demo-link{font-size:12px;color:var(--muted);text-decoration:underline;cursor:pointer;background:none;border:none;padding:0;font-weight:400;}
+  .demo-link{font-size:12px;color:var(--muted);text-decoration:underline;cursor:pointer;background:none;border:none;padding:0;font-weight:400;font-family:'IBM Plex Sans',sans-serif;}
   .demo-link:hover{color:var(--accent);}
 
   #results{display:none;}
 
-  /* KPI strip */
-  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:3px;overflow:hidden;margin-bottom:24px;}
-  .kpi{background:var(--panel);padding:16px 18px;}
+  /* KPI strip - instrument readout, not a card grid */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);overflow:hidden;margin-bottom:24px;}
+  .kpi{background:var(--panel);padding:16px 18px;border-top:2px solid var(--line);}
   .kpi .k-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;}
-  .kpi .k-val{font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;}
+  .kpi .k-val{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;}
   .kpi .k-val.crit{color:var(--crit);}
   .kpi .k-val.warn{color:var(--warn);}
 
   /* Dimension line (signature element) */
-  .dimline-panel{border:1px solid var(--line);border-radius:3px;padding:20px 22px 8px;margin-bottom:24px;background:var(--panel);}
+  .dimline-panel{border:1px solid var(--line);padding:20px 22px 8px;margin-bottom:24px;background:var(--panel);}
   .dimline-panel h3{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin:0 0 14px;font-weight:600;}
   svg text{font-family:'IBM Plex Mono',monospace;}
 
-  /* Activity table */
-  .section-title{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin:0 0 12px;font-weight:600;}
-  table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:28px;}
-  th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.8px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line);padding:8px 10px;font-weight:500;}
-  td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top;}
+  /* Activity table - tightened toward an actual P6 activity grid: dense rows,
+     zebra shading, and WBS shown as grouping bands (P6's "group & sort by WBS"
+     view) with activities indented beneath, rather than a repeated column. */
+  .section-title{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin:0 0 12px;font-weight:600;padding-left:10px;border-left:2px solid var(--accent);}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;margin-bottom:28px;}
+  th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.8px;text-transform:uppercase;color:var(--muted);border-bottom:2px solid var(--line);padding:6px 10px;font-weight:500;}
+  td{padding:5px 10px;border-bottom:1px solid var(--line);vertical-align:top;}
+  tbody tr:nth-child(even) td{background:rgba(255,255,255,0.018);}
+  tr.wbs-band td{background:var(--panel-raised);font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted);padding:5px 10px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
+  tr.wbs-band:first-child td{border-top:none;}
+  td.act-cell{padding-left:20px;border-left:2px solid var(--line);}
   tr.crit-row td{background:var(--crit-bg);}
   tr.warn-row td{background:var(--warn-bg);}
+  tr.crit-row td.act-cell{position:relative;border-left:none;}
+  tr.crit-row td.act-cell::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:repeating-linear-gradient(45deg, var(--crit) 0 4px, #14171A 4px 8px);}
   .act-code{font-family:'IBM Plex Mono',monospace;color:var(--muted);font-size:11px;}
   .act-name{font-weight:500;}
-  .mono{font-family:'IBM Plex Mono',monospace;font-size:12px;}
-  .flag{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;padding:3px 7px;border-radius:2px;letter-spacing:0.5px;}
-  .flag.crit{background:var(--crit);color:#0B0F14;}
-  .flag.warn{background:var(--warn);color:#0B0F14;}
-  .flag.ok{background:var(--ok);color:#0B0F14;}
-  .note-badge{display:inline-block;font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--accent);border:1px solid var(--accent);border-radius:2px;padding:1px 5px;margin-top:5px;cursor:help;}
+  .flag{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;padding:2px 7px;letter-spacing:0.5px;border:1px solid currentColor;background:transparent;}
+  .flag.crit{background:repeating-linear-gradient(45deg, var(--crit) 0 6px, #14171A 6px 12px);color:var(--text);border-color:var(--crit);font-weight:700;}
+  .flag.warn{color:var(--warn);}
+  .flag.ok{color:var(--ok);}
+  .note-badge{display:inline-block;font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--accent);border:1px solid var(--accent);padding:1px 5px;margin-top:5px;cursor:help;}
   .var-pos{color:var(--crit);font-weight:600;}
   .var-zero{color:var(--muted2);}
 
   /* Narrative report */
-  .report-panel{border:1px solid var(--line);border-radius:3px;padding:24px 26px;background:var(--panel);}
-  .report-panel h2{font-family:'Space Grotesk',sans-serif;font-size:16px;margin:0 0 4px;}
+  .report-panel{border:1px solid var(--line);padding:24px 26px;background:var(--panel);}
+  .report-panel h2{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;margin:0 0 4px;letter-spacing:0.5px;text-transform:uppercase;}
   .report-meta{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:18px;}
-  #reportBody{font-size:14px;line-height:1.65;color:#D8DBE1;}
-  #reportBody h3{font-family:'Space Grotesk',sans-serif;font-size:14px;color:var(--text);margin:20px 0 8px;text-transform:uppercase;letter-spacing:0.5px;}
+  #reportBody{font-size:14px;line-height:1.65;color:var(--text);}
+  #reportBody h3{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;color:var(--text);margin:20px 0 8px;text-transform:uppercase;letter-spacing:0.5px;}
   #reportBody h3:first-child{margin-top:0;}
   #reportBody p{margin:0 0 12px;}
   #reportBody ul{margin:0 0 12px;padding-left:20px;}
@@ -96,10 +171,10 @@
   .disclaimer{font-size:11px;color:var(--muted2);margin-top:16px;border-top:1px solid var(--line);padding-top:12px;}
 
   /* Crashing workbench */
-  .crash-panel{border:1px solid var(--line);border-radius:3px;padding:20px 22px;background:var(--panel);margin-bottom:28px;}
+  .crash-panel{border:1px solid var(--line);padding:20px 22px;background:var(--panel);margin-bottom:28px;}
   .crash-intro{font-size:12.5px;color:var(--muted);margin:0 0 14px;line-height:1.5;}
   .crash-panel table{margin-bottom:16px;}
-  .crash-panel input[type=number]{background:var(--panel-raised);border:1px solid var(--line);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:13px;padding:5px 8px;border-radius:2px;width:90px;}
+  .crash-panel input[type=number]{background:var(--panel-raised);border:1px solid var(--line);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:13px;padding:5px 8px;border-radius:0;width:90px;}
   .crash-panel input[type=number]:focus{outline:none;border-color:var(--accent);}
   .crash-controls{display:flex;align-items:center;gap:16px;padding-top:6px;border-top:1px solid var(--line);flex-wrap:wrap;}
   .crash-target-label{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);display:flex;align-items:center;gap:8px;letter-spacing:0.5px;text-transform:uppercase;}
@@ -116,14 +191,14 @@
 
   /* Health check */
   .health-pass{color:var(--ok);} .health-warn{color:var(--warn);} .health-fail{color:var(--crit);} .health-na{color:var(--muted2);}
-  .status-pill{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;padding:3px 8px;border-radius:2px;letter-spacing:0.5px;}
-  .status-pill.pass{background:var(--ok);color:#0B0F14;}
-  .status-pill.warn{background:var(--warn);color:#0B0F14;}
-  .status-pill.fail{background:var(--crit);color:#0B0F14;}
-  .status-pill.na{background:var(--panel-raised);color:var(--muted);border:1px solid var(--line);}
+  .status-pill{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;padding:2px 7px;letter-spacing:0.5px;border:1px solid currentColor;background:transparent;}
+  .status-pill.pass{color:var(--ok);}
+  .status-pill.warn{color:var(--warn);}
+  .status-pill.fail{background:repeating-linear-gradient(45deg, var(--crit) 0 6px, #14171A 6px 12px);color:var(--text);border-color:var(--crit);font-weight:700;}
+  .status-pill.na{color:var(--muted2);border-color:var(--line);}
 
   /* Look-ahead */
-  select{background:var(--panel-raised);border:1px solid var(--line);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:12px;padding:6px 8px;border-radius:2px;}
+  select{background:var(--panel-raised);border:1px solid var(--line);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:12px;padding:6px 8px;border-radius:0;}
   .logic-risk{color:var(--warn);font-size:11px;font-family:'IBM Plex Mono',monospace;}
   .logic-ok{color:var(--muted2);font-size:11px;font-family:'IBM Plex Mono',monospace;}
 
@@ -132,17 +207,34 @@
 </style>
 </head>
 <body>
+<div class="watermark" aria-hidden="true"><div class="watermark-inner">DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE<br>DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE<br>DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE<br>DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE<br>DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE<br>DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE<br>DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE<br>DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE</div></div>
 <div class="wrap">
 
   <div class="titleblock">
-    <div>
-      <h1>Planning Engineer Toolkit</h1>
-      <div class="sub">P6 update comparison, DCMA-14 health check, look-ahead generation &amp; crashing &mdash; from one XER export</div>
+    <div class="rev-stamp">REV&nbsp;A</div>
+    <div class="tb-row-top">
+      <div>
+        <h1>FloatCheck</h1>
+        <div class="sub">P6 update comparison, DCMA-14 health check, look-ahead generation &amp; crashing &mdash; from one XER export</div>
+      </div>
+      <div class="tb-topfield">
+        <span class="tb-field-label">Project</span>
+        <span class="tb-field-value" id="tbProject">&mdash;</span>
+      </div>
+      <div class="tb-topfield">
+        <span class="tb-field-label">Project No.</span>
+        <span class="tb-field-value" id="tbProjectNo">&mdash;</span>
+      </div>
     </div>
-    <div class="tb-meta">
-      <div>PROJECT<span id="tbProject">&mdash;</span></div>
-      <div>PREV. UPDATE<span id="tbPrev">&mdash;</span></div>
-      <div>CURR. UPDATE<span id="tbCurr">&mdash;</span></div>
+    <div class="tb-grid">
+      <div class="tb-field"><span class="tb-field-label">Drawn By</span><span class="tb-field-value">FLOATCHECK (AUTO)</span></div>
+      <div class="tb-field"><span class="tb-field-label">Checked By</span><span class="tb-field-value tb-blank">&nbsp;</span></div>
+      <div class="tb-field"><span class="tb-field-label">Approved By</span><span class="tb-field-value tb-blank">&nbsp;</span></div>
+      <div class="tb-field"><span class="tb-field-label">Scale</span><span class="tb-field-value">NTS</span></div>
+      <div class="tb-field"><span class="tb-field-label">Prev. Update</span><span class="tb-field-value" id="tbPrev">&mdash;</span></div>
+      <div class="tb-field"><span class="tb-field-label">Curr. Update</span><span class="tb-field-value" id="tbCurr">&mdash;</span></div>
+      <div class="tb-field"><span class="tb-field-label">Dwg No.</span><span class="tb-field-value" id="tbDwgNo">&mdash;</span></div>
+      <div class="tb-field tb-field-rev"><span class="tb-field-label">Rev</span><span class="tb-field-value">A</span></div>
     </div>
   </div>
 
@@ -192,7 +284,7 @@
     <div class="section-title">Activity Variance Register</div>
     <table>
       <thead><tr>
-        <th>Activity</th><th>WBS</th><th>Prior Finish</th><th>Curr. Finish</th><th>Variance</th><th>Prior TF</th><th>Curr. TF</th><th>Flag</th>
+        <th>Activity</th><th>Prior Finish</th><th>Curr. Finish</th><th>Variance</th><th>Prior TF</th><th>Curr. TF</th><th>Flag</th>
       </tr></thead>
       <tbody id="varTableBody"></tbody>
     </table>
@@ -264,7 +356,7 @@
         <span class="crash-intro" style="margin:0;">Activities starting or already active within the window from the current data date, ordered by start date.</span>
       </div>
       <table>
-        <thead><tr><th>Start</th><th>Activity</th><th>WBS</th><th>Duration</th><th>Finish</th><th>Float</th><th>Predecessor Status</th></tr></thead>
+        <thead><tr><th>Start</th><th>Activity</th><th>Duration</th><th>Finish</th><th>Float</th><th>Predecessor Status</th></tr></thead>
         <tbody id="lookaheadTableBody"></tbody>
       </table>
     </div>
@@ -761,6 +853,8 @@ function renderResults(diff){
   document.getElementById('tbProject').textContent = diff.projName || '—';
   document.getElementById('tbPrev').textContent = fmtDate(diff.prevFinish ? parseDate(prevData.header.date) : null) !== '—' ? prevData.header.date : '—';
   document.getElementById('tbCurr').textContent = currData.header.date || '—';
+  document.getElementById('tbProjectNo').textContent = currData.project.proj_id || '—';
+  document.getElementById('tbDwgNo').textContent = 'FC-' + (currData.project.proj_id || '000') + '-SVR';
 
   document.getElementById('kpiPrevFinish').textContent = fmtDate(diff.prevFinish);
   document.getElementById('kpiCurrFinish').textContent = fmtDate(diff.currFinish);
@@ -796,13 +890,13 @@ function renderDimline(diff){
   const y=45;
   const slipLabel = (diff.netSlip>0?'+':'') + diff.netSlip + ' working days';
   let svg = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}">`;
-  svg += `<line x1="${pad-20}" y1="${y}" x2="${w-pad+20}" y2="${y}" stroke="#2A2F38" stroke-width="1"/>`;
+  svg += `<line x1="${pad-20}" y1="${y}" x2="${w-pad+20}" y2="${y}" stroke="#333B44" stroke-width="1"/>`;
   // prior tick
-  svg += `<line x1="${xPrev}" y1="${y-12}" x2="${xPrev}" y2="${y+12}" stroke="#8A93A3" stroke-width="1.5"/>`;
-  svg += `<text x="${xPrev}" y="${y-20}" fill="#8A93A3" font-size="11" text-anchor="middle">PRIOR</text>`;
-  svg += `<text x="${xPrev}" y="${y+28}" fill="#8A93A3" font-size="11" text-anchor="middle">${fmtDate(diff.prevFinish)}</text>`;
+  svg += `<line x1="${xPrev}" y1="${y-12}" x2="${xPrev}" y2="${y+12}" stroke="#93897A" stroke-width="1.5"/>`;
+  svg += `<text x="${xPrev}" y="${y-20}" fill="#93897A" font-size="11" text-anchor="middle">PRIOR</text>`;
+  svg += `<text x="${xPrev}" y="${y+28}" fill="#93897A" font-size="11" text-anchor="middle">${fmtDate(diff.prevFinish)}</text>`;
   // curr tick
-  const currColor = diff.netSlip>0 ? '#E5484D' : '#3FC88B';
+  const currColor = diff.netSlip>0 ? '#D1544C' : '#6FA285';
   svg += `<line x1="${xCurr}" y1="${y-12}" x2="${xCurr}" y2="${y+12}" stroke="${currColor}" stroke-width="2"/>`;
   svg += `<text x="${xCurr}" y="${y-20}" fill="${currColor}" font-size="11" text-anchor="middle" font-weight="600">CURRENT</text>`;
   svg += `<text x="${xCurr}" y="${y+28}" fill="${currColor}" font-size="11" text-anchor="middle" font-weight="600">${fmtDate(diff.currFinish)}</text>`;
@@ -821,23 +915,38 @@ function renderDimline(diff){
 function renderTable(diff){
   const tbody = document.getElementById('varTableBody');
   tbody.innerHTML = '';
+  // Grouped into WBS bands (P6's "group & sort by WBS" activity view) rather than a
+  // repeated WBS column - rows keep their existing variance-desc order within each
+  // band, so bands still surface worst-first since the first row seen per WBS in an
+  // already-sorted list is that WBS's worst variance.
+  const groups = new Map();
   diff.rows.forEach(r=>{
-    const tr = document.createElement('tr');
-    if(r.flag==='crit') tr.className='crit-row';
-    else if(r.flag==='warn') tr.className='warn-row';
-    const flagLabel = r.flag==='crit' ? 'CRITICAL' : r.flag==='warn' ? 'NEAR-CRIT' : 'STABLE';
-    const varText = r.variance===0 ? '<span class="var-zero">0d</span>' : (r.variance>0 ? `<span class="var-pos">+${r.variance}d</span>` : `<span style="color:var(--ok)">${r.variance}d</span>`);
-    tr.innerHTML = `
-      <td><div class="act-code">${r.code}</div><div class="act-name">${r.name}</div>${r.notes.length ? '<div class="note-badge" title="'+r.notes.join(' | ').replace(/"/g,'&quot;')+'">NOTEBOOK ENTRY</div>' : ''}</td>
-      <td class="mono">${r.wbs}</td>
-      <td class="mono">${fmtDate(r.pEnd)}</td>
-      <td class="mono">${fmtDate(r.cEnd)}</td>
-      <td class="mono">${varText}</td>
-      <td class="mono">${r.pFloat}d</td>
-      <td class="mono">${r.cFloat}d</td>
-      <td><span class="flag ${r.flag}">${flagLabel}</span></td>
-    `;
-    tbody.appendChild(tr);
+    const key = r.wbs || '—';
+    if(!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(r);
+  });
+  groups.forEach((rows, wbsName)=>{
+    const bandTr = document.createElement('tr');
+    bandTr.className = 'wbs-band';
+    bandTr.innerHTML = `<td colspan="7">${wbsName}</td>`;
+    tbody.appendChild(bandTr);
+    rows.forEach(r=>{
+      const tr = document.createElement('tr');
+      if(r.flag==='crit') tr.className='crit-row';
+      else if(r.flag==='warn') tr.className='warn-row';
+      const flagLabel = r.flag==='crit' ? 'CRITICAL' : r.flag==='warn' ? 'NEAR-CRIT' : 'STABLE';
+      const varText = r.variance===0 ? '<span class="var-zero">0d</span>' : (r.variance>0 ? `<span class="var-pos">+${r.variance}d</span>` : `<span style="color:var(--ok)">${r.variance}d</span>`);
+      tr.innerHTML = `
+        <td class="act-cell"><div class="act-code">${r.code}</div><div class="act-name">${r.name}</div>${r.notes.length ? '<div class="note-badge" title="'+r.notes.join(' | ').replace(/"/g,'&quot;')+'">NOTEBOOK ENTRY</div>' : ''}</td>
+        <td class="mono">${fmtDate(r.pEnd)}</td>
+        <td class="mono">${fmtDate(r.cEnd)}</td>
+        <td class="mono">${varText}</td>
+        <td class="mono">${r.pFloat}d</td>
+        <td class="mono">${r.cFloat}d</td>
+        <td><span class="flag ${r.flag}">${flagLabel}</span></td>
+      `;
+      tbody.appendChild(tr);
+    });
   });
 }
 
@@ -963,25 +1072,38 @@ function renderLookahead(){
   const tbody = document.getElementById('lookaheadTableBody');
   tbody.innerHTML='';
   if(rows.length===0){
-    tbody.innerHTML = '<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:20px;">No activities start or are active within this window.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:20px;">No activities start or are active within this window.</td></tr>';
     return;
   }
+  // Grouped into WBS bands, same convention as the variance register - rows keep
+  // their existing start-date order within each band.
+  const groups = new Map();
   rows.forEach(r=>{
-    const tr = document.createElement('tr');
-    if(r.float<=0) tr.classList.add('crit-row'); else if(r.float<=5) tr.classList.add('warn-row');
-    const logic = r.predsIncomplete.length>0
-      ? `<span class="logic-risk">${r.predsIncomplete.join(', ')} not yet complete</span>`
-      : `<span class="logic-ok">Clear</span>`;
-    tr.innerHTML = `
-      <td class="mono">${fmtDate(r.es)}</td>
-      <td><div class="act-code">${r.code}</div><div class="act-name">${r.name}</div></td>
-      <td class="mono">${r.wbs}</td>
-      <td class="mono">${r.dur}d</td>
-      <td class="mono">${fmtDate(r.ef)}</td>
-      <td class="mono">${r.float}d</td>
-      <td>${logic}</td>
-    `;
-    tbody.appendChild(tr);
+    const key = r.wbs || '—';
+    if(!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(r);
+  });
+  groups.forEach((groupRows, wbsName)=>{
+    const bandTr = document.createElement('tr');
+    bandTr.className = 'wbs-band';
+    bandTr.innerHTML = `<td colspan="6">${wbsName}</td>`;
+    tbody.appendChild(bandTr);
+    groupRows.forEach(r=>{
+      const tr = document.createElement('tr');
+      if(r.float<=0) tr.classList.add('crit-row'); else if(r.float<=5) tr.classList.add('warn-row');
+      const logic = r.predsIncomplete.length>0
+        ? `<span class="logic-risk">${r.predsIncomplete.join(', ')} not yet complete</span>`
+        : `<span class="logic-ok">Clear</span>`;
+      tr.innerHTML = `
+        <td class="mono">${fmtDate(r.es)}</td>
+        <td class="act-cell"><div class="act-code">${r.code}</div><div class="act-name">${r.name}</div></td>
+        <td class="mono">${r.dur}d</td>
+        <td class="mono">${fmtDate(r.ef)}</td>
+        <td class="mono">${r.float}d</td>
+        <td>${logic}</td>
+      `;
+      tbody.appendChild(tr);
+    });
   });
 }
 
@@ -1014,11 +1136,11 @@ function renderTimeline(){
   }
   rows.forEach((r,i)=>{
     const y = padTop + i*rowH;
-    svg += `<text x="4" y="${y+13}" fill="#8A93A3" font-size="10" class="tl-row-label">${r.code}</text>`;
+    svg += `<text x="4" y="${y+13}" fill="#93897A" font-size="10" class="tl-row-label">${r.code}</text>`;
     const label = r.name.length>26 ? r.name.slice(0,25)+'\u2026' : r.name;
     svg += `<text x="70" y="${y+13}" fill="#B8BEC9" font-size="10" class="tl-row-label">${label}</text>`;
     const x1 = xScale(r.es), x2 = xScale(r.ef);
-    const barColor = r.tf<=0 ? '#E5484D' : (r.tf<=5 ? '#F2A93C' : '#5B8CFF');
+    const barColor = r.tf<=0 ? '#D1544C' : (r.tf<=5 ? '#D6A23C' : '#C9862E');
     svg += `<rect x="${x1}" y="${y+3}" width="${Math.max(x2-x1,2)}" height="${rowH-8}" fill="${barColor}" rx="1.5"/>`;
   });
   svg += `</svg>`;
@@ -1117,14 +1239,14 @@ function renderCrashChart(result){
     d += ` L ${xScale(pts[i][0])} ${yScale(pts[i-1][1])} L ${xScale(pts[i][0])} ${yScale(pts[i][1])}`;
   }
   let svg = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}">`;
-  svg += `<line x1="${padL}" y1="${padT}" x2="${padL}" y2="${h-padB}" stroke="#2A2F38"/>`;
-  svg += `<line x1="${padL}" y1="${h-padB}" x2="${w-padR}" y2="${h-padB}" stroke="#2A2F38"/>`;
-  svg += `<text x="${padL-10}" y="${padT+4}" fill="#8A93A3" font-size="10" text-anchor="end">$${maxCost.toLocaleString()}</text>`;
-  svg += `<text x="${padL-10}" y="${h-padB+4}" fill="#8A93A3" font-size="10" text-anchor="end">$0</text>`;
-  svg += `<text x="${w-padR}" y="${h-padB+20}" fill="#8A93A3" font-size="10" text-anchor="end">${maxRecovered}d recovered</text>`;
-  svg += `<text x="${padL}" y="${h-padB+20}" fill="#8A93A3" font-size="10" text-anchor="start">0d</text>`;
-  svg += `<path d="${d}" fill="none" stroke="#5B8CFF" stroke-width="2"/>`;
-  steps.forEach(s=> svg += `<circle cx="${xScale(s.recoveredSoFar)}" cy="${yScale(s.cumulativeCost)}" r="3" fill="#5B8CFF"/>`);
+  svg += `<line x1="${padL}" y1="${padT}" x2="${padL}" y2="${h-padB}" stroke="#333B44"/>`;
+  svg += `<line x1="${padL}" y1="${h-padB}" x2="${w-padR}" y2="${h-padB}" stroke="#333B44"/>`;
+  svg += `<text x="${padL-10}" y="${padT+4}" fill="#93897A" font-size="10" text-anchor="end">$${maxCost.toLocaleString()}</text>`;
+  svg += `<text x="${padL-10}" y="${h-padB+4}" fill="#93897A" font-size="10" text-anchor="end">$0</text>`;
+  svg += `<text x="${w-padR}" y="${h-padB+20}" fill="#93897A" font-size="10" text-anchor="end">${maxRecovered}d recovered</text>`;
+  svg += `<text x="${padL}" y="${h-padB+20}" fill="#93897A" font-size="10" text-anchor="start">0d</text>`;
+  svg += `<path d="${d}" fill="none" stroke="#C9862E" stroke-width="2"/>`;
+  steps.forEach(s=> svg += `<circle cx="${xScale(s.recoveredSoFar)}" cy="${yScale(s.cumulativeCost)}" r="3" fill="#C9862E"/>`);
   svg += `</svg>`;
   el.innerHTML = svg;
 }

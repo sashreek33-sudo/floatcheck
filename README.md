@@ -1,6 +1,6 @@
-# Planning Engineer Toolkit
+# FloatCheck
 
-A single-file HTML web app for construction schedule analysis. No backend, no build step, no dependencies beyond two Google Fonts — open `schedule-variance-agent.html` in a browser and it runs. It reads Primavera P6 XER exports (P6's tab-delimited schedule interchange format) entirely client-side; the file never leaves the browser except for the one step described under "AI narrative" below.
+A single-file HTML web app for construction schedule analysis. No backend, no build step, no dependencies beyond two Google Fonts — open `floatcheck.html` in a browser and it runs. It reads Primavera P6 XER exports (P6's tab-delimited schedule interchange format) entirely client-side; the file never leaves the browser except for the one step described under "AI narrative" below.
 
 ## What it does
 
@@ -34,7 +34,7 @@ The "Generate Narrative" button in the Update Comparison tab sends a structured 
 **Prototype-stage / not yet trustworthy:**
 - **Tested only on synthetic data.** The two `.xer` files in this repo were hand-generated to exercise the demo, not exported from a real P6 database. This has never parsed a real project's export.
 - **The "Generate Narrative" button will not currently work as shipped** — the `fetch` call to `https://api.anthropic.com/v1/messages` sends no `x-api-key` (or any auth) header, and the Anthropic API does not support unauthenticated direct-from-browser calls. This needs a backend proxy (e.g. a small Cloudflare Workers function) that holds the key server-side before it can produce a narrative at all — deliberately not fixed by hardcoding a key client-side, since this is headed toward a public static site. Scoped as its own piece of work, not part of this pass.
-- The visual design is a generated dark-mode dashboard aesthetic — not usability-tested with a practitioner.
+- The visual design (graphite ground, copper accent, drafting-sheet details — title block, corner registration marks, dimension lines) is deliberate but not usability-tested with a practitioner.
 
 ## Known limitations (roadmap, not bugs)
 
@@ -50,11 +50,11 @@ These are real gaps for a production XER file, but each is a genuine rebuild of 
 
 | File | Purpose |
 |---|---|
-| `schedule-variance-agent.html` | The app — everything in one file. |
+| `floatcheck.html` | The app — everything in one file. |
 | `schedule-explainer.md` | Domain-theory explainer (CPM, float, crashing, DCMA-14, XER format) written to build understanding of the engineering underneath the tool. |
 | `update_2026-06-01_previous.xer` | Synthetic demo schedule — previous update. |
 | `update_2026-06-15_current.xer` | Synthetic demo schedule — current update, 2 weeks later. |
 
 ## Running it
 
-No install. Open `schedule-variance-agent.html` directly in a browser, or click "Load demo update pair" to see it running against the two synthetic XER files above without needing to upload anything.
+No install. Open `floatcheck.html` directly in a browser, or click "Load demo update pair" to see it running against the two synthetic XER files above without needing to upload anything.
