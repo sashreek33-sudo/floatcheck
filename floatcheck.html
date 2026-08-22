@@ -112,6 +112,32 @@
   .demo-link{font-size:12px;color:var(--muted);text-decoration:underline;cursor:pointer;background:none;border:none;padding:0;font-weight:400;font-family:'IBM Plex Sans',sans-serif;}
   .demo-link:hover{color:var(--accent);}
 
+  /* Landing page - the front door. No watermark here (see #results below);
+     that belongs to the report-style output, not the menu. */
+  .hero{padding:36px 0 32px;border-bottom:1px solid var(--line);margin-bottom:28px;}
+  .hero-title{font-family:'Barlow Condensed',sans-serif;font-size:52px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin:0 0 10px;color:var(--text);}
+  .hero-sub{font-family:'IBM Plex Mono',monospace;font-size:16px;color:var(--accent);margin:0 0 16px;letter-spacing:0.3px;}
+  .hero-body{max-width:620px;font-size:14px;line-height:1.7;color:var(--muted);margin:0 0 22px;}
+  .hero-demo-link{font-size:13px;}
+
+  .tool-menu{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:36px;}
+  .tool-card{border:1px solid var(--line);background:var(--panel);padding:20px 20px 22px;cursor:pointer;transition:border-color .15s, background .15s;}
+  .tool-card:hover, .tool-card:focus-visible{border-color:var(--accent);background:var(--panel-raised);outline:none;}
+  .tool-card-label{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--accent);margin-bottom:10px;font-weight:600;}
+  .tool-card-desc{font-size:13.5px;line-height:1.55;color:var(--text);}
+
+  .site-footer{border-top:1px solid var(--line);padding-top:16px;font-size:12px;color:var(--muted2);}
+  .site-footer a{color:var(--accent);text-decoration:underline;}
+
+  /* App shell - entered from the landing page, not just scrolled to */
+  #appShell{opacity:0;transform:translateY(10px);}
+  #appShell.shell-enter{animation:shellIn .32s ease forwards;}
+  @keyframes shellIn{to{opacity:1;transform:translateY(0);}}
+  #landing.shell-enter{animation:shellIn .32s ease forwards;}
+  .back-link{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);background:none;border:none;padding:0;margin-bottom:14px;cursor:pointer;text-decoration:underline;}
+  .back-link:hover{color:var(--accent);}
+  .app-shell-context{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:16px;}
+
   #results{display:none;}
 
   /* KPI strip - instrument readout, not a card grid */
@@ -211,7 +237,7 @@
 </style>
 </head>
 <body>
-<div class="watermark" aria-hidden="true"><div class="watermark-inner">DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE<br>DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE<br>DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE<br>DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE<br>DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE<br>DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE<br>DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE<br>DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE</div></div>
+<div class="watermark" id="watermark" aria-hidden="true" style="display:none;"><div class="watermark-inner">DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE<br>DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE<br>DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE<br>DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE<br>DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE<br>DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE<br>DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE<br>DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE</div></div>
 <div class="wrap">
 
   <div class="titleblock">
@@ -241,6 +267,46 @@
       <div class="tb-field tb-field-rev"><span class="tb-field-label">Rev</span><span class="tb-field-value">A</span></div>
     </div>
   </div>
+
+  <div id="landing">
+    <section class="hero">
+      <h2 class="hero-title">FloatCheck</h2>
+      <p class="hero-sub">See what changed in your schedule &mdash; in seconds, not hours.</p>
+      <p class="hero-body">Every number here is calculated by code, not guessed by AI &mdash; the maths is exact and repeatable. AI is only used to explain what the numbers mean, in plain English, grounded in your actual file.</p>
+      <button class="demo-link hero-demo-link" onclick="enterApp(null); loadDemo();">Load demo update pair &rarr;</button>
+    </section>
+
+    <section class="tool-menu">
+      <div class="tool-card" tabindex="0" role="button" onclick="enterApp('comparison')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();enterApp('comparison');}">
+        <div class="tool-card-label">Update Comparison</div>
+        <div class="tool-card-desc">Compare two schedule updates and see exactly what slipped, why, and what it means for your finish date.</div>
+      </div>
+      <div class="tool-card" tabindex="0" role="button" onclick="enterApp('health')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();enterApp('health');}">
+        <div class="tool-card-label">Schedule Health Check</div>
+        <div class="tool-card-desc">Run the industry-standard DCMA 14-point audit to catch structural problems before they cause real delays.</div>
+      </div>
+      <div class="tool-card" tabindex="0" role="button" onclick="enterApp('lookahead')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();enterApp('lookahead');}">
+        <div class="tool-card-label">3-Week Look-ahead</div>
+        <div class="tool-card-desc">Auto-generate the filtered activity list your next site meeting actually needs.</div>
+      </div>
+      <div class="tool-card" tabindex="0" role="button" onclick="enterApp('crash')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();enterApp('crash');}">
+        <div class="tool-card-label">Crashing Workbench</div>
+        <div class="tool-card-desc">Model what it would cost to recover lost time, with your own cost assumptions.</div>
+      </div>
+      <div class="tool-card" tabindex="0" role="button" onclick="enterApp('timeline')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();enterApp('timeline');}">
+        <div class="tool-card-label">Critical Path Timeline</div>
+        <div class="tool-card-desc">See your schedule's real critical path, freshly recalculated from your file.</div>
+      </div>
+    </section>
+
+    <footer class="site-footer">
+      <p>Currently supports Primavera P6 (.xer) files only. <a href="https://github.com/sashreek33-sudo/floatcheck" target="_blank" rel="noopener">View source on GitHub</a>.</p>
+    </footer>
+  </div>
+
+  <div id="appShell" style="display:none;">
+    <button class="back-link" onclick="exitToLanding()">&larr; Back to overview</button>
+    <div id="appShellContext" class="app-shell-context"></div>
 
   <div class="uploads">
     <div class="dropzone" id="dzPrev" onclick="document.getElementById('filePrev').click()">
@@ -371,6 +437,7 @@
       <div id="timelineSvgWrap"></div>
     </div>
   </div>
+  </div><!-- /appShell -->
 
 </div>
 
@@ -746,6 +813,38 @@ function crashProject(tasks, projectStart, crashParams, targetRecoveryDays){
 // ---------- State ----------
 let prevData=null, currData=null;
 
+// ---------- Landing page navigation ----------
+// The five tool-menu cards don't each own a separate upload widget - every
+// module runs off the same two XER files, so a second upload flow per card
+// would be misleading about how the tool actually works. Instead each card
+// remembers which destination it wants, and renderResults() switches to that
+// tab once analysis completes; "crash" isn't a tab of its own (the Crashing
+// Workbench lives inside Update Comparison), so it also gets a scroll target.
+const TOOL_LABELS = { comparison:'Update Comparison', health:'Schedule Health Check', lookahead:'3-Week Look-ahead', crash:'Crashing Workbench', timeline:'Critical Path Timeline' };
+const TOOL_TAB_MAP = { comparison:'comparison', health:'health', lookahead:'lookahead', crash:'comparison', timeline:'timeline' };
+
+function enterApp(toolKey){
+  window._selectedTool = toolKey;
+  document.getElementById('landing').style.display = 'none';
+  const shell = document.getElementById('appShell');
+  shell.style.display = 'block';
+  shell.classList.remove('shell-enter'); void shell.offsetWidth; shell.classList.add('shell-enter');
+  document.getElementById('appShellContext').textContent = toolKey
+    ? ('Uploading for: ' + TOOL_LABELS[toolKey])
+    : 'Upload your two P6 updates to get started';
+  window.scrollTo(0,0);
+}
+
+function exitToLanding(){
+  document.getElementById('appShell').style.display = 'none';
+  document.getElementById('watermark').style.display = 'none';
+  const landing = document.getElementById('landing');
+  landing.style.display = 'block';
+  landing.classList.remove('shell-enter'); void landing.offsetWidth; landing.classList.add('shell-enter');
+  window._selectedTool = null;
+  window.scrollTo(0,0);
+}
+
 document.getElementById('filePrev').addEventListener('change', e=> handleFile(e.target.files[0], 'prev'));
 document.getElementById('fileCurr').addEventListener('change', e=> handleFile(e.target.files[0], 'curr'));
 ['dzPrev','dzCurr'].forEach(id=>{
@@ -878,10 +977,12 @@ function renderResults(diff){
   renderTimeline();
 
   document.getElementById('results').style.display='block';
-  switchTab('comparison');
+  document.getElementById('watermark').style.display='block'; // report output is visible now - this is where the draft watermark belongs
+  switchTab(TOOL_TAB_MAP[window._selectedTool] || 'comparison');
   document.getElementById('reportBody').innerHTML = '<button class="primary" id="genReportBtn" onclick="generateNarrative()">Generate Narrative</button>';
   document.getElementById('reportActions').style.display='none';
-  document.getElementById('results').scrollIntoView({behavior:'smooth', block:'start'});
+  const scrollTarget = (window._selectedTool === 'crash') ? document.querySelector('.crash-panel') : document.getElementById('results');
+  scrollTarget.scrollIntoView({behavior:'smooth', block:'start'});
 }
 
 function renderDimline(diff){
