@@ -112,19 +112,24 @@
   .demo-link{font-size:12px;color:var(--muted);text-decoration:underline;cursor:pointer;background:none;border:none;padding:0;font-weight:400;font-family:'IBM Plex Sans',sans-serif;}
   .demo-link:hover{color:var(--accent);}
 
-  /* Landing page - the front door. No watermark here (see #results below);
-     that belongs to the report-style output, not the menu. */
-  .hero{padding:36px 0 32px;border-bottom:1px solid var(--line);margin-bottom:28px;}
-  .hero-title{font-family:'Barlow Condensed',sans-serif;font-size:52px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin:0 0 10px;color:var(--text);}
-  .hero-sub{font-family:'IBM Plex Mono',monospace;font-size:16px;color:var(--accent);margin:0 0 16px;letter-spacing:0.3px;}
-  .hero-body{max-width:620px;font-size:14px;line-height:1.7;color:var(--muted);margin:0 0 22px;}
+  /* Landing page - the front door. No watermark here, no title-block either
+     (both only appear once real project data is loaded - see #results); this
+     is the brand moment, not a report. */
+  .hero{padding:56px 0 44px;border-bottom:1px solid var(--line);margin-bottom:36px;}
+  .wordmark{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:88px;line-height:0.95;letter-spacing:0.5px;text-transform:uppercase;margin:0 0 18px;text-wrap:balance;}
+  .wm-a{color:var(--text);}
+  .wm-b{color:var(--accent);}
+  .hero-pitch{font-family:'IBM Plex Sans',sans-serif;font-size:27px;font-weight:600;color:var(--text);margin:0 0 18px;line-height:1.35;max-width:700px;}
+  .hero-trust{max-width:600px;font-size:13px;line-height:1.65;color:var(--muted);margin:0 0 22px;}
   .hero-demo-link{font-size:13px;}
 
-  .tool-menu{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:36px;}
-  .tool-card{border:1px solid var(--line);background:var(--panel);padding:20px 20px 22px;cursor:pointer;transition:border-color .15s, background .15s;}
+  .tool-menu-eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin:0 0 14px;padding-left:10px;border-left:2px solid var(--accent);}
+  .tool-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:36px;}
+  .tool-card{border:1px solid var(--line);background:var(--panel);padding:28px 26px 30px;cursor:pointer;transition:border-color .15s, background .15s;}
   .tool-card:hover, .tool-card:focus-visible{border-color:var(--accent);background:var(--panel-raised);outline:none;}
-  .tool-card-label{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--accent);margin-bottom:10px;font-weight:600;}
-  .tool-card-desc{font-size:13.5px;line-height:1.55;color:var(--text);}
+  .tool-icon{width:36px;height:36px;color:var(--accent);margin-bottom:16px;display:block;}
+  .tool-card-label{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;letter-spacing:0.3px;text-transform:uppercase;color:var(--text);margin-bottom:10px;}
+  .tool-card-desc{font-size:14px;line-height:1.6;color:var(--muted);}
 
   .site-footer{border-top:1px solid var(--line);padding-top:16px;font-size:12px;color:var(--muted2);}
   .site-footer a{color:var(--accent);text-decoration:underline;}
@@ -240,7 +245,7 @@
 <div class="watermark" id="watermark" aria-hidden="true" style="display:none;"><div class="watermark-inner">DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE<br>DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE<br>DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE<br>DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE<br>DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE<br>DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE<br>DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE<br>DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE</div></div>
 <div class="wrap">
 
-  <div class="titleblock">
+  <div class="titleblock" id="titleblock" style="display:none;">
     <div class="rev-stamp">REV&nbsp;A</div>
     <div class="tb-row-top">
       <div>
@@ -270,32 +275,40 @@
 
   <div id="landing">
     <section class="hero">
-      <h2 class="hero-title">FloatCheck</h2>
-      <p class="hero-sub">See what changed in your schedule &mdash; in seconds, not hours.</p>
-      <p class="hero-body">Every number here is calculated by code, not guessed by AI &mdash; the maths is exact and repeatable. AI is only used to explain what the numbers mean, in plain English, grounded in your actual file.</p>
+      <h2 class="wordmark"><span class="wm-a">Float</span><span class="wm-b">Check</span></h2>
+      <p class="hero-pitch">See what changed in your schedule &mdash; in seconds, not hours.</p>
+      <p class="hero-trust">Every number here is calculated by code, not guessed by AI &mdash; the maths is exact and repeatable. AI is only used to explain what the numbers mean, in plain English, grounded in your actual file.</p>
       <button class="demo-link hero-demo-link" onclick="enterApp(null); loadDemo();">Load demo update pair &rarr;</button>
     </section>
 
     <section class="tool-menu">
-      <div class="tool-card" tabindex="0" role="button" onclick="enterApp('comparison')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();enterApp('comparison');}">
-        <div class="tool-card-label">Update Comparison</div>
-        <div class="tool-card-desc">Compare two schedule updates and see exactly what slipped, why, and what it means for your finish date.</div>
-      </div>
-      <div class="tool-card" tabindex="0" role="button" onclick="enterApp('health')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();enterApp('health');}">
-        <div class="tool-card-label">Schedule Health Check</div>
-        <div class="tool-card-desc">Run the industry-standard DCMA 14-point audit to catch structural problems before they cause real delays.</div>
-      </div>
-      <div class="tool-card" tabindex="0" role="button" onclick="enterApp('lookahead')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();enterApp('lookahead');}">
-        <div class="tool-card-label">3-Week Look-ahead</div>
-        <div class="tool-card-desc">Auto-generate the filtered activity list your next site meeting actually needs.</div>
-      </div>
-      <div class="tool-card" tabindex="0" role="button" onclick="enterApp('crash')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();enterApp('crash');}">
-        <div class="tool-card-label">Crashing Workbench</div>
-        <div class="tool-card-desc">Model what it would cost to recover lost time, with your own cost assumptions.</div>
-      </div>
-      <div class="tool-card" tabindex="0" role="button" onclick="enterApp('timeline')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();enterApp('timeline');}">
-        <div class="tool-card-label">Critical Path Timeline</div>
-        <div class="tool-card-desc">See your schedule's real critical path, freshly recalculated from your file.</div>
+      <div class="tool-menu-eyebrow">Five tools, one file</div>
+      <div class="tool-grid">
+        <div class="tool-card" tabindex="0" role="button" onclick="enterApp('comparison')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();enterApp('comparison');}">
+          <svg class="tool-icon" viewBox="0 0 40 40" aria-hidden="true"><line x1="6" y1="20" x2="34" y2="20" stroke="currentColor" stroke-width="1.5"/><line x1="6" y1="13" x2="6" y2="27" stroke="currentColor" stroke-width="1.5"/><line x1="34" y1="13" x2="34" y2="27" stroke="currentColor" stroke-width="1.5"/><path d="M25 13 L34 20 L25 27" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+          <div class="tool-card-label">Update Comparison</div>
+          <div class="tool-card-desc">Compare two schedule updates and see exactly what slipped, why, and what it means for your finish date.</div>
+        </div>
+        <div class="tool-card" tabindex="0" role="button" onclick="enterApp('health')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();enterApp('health');}">
+          <svg class="tool-icon" viewBox="0 0 40 40" aria-hidden="true"><line x1="16" y1="11" x2="34" y2="11" stroke="currentColor" stroke-width="1.5"/><line x1="16" y1="20" x2="34" y2="20" stroke="currentColor" stroke-width="1.5"/><line x1="16" y1="29" x2="34" y2="29" stroke="currentColor" stroke-width="1.5"/><path d="M5 20 L9 25 L15 14" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+          <div class="tool-card-label">Schedule Health Check</div>
+          <div class="tool-card-desc">Run the industry-standard DCMA 14-point audit to catch structural problems before they cause real delays.</div>
+        </div>
+        <div class="tool-card" tabindex="0" role="button" onclick="enterApp('lookahead')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();enterApp('lookahead');}">
+          <svg class="tool-icon" viewBox="0 0 40 40" aria-hidden="true"><line x1="4" y1="20" x2="36" y2="20" stroke="currentColor" stroke-width="1.5"/><line x1="4" y1="15" x2="4" y2="25" stroke="currentColor" stroke-width="1.5"/><line x1="14" y1="15" x2="14" y2="25" stroke="currentColor" stroke-width="1.5"/><line x1="24" y1="15" x2="24" y2="25" stroke="currentColor" stroke-width="1.5"/><line x1="34" y1="15" x2="34" y2="25" stroke="currentColor" stroke-width="1.5"/></svg>
+          <div class="tool-card-label">3-Week Look-ahead</div>
+          <div class="tool-card-desc">Auto-generate the filtered activity list your next site meeting actually needs.</div>
+        </div>
+        <div class="tool-card" tabindex="0" role="button" onclick="enterApp('crash')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();enterApp('crash');}">
+          <svg class="tool-icon" viewBox="0 0 40 40" aria-hidden="true"><line x1="4" y1="20" x2="15" y2="20" stroke="currentColor" stroke-width="1.5"/><path d="M9 15 L4 20 L9 25" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="25" y1="20" x2="36" y2="20" stroke="currentColor" stroke-width="1.5"/><path d="M31 15 L36 20 L31 25" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+          <div class="tool-card-label">Crashing Workbench</div>
+          <div class="tool-card-desc">Model what it would cost to recover lost time, with your own cost assumptions.</div>
+        </div>
+        <div class="tool-card" tabindex="0" role="button" onclick="enterApp('timeline')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();enterApp('timeline');}">
+          <svg class="tool-icon" viewBox="0 0 40 40" aria-hidden="true"><line x1="6" y1="12" x2="26" y2="12" stroke="currentColor" stroke-width="3"/><line x1="6" y1="20" x2="34" y2="20" stroke="currentColor" stroke-width="3"/><line x1="6" y1="28" x2="18" y2="28" stroke="currentColor" stroke-width="3"/></svg>
+          <div class="tool-card-label">Critical Path Timeline</div>
+          <div class="tool-card-desc">See your schedule's real critical path, freshly recalculated from your file.</div>
+        </div>
       </div>
     </section>
 
@@ -826,6 +839,10 @@ const TOOL_TAB_MAP = { comparison:'comparison', health:'health', lookahead:'look
 function enterApp(toolKey){
   window._selectedTool = toolKey;
   document.getElementById('landing').style.display = 'none';
+  // Title block and watermark both only belong once there's real project data
+  // (set in renderResults) - the upload screen itself is still just a form.
+  document.getElementById('titleblock').style.display = 'none';
+  document.getElementById('watermark').style.display = 'none';
   const shell = document.getElementById('appShell');
   shell.style.display = 'block';
   shell.classList.remove('shell-enter'); void shell.offsetWidth; shell.classList.add('shell-enter');
@@ -837,6 +854,7 @@ function enterApp(toolKey){
 
 function exitToLanding(){
   document.getElementById('appShell').style.display = 'none';
+  document.getElementById('titleblock').style.display = 'none';
   document.getElementById('watermark').style.display = 'none';
   const landing = document.getElementById('landing');
   landing.style.display = 'block';
@@ -953,6 +971,7 @@ function switchTab(name){
 }
 
 function renderResults(diff){
+  document.getElementById('titleblock').style.display = 'block'; // real project data exists now - this is where the title block belongs
   document.getElementById('tbProject').textContent = diff.projName || '—';
   document.getElementById('tbPrev').textContent = fmtDate(diff.prevFinish ? parseDate(prevData.header.date) : null) !== '—' ? prevData.header.date : '—';
   document.getElementById('tbCurr').textContent = currData.header.date || '—';
@@ -977,7 +996,7 @@ function renderResults(diff){
   renderTimeline();
 
   document.getElementById('results').style.display='block';
-  document.getElementById('watermark').style.display='block'; // report output is visible now - this is where the draft watermark belongs
+  document.getElementById('watermark').style.display='flex'; // matches .watermark's own flex centering; report output is visible now, so this is where the draft watermark belongs
   switchTab(TOOL_TAB_MAP[window._selectedTool] || 'comparison');
   document.getElementById('reportBody').innerHTML = '<button class="primary" id="genReportBtn" onclick="generateNarrative()">Generate Narrative</button>';
   document.getElementById('reportActions').style.display='none';
