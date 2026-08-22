@@ -1,0 +1,23 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# Local env / secrets (this app takes the Anthropic API key as user input at runtime,
+# but keep this ignored in case a local .env ever gets used for testing)
+.env
+.env.local
+
+# In case tooling gets added later
+node_modules/
+dist/
+
+# Real project XER exports a user might drop in this folder for local testing —
+# these are commercially sensitive schedule data and must never be committed
+*.xer
+!update_2026-06-01_previous.xer
+!update_2026-06-15_current.xer

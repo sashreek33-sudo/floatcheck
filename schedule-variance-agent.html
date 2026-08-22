@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Schedule Variance Agent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#14171C; --panel:#1B1F26; --panel-raised:#20242C; --line:#2A2F38;
+    --text:#E7E9ED; --muted:#8A93A3; --muted2:#5D6472;
+    --crit:#E5484D; --warn:#F2A93C; --ok:#3FC88B; --accent:#5B8CFF;
+    --crit-bg:rgba(229,72,77,0.12); --warn-bg:rgba(242,169,60,0.12); --ok-bg:rgba(63,200,139,0.12);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1100px;margin:0 auto;padding:28px 20px 80px;}
+
+  /* Title block */
+  .titleblock{border:1px solid var(--line);border-radius:2px;padding:18px 22px;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:14px;margin-bottom:26px;background:linear-gradient(180deg,var(--panel-raised),var(--panel));}
+  .titleblock h1{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;margin:0 0 4px;letter-spacing:0.2px;}
+  .titleblock .sub{color:var(--muted);font-size:13px;font-family:'IBM Plex Mono',monospace;}
+  .tb-meta{display:flex;gap:22px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);text-align:right;}
+  .tb-meta div span{display:block;color:var(--text);font-size:13px;margin-top:2px;}
+
+  /* Upload row */
+  .uploads{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;}
+  .dropzone{border:1px dashed var(--line);border-radius:3px;padding:22px 16px;text-align:center;cursor:pointer;transition:border-color .15s, background .15s;position:relative;background:var(--panel);}
+  .dropzone:hover{border-color:var(--accent);background:var(--panel-raised);}
+  .dropzone.filled{border-style:solid;border-color:var(--ok);background:var(--ok-bg);}
+  .dz-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:8px;}
+  .dz-file{font-size:13px;color:var(--text);word-break:break-all;}
+  .dz-hint{font-size:12px;color:var(--muted2);margin-top:4px;}
+  input[type=file]{display:none;}
+
+  .actions{display:flex;gap:10px;align-items:center;margin-bottom:30px;flex-wrap:wrap;}
+  button{font-family:'Inter',sans-serif;font-weight:600;font-size:13px;border-radius:3px;border:1px solid var(--line);background:var(--panel-raised);color:var(--text);padding:10px 16px;cursor:pointer;transition:all .15s;}
+  button:hover:not(:disabled){border-color:var(--accent);}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#0B0F14;}
+  button.primary:hover:not(:disabled){background:#7BA2FF;}
+  button:disabled{opacity:0.4;cursor:not-allowed;}
+  .demo-link{font-size:12px;color:var(--muted);text-decoration:underline;cursor:pointer;background:none;border:none;padding:0;font-weight:400;}
+  .demo-link:hover{color:var(--accent);}
+
+  #results{display:none;}
+
+  /* KPI strip */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:3px;overflow:hidden;margin-bottom:24px;}
+  .kpi{background:var(--panel);padding:16px 18px;}
+  .kpi .k-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;}
+  .kpi .k-val{font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;}
+  .kpi .k-val.crit{color:var(--crit);}
+  .kpi .k-val.warn{color:var(--warn);}
+
+  /* Dimension line (signature element) */
+  .dimline-panel{border:1px solid var(--line);border-radius:3px;padding:20px 22px 8px;margin-bottom:24px;background:var(--panel);}
+  .dimline-panel h3{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin:0 0 14px;font-weight:600;}
+  svg text{font-family:'IBM Plex Mono',monospace;}
+
+  /* Activity table */
+  .section-title{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin:0 0 12px;font-weight:600;}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:28px;}
+  th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.8px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line);padding:8px 10px;font-weight:500;}
+  td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top;}
+  tr.crit-row td{background:var(--crit-bg);}
+  tr.warn-row td{background:var(--warn-bg);}
+  .act-code{font-family:'IBM Plex Mono',monospace;color:var(--muted);font-size:11px;}
+  .act-name{font-weight:500;}
+  .mono{font-family:'IBM Plex Mono',monospace;font-size:12px;}
+  .flag{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;padding:3px 7px;border-radius:2px;letter-spacing:0.5px;}
+  .flag.crit{background:var(--crit);color:#0B0F14;}
+  .flag.warn{background:var(--warn);color:#0B0F14;}
+  .flag.ok{background:var(--ok);color:#0B0F14;}
+  .note-badge{display:inline-block;font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--accent);border:1px solid var(--accent);border-radius:2px;padding:1px 5px;margin-top:5px;cursor:help;}
+  .var-pos{color:var(--crit);font-weight:600;}
+  .var-zero{color:var(--muted2);}
+
+  /* Narrative report */
+  .report-panel{border:1px solid var(--line);border-radius:3px;padding:24px 26px;background:var(--panel);}
+  .report-panel h2{font-family:'Space Grotesk',sans-serif;font-size:16px;margin:0 0 4px;}
+  .report-meta{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:18px;}
+  #reportBody{font-size:14px;line-height:1.65;color:#D8DBE1;}
+  #reportBody h3{font-family:'Space Grotesk',sans-serif;font-size:14px;color:var(--text);margin:20px 0 8px;text-transform:uppercase;letter-spacing:0.5px;}
+  #reportBody h3:first-child{margin-top:0;}
+  #reportBody p{margin:0 0 12px;}
+  #reportBody ul{margin:0 0 12px;padding-left:20px;}
+  #reportBody li{margin-bottom:6px;}
+  #reportBody strong{color:var(--text);}
+  .report-actions{display:flex;justify-content:flex-end;margin-bottom:10px;}
+  .loading-line{display:flex;align-items:center;gap:8px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:12px;}
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 1.1s infinite ease-in-out;}
+  .dot:nth-child(2){animation-delay:.15s;} .dot:nth-child(3){animation-delay:.3s;}
+  @keyframes pulse{0%,80%,100%{opacity:0.25;}40%{opacity:1;}}
+  .disclaimer{font-size:11px;color:var(--muted2);margin-top:16px;border-top:1px solid var(--line);padding-top:12px;}
+
+  /* Crashing workbench */
+  .crash-panel{border:1px solid var(--line);border-radius:3px;padding:20px 22px;background:var(--panel);margin-bottom:28px;}
+  .crash-intro{font-size:12.5px;color:var(--muted);margin:0 0 14px;line-height:1.5;}
+  .crash-panel table{margin-bottom:16px;}
+  .crash-panel input[type=number]{background:var(--panel-raised);border:1px solid var(--line);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:13px;padding:5px 8px;border-radius:2px;width:90px;}
+  .crash-panel input[type=number]:focus{outline:none;border-color:var(--accent);}
+  .crash-controls{display:flex;align-items:center;gap:16px;padding-top:6px;border-top:1px solid var(--line);flex-wrap:wrap;}
+  .crash-target-label{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);display:flex;align-items:center;gap:8px;letter-spacing:0.5px;text-transform:uppercase;}
+  .crash-target-label input{width:70px;}
+  #crashResults{margin-top:22px;}
+  .crit-tag{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--crit);}
+
+  /* Tabs */
+  .tabbar{display:flex;gap:2px;border-bottom:1px solid var(--line);margin-bottom:22px;flex-wrap:wrap;}
+  .tab-btn{background:none;border:none;border-radius:0;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.8px;text-transform:uppercase;padding:11px 16px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;}
+  .tab-btn:hover{color:var(--text);border-color:var(--line);}
+  .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600;}
+  .tab-panel{display:block;}
+
+  /* Health check */
+  .health-pass{color:var(--ok);} .health-warn{color:var(--warn);} .health-fail{color:var(--crit);} .health-na{color:var(--muted2);}
+  .status-pill{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;padding:3px 8px;border-radius:2px;letter-spacing:0.5px;}
+  .status-pill.pass{background:var(--ok);color:#0B0F14;}
+  .status-pill.warn{background:var(--warn);color:#0B0F14;}
+  .status-pill.fail{background:var(--crit);color:#0B0F14;}
+  .status-pill.na{background:var(--panel-raised);color:var(--muted);border:1px solid var(--line);}
+
+  /* Look-ahead */
+  select{background:var(--panel-raised);border:1px solid var(--line);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:12px;padding:6px 8px;border-radius:2px;}
+  .logic-risk{color:var(--warn);font-size:11px;font-family:'IBM Plex Mono',monospace;}
+  .logic-ok{color:var(--muted2);font-size:11px;font-family:'IBM Plex Mono',monospace;}
+
+  /* Timeline */
+  .tl-row-label{font-family:'IBM Plex Mono',monospace;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="titleblock">
+    <div>
+      <h1>Planning Engineer Toolkit</h1>
+      <div class="sub">P6 update comparison, DCMA-14 health check, look-ahead generation &amp; crashing &mdash; from one XER export</div>
+    </div>
+    <div class="tb-meta">
+      <div>PROJECT<span id="tbProject">&mdash;</span></div>
+      <div>PREV. UPDATE<span id="tbPrev">&mdash;</span></div>
+      <div>CURR. UPDATE<span id="tbCurr">&mdash;</span></div>
+    </div>
+  </div>
+
+  <div class="uploads">
+    <div class="dropzone" id="dzPrev" onclick="document.getElementById('filePrev').click()">
+      <div class="dz-label">Previous Update (.xer)</div>
+      <div class="dz-file" id="dzPrevText">Click or drop file</div>
+      <div class="dz-hint">Baseline for comparison</div>
+      <input type="file" id="filePrev" accept=".xer">
+    </div>
+    <div class="dropzone" id="dzCurr" onclick="document.getElementById('fileCurr').click()">
+      <div class="dz-label">Current Update (.xer)</div>
+      <div class="dz-file" id="dzCurrText">Click or drop file</div>
+      <div class="dz-hint">Latest data date</div>
+      <input type="file" id="fileCurr" accept=".xer">
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="primary" id="runBtn" disabled onclick="runAnalysis()">Run Variance Analysis</button>
+    <button class="demo-link" onclick="loadDemo()">Load demo update pair &rarr;</button>
+  </div>
+
+  <div id="results">
+    <div class="tabbar" id="tabbar">
+      <button class="tab-btn active" data-tab="comparison" onclick="switchTab('comparison')">Update Comparison</button>
+      <button class="tab-btn" data-tab="health" onclick="switchTab('health')">Schedule Health Check</button>
+      <button class="tab-btn" data-tab="lookahead" onclick="switchTab('lookahead')">3-Week Look-ahead</button>
+      <button class="tab-btn" data-tab="timeline" onclick="switchTab('timeline')">Critical Path Timeline</button>
+    </div>
+
+    <div class="tab-panel" id="tab-comparison">
+    <div class="kpis">
+      <div class="kpi"><div class="k-label">Prior Finish</div><div class="k-val" id="kpiPrevFinish">&mdash;</div></div>
+      <div class="kpi"><div class="k-label">Current Finish</div><div class="k-val" id="kpiCurrFinish">&mdash;</div></div>
+      <div class="kpi"><div class="k-label">Net Slip</div><div class="k-val crit" id="kpiSlip">&mdash;</div></div>
+      <div class="kpi"><div class="k-label">Newly Critical</div><div class="k-val warn" id="kpiCritCount">&mdash;</div></div>
+    </div>
+
+    <div class="dimline-panel">
+      <h3>Project Finish &mdash; Dimension Check</h3>
+      <div id="dimlineSvg"></div>
+    </div>
+
+    <div class="section-title">Activity Variance Register</div>
+    <table>
+      <thead><tr>
+        <th>Activity</th><th>WBS</th><th>Prior Finish</th><th>Curr. Finish</th><th>Variance</th><th>Prior TF</th><th>Curr. TF</th><th>Flag</th>
+      </tr></thead>
+      <tbody id="varTableBody"></tbody>
+    </table>
+
+    <div class="section-title">Crashing Workbench</div>
+    <div class="crash-panel">
+      <p class="crash-intro">Computed fresh from the current schedule's logic and durations (not the variance table above). Enter cost/time trade-off assumptions for activities you could compress &mdash; only activities with a value entered are considered by the algorithm.</p>
+      <table id="crashInputTable">
+        <thead><tr>
+          <th>Activity</th><th>WBS</th><th>Duration</th><th>Float (CPM)</th><th>Max Crash (days)</th><th>Cost / Day Crashed ($)</th>
+        </tr></thead>
+        <tbody id="crashInputBody"></tbody>
+      </table>
+      <div class="crash-controls">
+        <label class="crash-target-label">Target recovery (working days)
+          <input type="number" id="targetRecovery" min="1" value="10">
+        </label>
+        <button class="primary" onclick="runCrashAnalysis()">Run Crash Analysis</button>
+      </div>
+      <div id="crashResults" style="display:none;">
+        <div class="kpis" id="crashKpis"></div>
+        <div class="dimline-panel">
+          <h3>Time &ndash; Cost Trade-off</h3>
+          <div id="crashChartSvg"></div>
+        </div>
+        <div class="section-title">Crash Sequence</div>
+        <table>
+          <thead><tr><th>Step</th><th>Activity Crashed</th><th>Cost this Step</th><th>Cumulative Cost</th><th>Resulting Finish</th><th>Recovered</th></tr></thead>
+          <tbody id="crashLogBody"></tbody>
+        </table>
+        <div class="disclaimer">Greedy least-cost heuristic: crashes the cheapest currently-critical activity one day at a time and re-derives the critical path each step. Correct for a single dominant critical path; where parallel near-critical paths exist, a full LP-based multi-path optimisation may find a lower-cost combination &mdash; treat this as a strong first-pass estimate, not a contractual figure.</div>
+      </div>
+    </div>
+
+    <div class="report-panel">
+      <h2>Progress Report Narrative</h2>
+      <div class="report-meta">Drafted by Claude &mdash; review before issuing</div>
+      <div class="report-actions" id="reportActions" style="display:none;">
+        <button onclick="copyReport()">Copy to clipboard</button>
+      </div>
+      <div id="reportBody">
+        <button class="primary" id="genReportBtn" onclick="generateNarrative()">Generate Narrative</button>
+      </div>
+      <div class="disclaimer">Generated from schedule data and notebook entries only. Verify contractual/EOT commentary and site facts before issuing externally.</div>
+    </div>
+    </div><!-- /tab-comparison -->
+
+    <div class="tab-panel" id="tab-health" style="display:none;">
+      <div class="section-title">DCMA 14-Point Schedule Health Check</div>
+      <p class="crash-intro">Industry-standard schedule quality audit, run against the current update. Four checks require data this XER export doesn't carry (constraints, resources, baseline performance indices) and are marked accordingly &mdash; that's an honest gap, not a bug.</p>
+      <div id="healthSummary" class="kpis"></div>
+      <table>
+        <thead><tr><th style="width:26px;">#</th><th>Check</th><th>Result</th><th>Threshold</th><th>Status</th></tr></thead>
+        <tbody id="healthTableBody"></tbody>
+      </table>
+    </div>
+
+    <div class="tab-panel" id="tab-lookahead" style="display:none;">
+      <div class="section-title">3-Week Look-ahead</div>
+      <div class="crash-controls" style="margin-bottom:16px;">
+        <label class="crash-target-label">Window
+          <select id="lookaheadWindow" onchange="renderLookahead()">
+            <option value="2">2 weeks</option>
+            <option value="3" selected>3 weeks</option>
+            <option value="4">4 weeks</option>
+            <option value="6">6 weeks</option>
+          </select>
+        </label>
+        <span class="crash-intro" style="margin:0;">Activities starting or already active within the window from the current data date, ordered by start date.</span>
+      </div>
+      <table>
+        <thead><tr><th>Start</th><th>Activity</th><th>WBS</th><th>Duration</th><th>Finish</th><th>Float</th><th>Predecessor Status</th></tr></thead>
+        <tbody id="lookaheadTableBody"></tbody>
+      </table>
+    </div>
+
+    <div class="tab-panel" id="tab-timeline" style="display:none;">
+      <div class="section-title">Critical Path Timeline</div>
+      <p class="crash-intro">Recomputed via CPM from current schedule logic and durations. Red bars are critical (zero float).</p>
+      <div id="timelineSvgWrap"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ---------- Demo data ----------
+const DEMO_PREV = `
+ERMHDR	18.8	2026-06-01	Project	Update 01-Jun-2026 (Previous)	sashreek720@gmail.com	RMIT Portfolio	Project Management	GMT
+%T	PROJECT
+%F	proj_id	proj_short_name	plan_start_date	plan_end_date	last_recalc_date
+%R	1001	SRL-STNBOX	2026-03-02 08:00	2027-02-05 08:00	2026-06-01 08:00
+%E
+%T	PROJWBS
+%F	wbs_id	proj_id	wbs_short_name	wbs_name
+%R	9000	1001	FINISH	FINISH works
+%R	9001	1001	MEP	MEP works
+%R	9002	1001	PREP	PREP works
+%R	9003	1001	SHAFT	SHAFT works
+%R	9004	1001	STRUCT	STRUCT works
+%R	9005	1001	TBM	TBM works
+%E
+%T	CALENDAR
+%F	clndr_id	clndr_name	day_hr_cnt
+%R	1	Standard 5 Day Week	8
+%E
+%T	TASK
+%F	task_id	proj_id	wbs_id	task_code	task_name	status_code	target_drtn_hr_cnt	early_start_date	early_end_date	act_start_date	act_end_date	total_float_hr_cnt	phys_complete_pct
+%R	5000	1001	9002	A1000	Site establishment & enabling works	TK_Complete	80	2026-03-02 08:00	2026-03-16 08:00	2026-03-02 08:00	2026-03-16 08:00	1872	100
+%R	5001	1001	9002	A1010	Utility diversions	TK_Complete	120	2026-03-16 08:00	2026-04-06 08:00	2026-03-16 08:00	2026-04-06 08:00	1752	100
+%R	5002	1001	9002	A1020	Piling mat construction	TK_Complete	64	2026-04-06 08:00	2026-04-16 08:00	2026-04-06 08:00	2026-04-16 08:00	1688	100
+%R	5003	1001	9003	A2000	Secant pile wall - North	TK_Complete	160	2026-04-16 08:00	2026-05-14 08:00	2026-04-16 08:00	2026-05-14 08:00	1528	100
+%R	5004	1001	9003	A2010	Secant pile wall - South	TK_Complete	160	2026-04-16 08:00	2026-05-14 08:00	2026-04-16 08:00	2026-05-14 08:00	1528	100
+%R	5005	1001	9003	A2020	Capping beam installation	TK_Complete	80	2026-05-14 08:00	2026-05-28 08:00	2026-05-14 08:00	2026-05-28 08:00	1448	100
+%R	5006	1001	9003	A2030	Bulk excavation - Stage 1 (to L1 prop)	TK_Active	96	2026-05-28 08:00	2026-06-15 08:00	2026-05-28 08:00		1352	22
+%R	5007	1001	9003	A2040	Prop installation - Level 1	TK_NotStart	48	2026-06-15 08:00	2026-06-23 08:00			1304	0
+%R	5008	1001	9003	A2050	Bulk excavation - Stage 2 (to L2 prop)	TK_NotStart	112	2026-06-23 08:00	2026-07-13 08:00			1192	0
+%R	5009	1001	9003	A2060	Prop installation - Level 2	TK_NotStart	48	2026-07-13 08:00	2026-07-21 08:00			1144	0
+%R	5010	1001	9003	A2070	Bulk excavation - Stage 3 (formation level)	TK_NotStart	128	2026-07-21 08:00	2026-08-12 08:00			1016	0
+%R	5011	1001	9004	A3000	Base slab reinforcement & pour	TK_NotStart	96	2026-08-12 08:00	2026-08-28 08:00			920	0
+%R	5012	1001	9005	A3010	TBM launch chamber fit-out	TK_NotStart	120	2026-08-28 08:00	2026-09-18 08:00			800	0
+%R	5013	1001	9005	A3020	TBM delivery & assembly	TK_NotStart	144	2026-09-18 08:00	2026-10-14 08:00			656	0
+%R	5014	1001	9005	A3030	TBM launch & initial drive	TK_NotStart	80	2026-10-14 08:00	2026-10-28 08:00			576	0
+%R	5015	1001	9005	A3040	TBM drive - Section 1	TK_NotStart	200	2026-10-28 08:00	2026-12-02 08:00			376	0
+%R	5016	1001	9005	A3050	TBM drive - Section 2	TK_NotStart	200	2026-12-02 08:00	2027-01-06 08:00			176	0
+%R	5017	1001	9004	A4000	Station box walls - concourse level	TK_NotStart	160	2026-08-28 08:00	2026-09-25 08:00			760	0
+%R	5018	1001	9004	A4010	Station box slab - concourse level	TK_NotStart	112	2026-09-25 08:00	2026-10-15 08:00			648	0
+%R	5019	1001	9004	A4020	Station box walls - platform level	TK_NotStart	160	2026-10-15 08:00	2026-11-12 08:00			488	0
+%R	5020	1001	9004	A4030	Waterproofing - platform level	TK_NotStart	64	2026-11-12 08:00	2026-11-24 08:00			424	0
+%R	5021	1001	9001	A5000	MEP first fix - concourse	TK_NotStart	120	2026-10-15 08:00	2026-11-05 08:00			528	0
+%R	5022	1001	9001	A5010	MEP first fix - platform	TK_NotStart	120	2026-11-24 08:00	2026-12-15 08:00			304	0
+%R	5023	1001	9000	A5020	Backfill & reinstatement	TK_NotStart	80	2027-01-06 08:00	2027-01-20 08:00			96	0
+%R	5024	1001	9000	A5030	Final finishes & handover prep	TK_NotStart	96	2027-01-20 08:00	2027-02-05 08:00			0	0
+%E
+%T	TASKPRED
+%F	task_pred_id	task_id	pred_task_id	proj_id	pred_type	lag_hr_cnt
+%R	8000	5001	5000	1001	PR_FS	0
+%R	8001	5002	5001	1001	PR_FS	0
+%R	8002	5003	5002	1001	PR_FS	0
+%R	8003	5004	5002	1001	PR_FS	0
+%R	8004	5005	5003	1001	PR_FS	0
+%R	8005	5005	5004	1001	PR_FS	0
+%R	8006	5006	5005	1001	PR_FS	0
+%R	8007	5007	5006	1001	PR_FS	0
+%R	8008	5008	5007	1001	PR_FS	0
+%R	8009	5009	5008	1001	PR_FS	0
+%R	8010	5010	5009	1001	PR_FS	0
+%R	8011	5011	5010	1001	PR_FS	0
+%R	8012	5012	5011	1001	PR_FS	0
+%R	8013	5013	5012	1001	PR_FS	0
+%R	8014	5014	5013	1001	PR_FS	0
+%R	8015	5015	5014	1001	PR_FS	0
+%R	8016	5016	5015	1001	PR_FS	0
+%R	8017	5017	5011	1001	PR_FS	0
+%R	8018	5018	5017	1001	PR_FS	0
+%R	8019	5019	5018	1001	PR_FS	0
+%R	8020	5020	5019	1001	PR_FS	0
+%R	8021	5021	5018	1001	PR_FS	0
+%R	8022	5022	5020	1001	PR_FS	0
+%R	8023	5023	5020	1001	PR_FS	0
+%R	8024	5023	5016	1001	PR_FS	0
+%R	8025	5024	5022	1001	PR_FS	0
+%R	8026	5024	5023	1001	PR_FS	0
+%E
+`;
+
+const DEMO_CURR = `
+ERMHDR	18.8	2026-06-15	Project	Update 15-Jun-2026 (Current)	sashreek720@gmail.com	RMIT Portfolio	Project Management	GMT
+%T	PROJECT
+%F	proj_id	proj_short_name	plan_start_date	plan_end_date	last_recalc_date
+%R	1001	SRL-STNBOX	2026-03-02 08:00	2027-03-03 08:00	2026-06-15 08:00
+%E
+%T	PROJWBS
+%F	wbs_id	proj_id	wbs_short_name	wbs_name
+%R	9000	1001	FINISH	FINISH works
+%R	9001	1001	MEP	MEP works
+%R	9002	1001	PREP	PREP works
+%R	9003	1001	SHAFT	SHAFT works
+%R	9004	1001	STRUCT	STRUCT works
+%R	9005	1001	TBM	TBM works
+%E
+%T	CALENDAR
+%F	clndr_id	clndr_name	day_hr_cnt
+%R	1	Standard 5 Day Week	8
+%E
+%T	TASK
+%F	task_id	proj_id	wbs_id	task_code	task_name	status_code	target_drtn_hr_cnt	early_start_date	early_end_date	act_start_date	act_end_date	total_float_hr_cnt	phys_complete_pct
+%R	5000	1001	9002	A1000	Site establishment & enabling works	TK_Complete	80	2026-03-02 08:00	2026-03-16 08:00	2026-03-02 08:00	2026-03-16 08:00	2016	100
+%R	5001	1001	9002	A1010	Utility diversions	TK_Complete	120	2026-03-16 08:00	2026-04-06 08:00	2026-03-16 08:00	2026-04-06 08:00	1896	100
+%R	5002	1001	9002	A1020	Piling mat construction	TK_Complete	64	2026-04-06 08:00	2026-04-16 08:00	2026-04-06 08:00	2026-04-16 08:00	1832	100
+%R	5003	1001	9003	A2000	Secant pile wall - North	TK_Complete	160	2026-04-16 08:00	2026-05-14 08:00	2026-04-16 08:00	2026-05-14 08:00	1672	100
+%R	5004	1001	9003	A2010	Secant pile wall - South	TK_Complete	208	2026-04-16 08:00	2026-05-22 08:00	2026-04-16 08:00	2026-05-22 08:00	1624	100
+%R	5005	1001	9003	A2020	Capping beam installation	TK_Complete	80	2026-05-22 08:00	2026-06-05 08:00	2026-05-22 08:00	2026-06-05 08:00	1544	100
+%R	5006	1001	9003	A2030	Bulk excavation - Stage 1 (to L1 prop)	TK_Active	96	2026-06-05 08:00	2026-06-23 08:00	2026-06-05 08:00		1448	56
+%R	5007	1001	9003	A2040	Prop installation - Level 1	TK_NotStart	48	2026-06-23 08:00	2026-07-01 08:00			1400	0
+%R	5008	1001	9003	A2050	Bulk excavation - Stage 2 (to L2 prop)	TK_NotStart	144	2026-07-01 08:00	2026-07-27 08:00			1256	0
+%R	5009	1001	9003	A2060	Prop installation - Level 2	TK_NotStart	48	2026-07-27 08:00	2026-08-04 08:00			1208	0
+%R	5010	1001	9003	A2070	Bulk excavation - Stage 3 (formation level)	TK_NotStart	128	2026-08-04 08:00	2026-08-26 08:00			1080	0
+%R	5011	1001	9004	A3000	Base slab reinforcement & pour	TK_NotStart	96	2026-08-26 08:00	2026-09-11 08:00			984	0
+%R	5012	1001	9005	A3010	TBM launch chamber fit-out	TK_NotStart	120	2026-09-11 08:00	2026-10-02 08:00			864	0
+%R	5013	1001	9005	A3020	TBM delivery & assembly	TK_NotStart	208	2026-10-02 08:00	2026-11-09 08:00			656	0
+%R	5014	1001	9005	A3030	TBM launch & initial drive	TK_NotStart	80	2026-11-09 08:00	2026-11-23 08:00			576	0
+%R	5015	1001	9005	A3040	TBM drive - Section 1	TK_NotStart	200	2026-11-23 08:00	2026-12-28 08:00			376	0
+%R	5016	1001	9005	A3050	TBM drive - Section 2	TK_NotStart	200	2026-12-28 08:00	2027-02-01 08:00			176	0
+%R	5017	1001	9004	A4000	Station box walls - concourse level	TK_NotStart	160	2026-09-11 08:00	2026-10-09 08:00			824	0
+%R	5018	1001	9004	A4010	Station box slab - concourse level	TK_NotStart	112	2026-10-09 08:00	2026-10-29 08:00			712	0
+%R	5019	1001	9004	A4020	Station box walls - platform level	TK_NotStart	160	2026-10-29 08:00	2026-11-26 08:00			552	0
+%R	5020	1001	9004	A4030	Waterproofing - platform level	TK_NotStart	64	2026-11-26 08:00	2026-12-08 08:00			488	0
+%R	5021	1001	9001	A5000	MEP first fix - concourse	TK_NotStart	120	2026-10-29 08:00	2026-11-19 08:00			592	0
+%R	5022	1001	9001	A5010	MEP first fix - platform	TK_NotStart	120	2026-12-08 08:00	2026-12-29 08:00			368	0
+%R	5023	1001	9000	A5020	Backfill & reinstatement	TK_NotStart	80	2027-02-01 08:00	2027-02-15 08:00			96	0
+%R	5024	1001	9000	A5030	Final finishes & handover prep	TK_NotStart	96	2027-02-15 08:00	2027-03-03 08:00			0	0
+%E
+%T	TASKPRED
+%F	task_pred_id	task_id	pred_task_id	proj_id	pred_type	lag_hr_cnt
+%R	8000	5001	5000	1001	PR_FS	0
+%R	8001	5002	5001	1001	PR_FS	0
+%R	8002	5003	5002	1001	PR_FS	0
+%R	8003	5004	5002	1001	PR_FS	0
+%R	8004	5005	5003	1001	PR_FS	0
+%R	8005	5005	5004	1001	PR_FS	0
+%R	8006	5006	5005	1001	PR_FS	0
+%R	8007	5007	5006	1001	PR_FS	0
+%R	8008	5008	5007	1001	PR_FS	0
+%R	8009	5009	5008	1001	PR_FS	0
+%R	8010	5010	5009	1001	PR_FS	0
+%R	8011	5011	5010	1001	PR_FS	0
+%R	8012	5012	5011	1001	PR_FS	0
+%R	8013	5013	5012	1001	PR_FS	0
+%R	8014	5014	5013	1001	PR_FS	0
+%R	8015	5015	5014	1001	PR_FS	0
+%R	8016	5016	5015	1001	PR_FS	0
+%R	8017	5017	5011	1001	PR_FS	0
+%R	8018	5018	5017	1001	PR_FS	0
+%R	8019	5019	5018	1001	PR_FS	0
+%R	8020	5020	5019	1001	PR_FS	0
+%R	8021	5021	5018	1001	PR_FS	0
+%R	8022	5022	5020	1001	PR_FS	0
+%R	8023	5023	5020	1001	PR_FS	0
+%R	8024	5023	5016	1001	PR_FS	0
+%R	8025	5024	5022	1001	PR_FS	0
+%R	8026	5024	5023	1001	PR_FS	0
+%E
+%T	NOTETYPE
+%F	memo_type_id	memo_type
+%R	1	Progress Narrative
+%E
+%T	TASKNOTE
+%F	task_note_id	task_id	memo_type_id	task_memo
+%R	7000	5004	1	Unforeseen underground obstruction (redundant sewer pipe, not on services plan) hit at CH12-18m during secant piling, South wall. Piling rig stood down 4 days for potholing/removal, 2 days re-sequencing. Client PM notified 03-Jun, photos on site diary. Potential EOT claim - services survey was principal-supplied.
+%R	7001	5008	1	Groundwater inflow exceeded design assumption during Stage 2 bulk excavation - dewatering wells under-capacity for actual permeability encountered. Additional wellpoint system mobilised, 4 day delay to excavation face advance. Geotech advised on 08-Jun, no design change required, dewatering rate increased.
+%R	7002	5013	1	TBM assembly delayed - cutterhead bearing shipment held at customs (supplier logistics issue), original ETA 02-Jun now 10-Jun. Supplier confirms not a manufacturing defect. Assembly crew partially remobilised to support station box MEP first fix in interim to reduce idle cost.
+%E
+`;
+
+// ---------- XER Parser ----------
+function parseXER(text){
+  const lines = text.split(/\r?\n/);
+  const data = { header:{}, project:{}, wbs:{}, tasks:[], notes:{}, preds:{} };
+  let currentTable = null, headers = [];
+  const taskIdIndex = {}; // task_id -> task object (for note attachment)
+
+  for(const raw of lines){
+    if(!raw) continue;
+    if(raw.startsWith('ERMHDR')){
+      const p = raw.split('\t');
+      data.header = { date:p[2], projName:p[4] };
+      continue;
+    }
+    if(raw.startsWith('%T')){ currentTable = raw.split('\t')[1]; headers=[]; continue; }
+    if(raw.startsWith('%F')){ headers = raw.split('\t').slice(1); continue; }
+    if(raw.startsWith('%E')){ currentTable=null; continue; }
+    if(raw.startsWith('%R') && currentTable){
+      const vals = raw.split('\t').slice(1);
+      const row = {};
+      headers.forEach((h,i)=> row[h]=vals[i] !== undefined ? vals[i] : '');
+      if(currentTable === 'PROJECT'){ data.project = row; }
+      else if(currentTable === 'PROJWBS'){ data.wbs[row.wbs_id] = row.wbs_short_name; }
+      else if(currentTable === 'TASK'){ data.tasks.push(row); taskIdIndex[row.task_id]=row; }
+      else if(currentTable === 'TASKNOTE'){
+        if(!data.notes[row.task_id]) data.notes[row.task_id] = [];
+        data.notes[row.task_id].push(row.task_memo);
+      }
+      else if(currentTable === 'TASKPRED'){
+        if(!data.preds[row.task_id]) data.preds[row.task_id] = [];
+        data.preds[row.task_id].push({ pred_task_id: row.pred_task_id, lag_hr: parseFloat(row.lag_hr_cnt)||0, pred_type: row.pred_type||'PR_FS' });
+      }
+    }
+  }
+  // attach wbs name + notes + predecessor codes + duration (days) to each task
+  const idToCode = {}; data.tasks.forEach(t=> idToCode[t.task_id]=t.task_code);
+  data.tasks.forEach(t=>{
+    t.wbs_name = data.wbs[t.wbs_id] || '';
+    t.notes = data.notes[t.task_id] || [];
+    const rawEdges = data.preds[t.task_id] || [];
+    t.pred_edges = rawEdges.map(e=> ({ code: idToCode[e.pred_task_id], lag_hr: e.lag_hr, pred_type: e.pred_type })).filter(e=>e.code);
+    t.pred_codes = t.pred_edges.map(e=>e.code);
+    t.dur_days = Math.round((parseFloat(t.target_drtn_hr_cnt)||0)/8);
+  });
+  // successor count per task (for open-end / missing-logic checks)
+  const succCount = {}; data.tasks.forEach(t=> succCount[t.task_code]=0);
+  data.tasks.forEach(t=> t.pred_codes.forEach(p=> { if(succCount[p]!==undefined) succCount[p]++; }));
+  data.tasks.forEach(t=> t.succ_count = succCount[t.task_code]||0);
+  return data;
+}
+
+function parseDate(s){
+  if(!s) return null;
+  const d = s.trim().split(' ')[0];
+  const [y,m,day] = d.split('-').map(Number);
+  return new Date(Date.UTC(y, m-1, day));
+}
+function fmtDate(d){
+  if(!d) return '—';
+  return d.toLocaleDateString('en-AU', { day:'2-digit', month:'short', year:'numeric', timeZone:'UTC' });
+}
+function workdaysBetween(d1, d2){
+  if(!d1 || !d2) return 0;
+  let sign = 1, a=d1, b=d2;
+  if(b < a){ sign=-1; a=d2; b=d1; }
+  let days=0, cur=new Date(a);
+  while(cur < b){
+    cur.setUTCDate(cur.getUTCDate()+1);
+    const wd = cur.getUTCDay();
+    if(wd!==0 && wd!==6) days++;
+  }
+  return sign*days;
+}
+function addWorkdays(start, days){
+  let d = new Date(start), added=0;
+  while(added<days){ d.setUTCDate(d.getUTCDate()+1); const wd=d.getUTCDay(); if(wd!==0&&wd!==6) added++; }
+  return d;
+}
+function subWorkdays(end, days){
+  let d = new Date(end), removed=0;
+  while(removed<days){ d.setUTCDate(d.getUTCDate()-1); const wd=d.getUTCDay(); if(wd!==0&&wd!==6) removed++; }
+  return d;
+}
+
+// CPM forward/backward pass. durOverride: optional map code->duration days (used during crash iterations)
+function runCPM(tasks, projectStart, durOverride){
+  const byCode = {}; tasks.forEach(t=> byCode[t.task_code]=t);
+  const visited={}, order=[];
+  function visit(code){
+    if(visited[code]) return; visited[code]=true;
+    const t = byCode[code]; if(!t) return;
+    t.pred_codes.forEach(p=> visit(p));
+    order.push(code);
+  }
+  tasks.forEach(t=> visit(t.task_code));
+
+  const dur = code => (durOverride && durOverride[code]!==undefined) ? durOverride[code] : byCode[code].dur_days;
+  const ES={}, EF={};
+  order.forEach(code=>{
+    const t = byCode[code];
+    if(t.pred_codes.length===0){ ES[code]=new Date(projectStart); }
+    else { ES[code] = t.pred_codes.reduce((m,p)=> (!m||(EF[p] && EF[p]>m)) ? EF[p] : m, null); }
+    EF[code] = addWorkdays(ES[code], dur(code));
+  });
+  const projFinish = order.reduce((m,c)=> !m||EF[c]>m?EF[c]:m, null);
+
+  const succ = {}; tasks.forEach(t=> succ[t.task_code]=[]);
+  tasks.forEach(t=> t.pred_codes.forEach(p=> { (succ[p] ||= []).push(t.task_code); }));
+
+  const LF={}, LS={};
+  for(let i=order.length-1;i>=0;i--){
+    const code = order[i];
+    const s = succ[code]||[];
+    if(s.length===0){ LF[code]=projFinish; }
+    else { LF[code] = s.reduce((m,sc)=> (!m||(LS[sc] && LS[sc]<m)) ? LS[sc] : m, null); }
+    LS[code] = subWorkdays(LF[code], dur(code));
+  }
+  const TF = {};
+  order.forEach(code=> TF[code] = workdaysBetween(EF[code], LF[code]));
+
+  return { order, ES, EF, LS, LF, TF, projFinish, byCode };
+}
+
+// Greedy least-cost crashing: each iteration, among currently-critical activities
+// with remaining crash capacity, crash the cheapest one by 1 day, then recompute
+// CPM (critical path can shift between parallel chains as crashing proceeds).
+// NOTE: this is a greedy heuristic, not a globally-optimal LP solution - correct
+// for a single dominant critical path, an approximation when paths run parallel.
+function crashProject(tasks, projectStart, crashParams, targetRecoveryDays){
+  const durOverride = {};
+  tasks.forEach(t=> durOverride[t.task_code] = t.dur_days);
+  const crashedSoFar = {};
+  tasks.forEach(t=> crashedSoFar[t.task_code]=0);
+
+  let cpm = runCPM(tasks, projectStart, durOverride);
+  const originalFinish = cpm.projFinish;
+  const log = [];
+  let totalCost = 0, recovered = 0, guard = 0;
+
+  while(recovered < targetRecoveryDays && guard < 300){
+    guard++;
+    const critical = cpm.order.filter(c=> cpm.TF[c]<=0);
+    const candidates = critical.filter(c=> crashParams[c] && crashedSoFar[c] < crashParams[c].maxCrash);
+    if(candidates.length===0) break;
+    candidates.sort((a,b)=> crashParams[a].costPerDay - crashParams[b].costPerDay);
+    const pick = candidates[0];
+    durOverride[pick] -= 1;
+    crashedSoFar[pick] += 1;
+    totalCost += crashParams[pick].costPerDay;
+    cpm = runCPM(tasks, projectStart, durOverride);
+    recovered = workdaysBetween(cpm.projFinish, originalFinish);
+    log.push({ day: guard, activity: pick, costToday: crashParams[pick].costPerDay, cumulativeCost: totalCost, newFinish: cpm.projFinish, recoveredSoFar: recovered });
+  }
+  return { originalFinish, finalFinish: cpm.projFinish, recovered, totalCost, log, crashedSoFar, targetReached: recovered>=targetRecoveryDays };
+}
+
+// ---------- State ----------
+let prevData=null, currData=null;
+
+document.getElementById('filePrev').addEventListener('change', e=> handleFile(e.target.files[0], 'prev'));
+document.getElementById('fileCurr').addEventListener('change', e=> handleFile(e.target.files[0], 'curr'));
+['dzPrev','dzCurr'].forEach(id=>{
+  const el = document.getElementById(id);
+  el.addEventListener('dragover', e=>{ e.preventDefault(); el.style.borderColor='var(--accent)'; });
+  el.addEventListener('dragleave', ()=> el.style.borderColor='');
+  el.addEventListener('drop', e=>{
+    e.preventDefault();
+    const f = e.dataTransfer.files[0];
+    handleFile(f, id==='dzPrev' ? 'prev':'curr');
+  });
+});
+
+function handleFile(file, which){
+  if(!file) return;
+  window._isDemo = false;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      const parsed = parseXER(reader.result);
+      if(which==='prev'){ prevData=parsed; document.getElementById('dzPrevText').textContent=file.name; document.getElementById('dzPrev').classList.add('filled'); }
+      else { currData=parsed; document.getElementById('dzCurrText').textContent=file.name; document.getElementById('dzCurr').classList.add('filled'); }
+      updateRunButton();
+    }catch(err){
+      alert('Could not parse this XER file: '+err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+function loadDemo(){
+  window._isDemo = true;
+  prevData = parseXER(DEMO_PREV);
+  currData = parseXER(DEMO_CURR);
+  document.getElementById('dzPrevText').textContent = 'update_2026-06-01_previous.xer (demo)';
+  document.getElementById('dzCurrText').textContent = 'update_2026-06-15_current.xer (demo)';
+  document.getElementById('dzPrev').classList.add('filled');
+  document.getElementById('dzCurr').classList.add('filled');
+  updateRunButton();
+}
+
+function updateRunButton(){
+  document.getElementById('runBtn').disabled = !(prevData && currData);
+}
+
+// ---------- Analysis ----------
+let lastDiff = null;
+
+function runAnalysis(){
+  const prevMap = {}; prevData.tasks.forEach(t=> prevMap[t.task_code]=t);
+  const currMap = {}; currData.tasks.forEach(t=> currMap[t.task_code]=t);
+
+  const prevFinish = prevData.tasks.reduce((m,t)=>{ const d=parseDate(t.early_end_date); return (!m||d>m)?d:m; }, null);
+  const currFinish = currData.tasks.reduce((m,t)=>{ const d=parseDate(t.early_end_date); return (!m||d>m)?d:m; }, null);
+  const netSlip = workdaysBetween(prevFinish, currFinish);
+
+  const rows = [];
+  let newlyCritical = 0;
+  currData.tasks.forEach(ct=>{
+    const pt = prevMap[ct.task_code];
+    if(!pt) return; // new scope, skip for this pass
+    const pEnd = parseDate(pt.early_end_date), cEnd = parseDate(ct.early_end_date);
+    const variance = workdaysBetween(pEnd, cEnd);
+    const pFloat = Math.round((parseFloat(pt.total_float_hr_cnt)||0)/8);
+    const cFloat = Math.round((parseFloat(ct.total_float_hr_cnt)||0)/8);
+    let flag = 'ok';
+    if(cFloat <= 0) flag='crit'; else if(cFloat <= 5) flag='warn';
+    if(flag!=='ok' && pFloat > 5) newlyCritical++;
+    rows.push({
+      code: ct.task_code, name: ct.task_name, wbs: ct.wbs_name,
+      pEnd, cEnd, variance, pFloat, cFloat, flag,
+      notes: ct.notes||[]
+    });
+  });
+  rows.sort((a,b)=> b.variance - a.variance);
+
+  lastDiff = { prevFinish, currFinish, netSlip, newlyCritical, rows, projName: currData.project.proj_short_name || currData.header.projName };
+
+  renderResults(lastDiff);
+}
+
+function switchTab(name){
+  document.querySelectorAll('.tab-panel').forEach(el=> el.style.display='none');
+  document.querySelectorAll('.tab-btn').forEach(el=> el.classList.remove('active'));
+  document.getElementById('tab-'+name).style.display='block';
+  document.querySelector(`.tab-btn[data-tab="${name}"]`).classList.add('active');
+}
+
+function renderResults(diff){
+  document.getElementById('tbProject').textContent = diff.projName || '—';
+  document.getElementById('tbPrev').textContent = fmtDate(diff.prevFinish ? parseDate(prevData.header.date) : null) !== '—' ? prevData.header.date : '—';
+  document.getElementById('tbCurr').textContent = currData.header.date || '—';
+
+  document.getElementById('kpiPrevFinish').textContent = fmtDate(diff.prevFinish);
+  document.getElementById('kpiCurrFinish').textContent = fmtDate(diff.currFinish);
+  document.getElementById('kpiSlip').textContent = (diff.netSlip>0?'+':'') + diff.netSlip + ' wd';
+  document.getElementById('kpiSlip').className = 'k-val ' + (diff.netSlip>0?'crit':(diff.netSlip<0?'':''));
+  document.getElementById('kpiCritCount').textContent = diff.newlyCritical;
+
+  renderDimline(diff);
+  renderTable(diff);
+  populateCrashWorkbench();
+  document.getElementById('targetRecovery').value = Math.max(diff.netSlip, 1);
+  document.getElementById('crashResults').style.display='none';
+  window._lastCrashResult = null;
+
+  renderHealthCheck();
+  renderLookahead();
+  renderTimeline();
+
+  document.getElementById('results').style.display='block';
+  switchTab('comparison');
+  document.getElementById('reportBody').innerHTML = '<button class="primary" id="genReportBtn" onclick="generateNarrative()">Generate Narrative</button>';
+  document.getElementById('reportActions').style.display='none';
+  document.getElementById('results').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function renderDimline(diff){
+  const w=1000,h=90;
+  const t0 = diff.prevFinish.getTime(), t1=diff.currFinish.getTime();
+  const minT = Math.min(t0,t1), maxT=Math.max(t0,t1);
+  const pad=60, span = Math.max(maxT-minT, 1);
+  const scaleX = x => pad + (x-minT)/span * (w-2*pad);
+  const xPrev = scaleX(t0), xCurr = scaleX(t1);
+  const y=45;
+  const slipLabel = (diff.netSlip>0?'+':'') + diff.netSlip + ' working days';
+  let svg = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}">`;
+  svg += `<line x1="${pad-20}" y1="${y}" x2="${w-pad+20}" y2="${y}" stroke="#2A2F38" stroke-width="1"/>`;
+  // prior tick
+  svg += `<line x1="${xPrev}" y1="${y-12}" x2="${xPrev}" y2="${y+12}" stroke="#8A93A3" stroke-width="1.5"/>`;
+  svg += `<text x="${xPrev}" y="${y-20}" fill="#8A93A3" font-size="11" text-anchor="middle">PRIOR</text>`;
+  svg += `<text x="${xPrev}" y="${y+28}" fill="#8A93A3" font-size="11" text-anchor="middle">${fmtDate(diff.prevFinish)}</text>`;
+  // curr tick
+  const currColor = diff.netSlip>0 ? '#E5484D' : '#3FC88B';
+  svg += `<line x1="${xCurr}" y1="${y-12}" x2="${xCurr}" y2="${y+12}" stroke="${currColor}" stroke-width="2"/>`;
+  svg += `<text x="${xCurr}" y="${y-20}" fill="${currColor}" font-size="11" text-anchor="middle" font-weight="600">CURRENT</text>`;
+  svg += `<text x="${xCurr}" y="${y+28}" fill="${currColor}" font-size="11" text-anchor="middle" font-weight="600">${fmtDate(diff.currFinish)}</text>`;
+  // dimension arrows between
+  if(Math.abs(xCurr-xPrev) > 4){
+    const xa=Math.min(xPrev,xCurr), xb=Math.max(xPrev,xCurr);
+    svg += `<line x1="${xa}" y1="${y+40}" x2="${xb}" y2="${y+40}" stroke="${currColor}" stroke-width="1"/>`;
+    svg += `<line x1="${xa}" y1="${y+36}" x2="${xa}" y2="${y+44}" stroke="${currColor}" stroke-width="1"/>`;
+    svg += `<line x1="${xb}" y1="${y+36}" x2="${xb}" y2="${y+44}" stroke="${currColor}" stroke-width="1"/>`;
+    svg += `<text x="${(xa+xb)/2}" y="${y+58}" fill="${currColor}" font-size="12" text-anchor="middle" font-weight="600">${slipLabel}</text>`;
+  }
+  svg += `</svg>`;
+  document.getElementById('dimlineSvg').innerHTML = svg;
+}
+
+function renderTable(diff){
+  const tbody = document.getElementById('varTableBody');
+  tbody.innerHTML = '';
+  diff.rows.forEach(r=>{
+    const tr = document.createElement('tr');
+    if(r.flag==='crit') tr.className='crit-row';
+    else if(r.flag==='warn') tr.className='warn-row';
+    const flagLabel = r.flag==='crit' ? 'CRITICAL' : r.flag==='warn' ? 'NEAR-CRIT' : 'STABLE';
+    const varText = r.variance===0 ? '<span class="var-zero">0d</span>' : (r.variance>0 ? `<span class="var-pos">+${r.variance}d</span>` : `<span style="color:var(--ok)">${r.variance}d</span>`);
+    tr.innerHTML = `
+      <td><div class="act-code">${r.code}</div><div class="act-name">${r.name}</div>${r.notes.length ? '<div class="note-badge" title="'+r.notes.join(' | ').replace(/"/g,'&quot;')+'">NOTEBOOK ENTRY</div>' : ''}</td>
+      <td class="mono">${r.wbs}</td>
+      <td class="mono">${fmtDate(r.pEnd)}</td>
+      <td class="mono">${fmtDate(r.cEnd)}</td>
+      <td class="mono">${varText}</td>
+      <td class="mono">${r.pFloat}d</td>
+      <td class="mono">${r.cFloat}d</td>
+      <td><span class="flag ${r.flag}">${flagLabel}</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// ---------- DCMA 14-Point Schedule Health Check ----------
+function renderHealthCheck(){
+  const cpm = window._currentCPM || runCPM(currData.tasks, parseDate(currData.project.plan_start_date));
+  const tasks = currData.tasks;
+  const dataDate = parseDate(currData.header.date);
+  const total = tasks.length;
+  const checks = [];
+
+  // 1. Logic - missing predecessors/successors (excluding true start/finish anchors)
+  const noPred = tasks.filter(t=> t.pred_codes.length===0);
+  const noSucc = tasks.filter(t=> t.succ_count===0);
+  const missingLogicCount = noPred.length + noSucc.length - 1; // rough: one true start + one true finish expected
+  const logicPct = total ? Math.round(100*Math.max(missingLogicCount,0)/total) : 0;
+  checks.push({ n:1, name:'Logic (Missing Predecessors/Successors)', value:`${Math.max(missingLogicCount,0)} activities (${logicPct}%)`, threshold:'< 5% open ends', status: logicPct<=5?'pass':(logicPct<=15?'warn':'fail') });
+
+  // 2. Leads (negative lag)
+  let leadCount=0; tasks.forEach(t=> t.pred_edges.forEach(e=>{ if(e.lag_hr<0) leadCount++; }));
+  checks.push({ n:2, name:'Leads (Negative Lag)', value:`${leadCount} relationships`, threshold:'0 (leads distort true logic)', status: leadCount===0?'pass':'fail' });
+
+  // 3. Lags (positive lag)
+  let lagCount=0, totalRels=0; tasks.forEach(t=> t.pred_edges.forEach(e=>{ totalRels++; if(e.lag_hr>0) lagCount++; }));
+  const lagPct = totalRels ? Math.round(100*lagCount/totalRels) : 0;
+  checks.push({ n:3, name:'Lags (Positive Lag)', value:`${lagCount} relationships (${lagPct}%)`, threshold:'< 5% of relationships', status: lagPct<=5?'pass':(lagPct<=15?'warn':'fail') });
+
+  // 4. Relationship types (% FS)
+  let fsCount=0; tasks.forEach(t=> t.pred_edges.forEach(e=>{ if(e.pred_type==='PR_FS') fsCount++; }));
+  const fsPct = totalRels ? Math.round(100*fsCount/totalRels) : 0;
+  checks.push({ n:4, name:'Relationship Types (% Finish-to-Start)', value:`${fsPct}%`, threshold:'\u2265 90% FS', status: fsPct>=90?'pass':(fsPct>=75?'warn':'fail') });
+
+  // 5. Hard Constraints - not assessable
+  checks.push({ n:5, name:'Hard Constraints', value:'Not assessable', threshold:'\u2264 5% hard-constrained', status:'na' });
+
+  // 6. High Duration Activities (> 44 working days)
+  const highDur = tasks.filter(t=> t.dur_days>44);
+  const highDurPct = total ? Math.round(100*highDur.length/total) : 0;
+  checks.push({ n:6, name:'High Duration Activities (>44wd)', value:`${highDur.length} activities (${highDurPct}%)`, threshold:'< 5%', status: highDurPct<=5?'pass':(highDurPct<=15?'warn':'fail') });
+
+  // 7. Negative Float
+  const negFloat = cpm.order.filter(c=> cpm.TF[c]<0);
+  checks.push({ n:7, name:'Negative Float', value:`${negFloat.length} activities`, threshold:'0', status: negFloat.length===0?'pass':'fail' });
+
+  // 8. High Float (> 44 working days)
+  const highFloat = cpm.order.filter(c=> cpm.TF[c]>44);
+  const highFloatPct = total ? Math.round(100*highFloat.length/total) : 0;
+  checks.push({ n:8, name:'High Float (>44wd)', value:`${highFloat.length} activities (${highFloatPct}%)`, threshold:'< 5%', status: highFloatPct<=5?'pass':(highFloatPct<=15?'warn':'fail') });
+
+  // 9. Invalid Dates
+  const invalidDates = tasks.filter(t=> !t.early_start_date || !t.early_end_date);
+  checks.push({ n:9, name:'Invalid Dates', value:`${invalidDates.length} activities`, threshold:'0 missing start/finish', status: invalidDates.length===0?'pass':'fail' });
+
+  // 10. Resources - not assessable
+  checks.push({ n:10, name:'Resources', value:'Not assessable', threshold:'100% resource-loaded', status:'na' });
+
+  // 11. Missed Activities (forecast finish before data date, not complete)
+  const missed = tasks.filter(t=>{
+    const ef = parseDate(t.early_end_date);
+    return ef && ef < dataDate && t.status_code !== 'TK_Complete';
+  });
+  checks.push({ n:11, name:'Missed Activities', value:`${missed.length} activities`, threshold:'0 (forecast finish in the past, still open)', status: missed.length===0?'pass':(missed.length<=2?'warn':'fail') });
+
+  // 12. Critical Path / Float Consistency (compare CPM float to XER-stored float)
+  let mismatches=0;
+  tasks.forEach(t=>{
+    const storedFloat = Math.round((parseFloat(t.total_float_hr_cnt)||0)/8);
+    const cpmFloat = cpm.TF[t.task_code];
+    if(cpmFloat!==undefined && Math.abs(storedFloat-cpmFloat)>2) mismatches++;
+  });
+  checks.push({ n:12, name:'Critical Path Test (Float Consistency)', value:`${mismatches} activities differ >2d from schedule's own float`, threshold:'0 (recomputed CPM should match P6\u2019s stored float)', status: mismatches===0?'pass':(mismatches<=3?'warn':'fail') });
+
+  // 13/14. CPLI / BEI - not assessable (need baseline schedule)
+  checks.push({ n:13, name:'CPLI (Critical Path Length Index)', value:'Not assessable', threshold:'\u2265 0.95', status:'na' });
+  checks.push({ n:14, name:'BEI (Baseline Execution Index)', value:'Not assessable', threshold:'\u2265 0.95', status:'na' });
+
+  const passCount = checks.filter(c=>c.status==='pass').length;
+  const failCount = checks.filter(c=>c.status==='fail').length;
+  const naCount = checks.filter(c=>c.status==='na').length;
+
+  document.getElementById('healthSummary').innerHTML = `
+    <div class="kpi"><div class="k-label">Checks Passed</div><div class="k-val" style="color:var(--ok)">${passCount} / ${checks.length}</div></div>
+    <div class="kpi"><div class="k-label">Checks Failed</div><div class="k-val ${failCount>0?'crit':''}">${failCount}</div></div>
+    <div class="kpi"><div class="k-label">Not Assessable</div><div class="k-val">${naCount}</div></div>
+    <div class="kpi"><div class="k-label">Data Date</div><div class="k-val" style="font-size:16px;">${fmtDate(dataDate)}</div></div>
+  `;
+
+  const tbody = document.getElementById('healthTableBody');
+  tbody.innerHTML='';
+  checks.forEach(c=>{
+    const tr = document.createElement('tr');
+    const label = c.status==='pass'?'PASS':c.status==='warn'?'WARNING':c.status==='fail'?'FAIL':'N/A';
+    tr.innerHTML = `<td class="mono">${c.n}</td><td>${c.name}</td><td class="mono">${c.value}</td><td class="mono" style="color:var(--muted);">${c.threshold}</td><td><span class="status-pill ${c.status}">${label}</span></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// ---------- 3-Week Look-ahead Generator ----------
+function renderLookahead(){
+  if(!currData) return;
+  const weeks = parseInt(document.getElementById('lookaheadWindow').value || '3');
+  const dataDate = parseDate(currData.header.date);
+  const windowEnd = addWorkdays(dataDate, weeks*5); // approx calendar window via workdays
+  const cpm = window._currentCPM || runCPM(currData.tasks, parseDate(currData.project.plan_start_date));
+  const byCode = cpm.byCode;
+
+  const rows = currData.tasks.filter(t=>{
+    const es = parseDate(t.early_start_date), ef = parseDate(t.early_end_date);
+    if(!es || !ef) return false;
+    const isActiveNow = t.status_code==='TK_Active';
+    const startsInWindow = es >= dataDate && es <= windowEnd;
+    return isActiveNow || startsInWindow;
+  }).map(t=>{
+    const es = parseDate(t.early_start_date), ef = parseDate(t.early_end_date);
+    const predsIncomplete = t.pred_codes.filter(p=>{
+      const pt = currData.tasks.find(x=>x.task_code===p);
+      return pt && pt.status_code!=='TK_Complete';
+    });
+    return { code:t.task_code, name:t.task_name, wbs:t.wbs_name, es, ef, dur:t.dur_days,
+      float: cpm.TF[t.task_code], predsIncomplete };
+  }).sort((a,b)=> a.es - b.es);
+
+  const tbody = document.getElementById('lookaheadTableBody');
+  tbody.innerHTML='';
+  if(rows.length===0){
+    tbody.innerHTML = '<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:20px;">No activities start or are active within this window.</td></tr>';
+    return;
+  }
+  rows.forEach(r=>{
+    const tr = document.createElement('tr');
+    if(r.float<=0) tr.classList.add('crit-row'); else if(r.float<=5) tr.classList.add('warn-row');
+    const logic = r.predsIncomplete.length>0
+      ? `<span class="logic-risk">${r.predsIncomplete.join(', ')} not yet complete</span>`
+      : `<span class="logic-ok">Clear</span>`;
+    tr.innerHTML = `
+      <td class="mono">${fmtDate(r.es)}</td>
+      <td><div class="act-code">${r.code}</div><div class="act-name">${r.name}</div></td>
+      <td class="mono">${r.wbs}</td>
+      <td class="mono">${r.dur}d</td>
+      <td class="mono">${fmtDate(r.ef)}</td>
+      <td class="mono">${r.float}d</td>
+      <td>${logic}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// ---------- Critical Path Timeline (Gantt) ----------
+function renderTimeline(){
+  const projectStart = parseDate(currData.project.plan_start_date);
+  const cpm = window._currentCPM || runCPM(currData.tasks, projectStart);
+  const byCode = cpm.byCode;
+  const rows = cpm.order.map(code=>({
+    code, name: byCode[code].task_name, wbs: byCode[code].wbs_name,
+    es: cpm.ES[code], ef: cpm.EF[code], tf: cpm.TF[code]
+  })).sort((a,b)=> a.es - b.es);
+
+  const rowH = 22, padTop=30, padLeft=230, padRight=20, chartW=750;
+  const minDate = rows.reduce((m,r)=> !m||r.es<m?r.es:m, null);
+  const maxDate = rows.reduce((m,r)=> !m||r.ef>m?r.ef:m, null);
+  const totalSpanMs = maxDate - minDate || 1;
+  const h = padTop + rows.length*rowH + 20;
+  const w = padLeft + chartW + padRight;
+  const xScale = d => padLeft + ((d-minDate)/totalSpanMs)*chartW;
+
+  let svg = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}">`;
+  // month gridlines (approx, every 30 days)
+  let gridDate = new Date(minDate);
+  while(gridDate <= maxDate){
+    const x = xScale(gridDate);
+    svg += `<line x1="${x}" y1="${padTop-10}" x2="${x}" y2="${h-10}" stroke="#22262E" stroke-width="1"/>`;
+    svg += `<text x="${x}" y="${padTop-16}" fill="#5D6472" font-size="9" text-anchor="middle">${gridDate.toLocaleDateString('en-AU',{month:'short',year:'2-digit',timeZone:'UTC'})}</text>`;
+    gridDate = new Date(gridDate); gridDate.setUTCDate(gridDate.getUTCDate()+30);
+  }
+  rows.forEach((r,i)=>{
+    const y = padTop + i*rowH;
+    svg += `<text x="4" y="${y+13}" fill="#8A93A3" font-size="10" class="tl-row-label">${r.code}</text>`;
+    const label = r.name.length>26 ? r.name.slice(0,25)+'\u2026' : r.name;
+    svg += `<text x="70" y="${y+13}" fill="#B8BEC9" font-size="10" class="tl-row-label">${label}</text>`;
+    const x1 = xScale(r.es), x2 = xScale(r.ef);
+    const barColor = r.tf<=0 ? '#E5484D' : (r.tf<=5 ? '#F2A93C' : '#5B8CFF');
+    svg += `<rect x="${x1}" y="${y+3}" width="${Math.max(x2-x1,2)}" height="${rowH-8}" fill="${barColor}" rx="1.5"/>`;
+  });
+  svg += `</svg>`;
+  document.getElementById('timelineSvgWrap').innerHTML = svg;
+}
+
+// ---------- Crashing Workbench ----------
+function populateCrashWorkbench(){
+  const projectStart = parseDate(currData.project.plan_start_date);
+  const cpm = runCPM(currData.tasks, projectStart);
+  window._currentCPM = cpm;
+  window._projectStart = projectStart;
+  const byCode = cpm.byCode;
+  const rows = cpm.order.map(code=>({
+    code, tf: cpm.TF[code], dur: byCode[code].dur_days,
+    name: byCode[code].task_name, wbs: byCode[code].wbs_name
+  })).filter(r=> r.tf <= 10).sort((a,b)=> a.tf - b.tf);
+
+  const demoDefaults = { A2050:{max:3,cost:4200}, A2070:{max:4,cost:3100}, A3000:{max:2,cost:5000}, A3020:{max:5,cost:6500}, A3040:{max:5,cost:8800}, A3050:{max:5,cost:8800} };
+  const tbody = document.getElementById('crashInputBody');
+  tbody.innerHTML='';
+  rows.forEach(r=>{
+    const tr = document.createElement('tr');
+    if(r.tf<=0) tr.classList.add('crit-row');
+    const dv = window._isDemo && demoDefaults[r.code] ? demoDefaults[r.code] : null;
+    tr.innerHTML = `
+      <td><div class="act-code">${r.code}</div><div class="act-name">${r.name}</div></td>
+      <td class="mono">${r.wbs}</td>
+      <td class="mono">${r.dur}d</td>
+      <td class="mono">${r.tf<=0 ? '<span class="crit-tag">0 (critical)</span>' : r.tf+'d'}</td>
+      <td><input type="number" min="0" max="${Math.max(r.dur-1,0)}" id="maxcrash-${r.code}" value="${dv?dv.max:''}" placeholder="0"></td>
+      <td><input type="number" min="0" id="costday-${r.code}" value="${dv?dv.cost:''}" placeholder="$"></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function runCrashAnalysis(){
+  const cpm = window._currentCPM, projectStart = window._projectStart;
+  const crashParams = {};
+  cpm.order.forEach(code=>{
+    const maxEl = document.getElementById('maxcrash-'+code);
+    const costEl = document.getElementById('costday-'+code);
+    if(maxEl && costEl){
+      const max = parseFloat(maxEl.value), cost = parseFloat(costEl.value);
+      if(max>0 && cost>=0 && !isNaN(max) && !isNaN(cost)) crashParams[code] = {maxCrash:max, costPerDay:cost};
+    }
+  });
+  const target = parseFloat(document.getElementById('targetRecovery').value) || 0;
+  if(Object.keys(crashParams).length===0){ alert("Enter max crash days and cost/day for at least one activity."); return; }
+  if(target<=0){ alert("Enter a target recovery greater than 0 working days."); return; }
+  const result = crashProject(currData.tasks, projectStart, crashParams, target);
+  window._lastCrashResult = { target, ...result };
+  renderCrashResults(result, target);
+}
+
+function renderCrashResults(result, target){
+  document.getElementById('crashResults').style.display='block';
+  const kpis = document.getElementById('crashKpis');
+  const shortfallNote = result.targetReached ? '' : `<div class="kpi"><div class="k-label">Status</div><div class="k-val warn" style="font-size:14px;">Target not fully reachable with entered inputs</div></div>`;
+  kpis.innerHTML = `
+    <div class="kpi"><div class="k-label">Target Recovery</div><div class="k-val">${target} wd</div></div>
+    <div class="kpi"><div class="k-label">Recovered</div><div class="k-val ${result.targetReached?'':'warn'}">${result.recovered} wd</div></div>
+    <div class="kpi"><div class="k-label">Total Crash Cost</div><div class="k-val">$${result.totalCost.toLocaleString()}</div></div>
+    <div class="kpi"><div class="k-label">New Finish</div><div class="k-val">${fmtDate(result.finalFinish)}</div></div>
+  `;
+  document.getElementById('crashKpis').insertAdjacentHTML('afterend', shortfallNote ? '' : '');
+  renderCrashChart(result);
+  const tbody = document.getElementById('crashLogBody');
+  tbody.innerHTML='';
+  result.log.forEach(l=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td class="mono">${l.day}</td><td>${l.activity}</td><td class="mono">$${l.costToday.toLocaleString()}</td><td class="mono">$${l.cumulativeCost.toLocaleString()}</td><td class="mono">${fmtDate(l.newFinish)}</td><td class="mono">${l.recoveredSoFar}d</td>`;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('crashResults').scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function renderCrashChart(result){
+  const w=1000,h=220,padL=75,padB=32,padT=15,padR=15;
+  const steps = result.log;
+  const el = document.getElementById('crashChartSvg');
+  if(steps.length===0){ el.innerHTML = '<p style="color:var(--muted);font-size:13px;">No crash steps executed &mdash; check activity inputs above.</p>'; return; }
+  const maxCost = steps[steps.length-1].cumulativeCost || 1;
+  const maxRecovered = steps[steps.length-1].recoveredSoFar || 1;
+  const xScale = r => padL + (r/maxRecovered)*(w-padL-padR);
+  const yScale = c => (h-padB) - (c/maxCost)*(h-padB-padT);
+
+  let pts = [[0,0]];
+  steps.forEach(s=> pts.push([s.recoveredSoFar, s.cumulativeCost]));
+  let d = `M ${xScale(pts[0][0])} ${yScale(pts[0][1])}`;
+  for(let i=1;i<pts.length;i++){
+    d += ` L ${xScale(pts[i][0])} ${yScale(pts[i-1][1])} L ${xScale(pts[i][0])} ${yScale(pts[i][1])}`;
+  }
+  let svg = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}">`;
+  svg += `<line x1="${padL}" y1="${padT}" x2="${padL}" y2="${h-padB}" stroke="#2A2F38"/>`;
+  svg += `<line x1="${padL}" y1="${h-padB}" x2="${w-padR}" y2="${h-padB}" stroke="#2A2F38"/>`;
+  svg += `<text x="${padL-10}" y="${padT+4}" fill="#8A93A3" font-size="10" text-anchor="end">$${maxCost.toLocaleString()}</text>`;
+  svg += `<text x="${padL-10}" y="${h-padB+4}" fill="#8A93A3" font-size="10" text-anchor="end">$0</text>`;
+  svg += `<text x="${w-padR}" y="${h-padB+20}" fill="#8A93A3" font-size="10" text-anchor="end">${maxRecovered}d recovered</text>`;
+  svg += `<text x="${padL}" y="${h-padB+20}" fill="#8A93A3" font-size="10" text-anchor="start">0d</text>`;
+  svg += `<path d="${d}" fill="none" stroke="#5B8CFF" stroke-width="2"/>`;
+  steps.forEach(s=> svg += `<circle cx="${xScale(s.recoveredSoFar)}" cy="${yScale(s.cumulativeCost)}" r="3" fill="#5B8CFF"/>`);
+  svg += `</svg>`;
+  el.innerHTML = svg;
+}
+
+// ---------- Narrative generation via Claude API ----------
+async function generateNarrative(){
+  const btn = document.getElementById('genReportBtn');
+  const reportBody = document.getElementById('reportBody');
+  reportBody.innerHTML = `<div class="loading-line"><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;Drafting progress narrative from schedule variance and notebook entries&hellip;</div>`;
+
+  const diff = lastDiff;
+  const slipped = diff.rows.filter(r=>r.variance>0);
+  const withNotes = diff.rows.filter(r=>r.notes.length>0);
+  const criticalNow = diff.rows.filter(r=>r.flag!=='ok');
+
+  const payload = {
+    project: diff.projName,
+    prev_data_date: prevData.header.date,
+    curr_data_date: currData.header.date,
+    prior_finish: fmtDate(diff.prevFinish),
+    current_finish: fmtDate(diff.currFinish),
+    net_slip_working_days: diff.netSlip,
+    activities_with_delay_notes: withNotes.map(r=>({ activity: r.code+' - '+r.name, variance_days: r.variance, notebook_entries: r.notes })),
+    slipped_activities: slipped.map(r=>({ activity:r.code+' - '+r.name, wbs:r.wbs, variance_days:r.variance, prior_float_days:r.pFloat, current_float_days:r.cFloat })),
+    newly_critical_or_near_critical: criticalNow.map(r=>({ activity:r.code+' - '+r.name, current_float_days:r.cFloat, flag:r.flag })),
+    crash_analysis: window._lastCrashResult ? {
+      target_recovery_days: window._lastCrashResult.target,
+      recovered_days: window._lastCrashResult.recovered,
+      target_fully_reached: window._lastCrashResult.targetReached,
+      total_crash_cost_aud: window._lastCrashResult.totalCost,
+      new_finish_after_crashing: fmtDate(window._lastCrashResult.finalFinish),
+      activities_crashed: Object.entries(window._lastCrashResult.crashedSoFar).filter(([,d])=>d>0).map(([code,d])=>({activity:code, days_crashed:d}))
+    } : null
+  };
+
+  const systemPrompt = `You are drafting a fortnightly schedule progress report narrative for a planning engineer on an Australian civil infrastructure project (station box / TBM works). Write in a professional, factual, restrained tone matching how an experienced planning engineer writes for a client progress report - no hype, no filler, precise numbers and dates. Structure your response as clean HTML using only these tags: <h3> <p> <ul> <li> <strong> - no other tags, no markdown, no code fences. Sections, in order: "Executive Summary" (2-3 sentences on net program movement), "Key Variances & Root Causes" (bullet list, only using facts from the notebook_entries provided - do not invent causes for activities with no notebook entry, instead note the variance is under investigation), "Critical Path Impact" (which activities are now critical/near-critical and what that means for the finish date), "Recovery Options" (only include this section if crash_analysis is not null in the data - summarise the recovery achieved, cost, and which activities were compressed, framed as an option for client discussion, not a commitment), "Recommended Actions" (bullet list, practical next steps a planning engineer would actually take, including flagging EOT entitlement only where the data explicitly supports a principal-caused or unforeseen risk event). Do not fabricate any facts, dates, or numbers beyond what is given in the JSON. If data for a section is sparse, say so briefly rather than padding.`;
+
+  try{
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1400,
+        system: systemPrompt,
+        messages: [{ role:"user", content: "Here is the schedule variance data:\n\n" + JSON.stringify(payload, null, 2) }]
+      })
+    });
+    const data = await response.json();
+    const textBlock = (data.content||[]).find(c=>c.type==='text');
+    let html = textBlock ? textBlock.text : '<p>No response generated.</p>';
+    html = html.replace(/```html|```/g,'').trim();
+    reportBody.innerHTML = html;
+    document.getElementById('reportActions').style.display='flex';
+  }catch(err){
+    reportBody.innerHTML = `<p style="color:var(--crit)">Could not generate narrative: ${err.message}. You can retry.</p><button class="primary" onclick="generateNarrative()">Retry</button>`;
+  }
+}
+
+function copyReport(){
+  const text = document.getElementById('reportBody').innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn = document.querySelector('#reportActions button');
+    const orig = btn.textContent;
+    btn.textContent = 'Copied';
+    setTimeout(()=> btn.textContent = orig, 1400);
+  });
+}
+</script>
+</body>
+</html>
