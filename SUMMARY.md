@@ -136,18 +136,11 @@ Full detail lives in [PROGRESS.md](PROGRESS.md). Status as of this summary:
    activity-code-mismatch handling before Phase 4 starts at all.
 3. **Phase 5 risk assessment** — needs to happen (and be shown to you)
    before the resource-loading UI gets built.
-4. **Meeting Actions tool** — you referenced this multiple times (privacy
-   notice draft, "AI features" list) as if it already existed. It does not
-   exist anywhere in this repo or its git history — confirmed by search each
-   time it came up. Not built. If you still want it, it needs to be
-   explicitly requested as new work (same shape as Narrative/Full Report:
-   full UI + prompt logic, but shows the same shared "not wired up" message
-   until a backend exists).
-5. **Supabase accounts / saved projects** — same situation as Meeting
-   Actions: referenced as if it exists (privacy notice draft mentioned
-   "saved projects (if signed in)"), confirmed not to exist anywhere in this
-   project. The privacy notice was deliberately written to describe only
-   what's real today rather than include this.
+4. **Meeting Actions tool** — not built. If wanted, it would follow the same
+   shape as Narrative/Full Report: full UI and prompt logic, but showing
+   the same shared "not wired up yet" message until a backend exists.
+5. **Supabase accounts / saved projects** — not built. The privacy notice
+   describes only what's real today.
 
 ## Notes on how this session worked
 
