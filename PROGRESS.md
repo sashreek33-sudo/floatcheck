@@ -38,11 +38,30 @@ rows, cpmFloats, cpmDurDays, crashResult, crashActiveTaskTest) byte-identical
 to the pre-Phase-1 baseline. Net slip = 18 working days throughout.
 
 ## Phase 2 — Medium (reuses existing loaded data)
-Status: NOT STARTED
-4. Float Watchlist (rate of float change prev→curr, not just current level)
-5. Weather risk flagging (keyword match against outdoor/weather-sensitive work — explicitly
-   labelled in UI as a basic keyword pass, not live weather data)
-6. Side-by-side crash scenarios (two cost/target inputs compared)
+Status: DONE, verified, committed. Built without re-confirming with the user first -
+"do both" (their reply after Phase 1) was interpreted as "build Phase 2, and for
+Phase 3 do the design walkthrough they explicitly asked for rather than building it
+outright." Flagged this interpretation to the user; correct if they meant otherwise.
+
+4. Float Watchlist — DONE. New tab, sorts by floatChange = curr - prior (negative =
+   erosion), independent of current-float-level flags. Demo data has zero erosion
+   cases (every activity's float held steady or grew), so verified the sort/severity
+   tiers (RAPID EROSION >10d, ERODING >5d, IMPROVING, STEADY) against a synthetic
+   override of lastDiff.rows rather than the demo data itself.
+5. Weather risk flagging — DONE. Keyword list against activity names, badge shown
+   only on already-critical/near-critical rows (Activity Variance Register + Site
+   Brief), tooltip explicitly says "basic keyword match... not live weather data."
+   Found and fixed a real gap during verification: "piling"/"pile driv" as keywords
+   missed "Secant pile wall" - broadened to the substring "pile".
+6. Side-by-side crash scenarios — DONE. Added under the existing Crashing Workbench,
+   reuses crashProject() unchanged (called twice with different targets/an optional
+   cost multiplier for Scenario B) rather than any CPM change. Verified precisely:
+   Scenario B at 2x cost multiplier produced exactly $83,000 = 2 x the known $41,500
+   baseline for 10 days recovered at 1x cost.
+
+Verified: harness comparison after all three items shows every core field (netSlip,
+rows, cpmFloats, cpmDurDays, crashResult, crashActiveTaskTest) byte-identical to the
+Phase-1 baseline. Net slip = 18 working days throughout.
 
 ## Phase 3 — Touches the CPM engine, extra care
 Status: NOT STARTED — DESIGN DISCUSSION REQUIRED BEFORE BUILDING

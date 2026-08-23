@@ -201,6 +201,7 @@
   .flag.warn{color:var(--warn);}
   .flag.ok{color:var(--ok);}
   .note-badge{display:inline-block;font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--accent);border:1px solid var(--accent);padding:1px 5px;margin-top:5px;cursor:help;}
+  .weather-badge{display:inline-block;font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--accent);border:1px solid var(--accent);padding:1px 5px;margin-top:5px;margin-left:5px;cursor:help;}
   .var-pos{color:var(--crit);font-weight:600;}
   .var-zero{color:var(--muted2);}
 
@@ -242,6 +243,14 @@
   .crash-panel table{margin-bottom:16px;}
   .crash-panel input[type=number]{background:var(--panel-raised);border:1px solid var(--line);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:13px;padding:5px 8px;border-radius:0;width:90px;}
   .crash-panel input[type=number]:focus{outline:none;border-color:var(--accent);}
+  .scenario-compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;}
+  .scenario-col{border:1px solid var(--line);padding:16px 18px;background:var(--panel-raised);}
+  .scenario-col-label{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;letter-spacing:0.3px;text-transform:uppercase;color:var(--accent);margin-bottom:12px;}
+  .scenario-stat{display:flex;justify-content:space-between;gap:10px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);padding:5px 0;border-bottom:1px solid var(--line);}
+  .scenario-stat span:last-child{color:var(--text);font-weight:600;}
+  .scenario-stat span.warn{color:var(--warn);}
+  .scenario-note{font-size:11px;color:var(--muted2);margin-top:8px;}
+  .scenario-activities{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);line-height:1.6;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);}
   .crash-controls{display:flex;align-items:center;gap:16px;padding-top:6px;border-top:1px solid var(--line);flex-wrap:wrap;}
   .crash-target-label{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);display:flex;align-items:center;gap:8px;letter-spacing:0.5px;text-transform:uppercase;}
   .crash-target-label input{width:70px;}
@@ -438,6 +447,7 @@
       <button class="tab-btn" data-tab="timeline" onclick="switchTab('timeline')">Critical Path Timeline</button>
       <button class="tab-btn" data-tab="report" onclick="switchTab('report')">Full Report</button>
       <button class="tab-btn" data-tab="brief" onclick="switchTab('brief')">Site Brief</button>
+      <button class="tab-btn" data-tab="watchlist" onclick="switchTab('watchlist')">Float Watchlist</button>
     </div>
 
     <div class="tab-panel" id="tab-comparison">
@@ -496,6 +506,22 @@
         </table>
         <div class="disclaimer">Greedy least-cost heuristic: crashes the cheapest currently-critical activity one day at a time and re-derives the critical path each step. Correct for a single dominant critical path; where parallel near-critical paths exist, a full LP-based multi-path optimisation may find a lower-cost combination &mdash; treat this as a strong first-pass estimate, not a contractual figure.</div>
       </div>
+
+      <div class="section-title" style="margin-top:22px;">Compare Two Scenarios</div>
+      <p class="crash-intro">Uses the same cost/max-crash assumptions entered above, run against two different targets &mdash; and, optionally, a cost multiplier for Scenario B (e.g. 1.5&times; to model overtime/expedite rates), so you're not stuck seeing only one result at a time.</p>
+      <div class="crash-controls">
+        <label class="crash-target-label">Scenario A target (wd)
+          <input type="number" id="scenarioATarget" min="1" value="10">
+        </label>
+        <label class="crash-target-label">Scenario B target (wd)
+          <input type="number" id="scenarioBTarget" min="1" value="18">
+        </label>
+        <label class="crash-target-label">Scenario B cost &times;
+          <input type="number" id="scenarioBMultiplier" min="0.1" step="0.1" value="1.5">
+        </label>
+        <button class="primary" onclick="runScenarioComparison()">Compare Scenarios</button>
+      </div>
+      <div id="scenarioResults" style="display:none;"></div>
     </div>
 
     <div class="report-panel">
@@ -578,7 +604,7 @@
     <div class="tab-panel" id="tab-brief" style="display:none;">
       <div class="brief-intro">
         <div class="section-title">Site Meeting Brief</div>
-        <p class="crash-intro">One printable page for the next site meeting: what's newly critical, and what's starting or already running in the next three weeks. Weather risk flagging isn't built yet, so it isn't included here.</p>
+        <p class="crash-intro">One printable page for the next site meeting: what's newly critical, and what's starting or already running in the next three weeks. Weather-sensitive activities are flagged by simple keyword matching against activity names &mdash; a basic first pass, not live weather data.</p>
         <div class="table-actions"><button onclick="printCurrentTab()">Print this brief</button></div>
       </div>
 
@@ -594,6 +620,15 @@
       <table>
         <thead><tr><th>Start</th><th>Activity</th><th>Duration</th><th>Finish</th><th>Float</th><th>Predecessor Status</th></tr></thead>
         <tbody id="briefLookaheadBody"></tbody>
+      </table>
+    </div>
+
+    <div class="tab-panel" id="tab-watchlist" style="display:none;">
+      <div class="section-title">Float Watchlist</div>
+      <p class="crash-intro">Sorted by how fast float is disappearing between updates, not by where it sits today &mdash; an activity that dropped from 20 days float to 8 is a bigger near-term worry right now than one that's simply sat at 8 days both updates, even though a current-float-only view treats them the same.</p>
+      <table>
+        <thead><tr><th>Activity</th><th>WBS</th><th>Prior TF</th><th>Curr. TF</th><th>&Delta; Float</th><th>Trend</th></tr></thead>
+        <tbody id="watchlistTableBody"></tbody>
       </table>
     </div>
   </div>
@@ -982,6 +1017,19 @@ let prevData=null, currData=null;
 // tab once analysis completes; "crash" isn't a tab of its own (the Crashing
 // Workbench lives inside Update Comparison), so it also gets a scroll target.
 const TOOL_LABELS = { comparison:'Update Comparison', health:'Schedule Health Check', lookahead:'3-Week Look-ahead', crash:'Crashing Workbench', timeline:'Critical Path Timeline' };
+
+// Weather risk flagging: deliberately simple keyword matching against activity
+// names, not a weather API - flagged as a "basic first pass" everywhere it
+// surfaces (see the badge's title tooltip and the Site Brief intro).
+const WEATHER_SENSITIVE_KEYWORDS = [
+  'excavat','earthwork','concrete','pour','pile','roofing','roof',
+  'paving','asphalt','drainage','embankment','backfill','waterproof','crane',
+  'scaffold','landscap','road work','formwork','steel erection','external clad'
+];
+function isWeatherSensitive(name){
+  const n = (name||'').toLowerCase();
+  return WEATHER_SENSITIVE_KEYWORDS.some(k=> n.includes(k));
+}
 const TOOL_TAB_MAP = { comparison:'comparison', health:'health', lookahead:'lookahead', crash:'comparison', timeline:'timeline' };
 
 function enterApp(toolKey){
@@ -1166,6 +1214,7 @@ function renderResults(diff){
   renderLookahead();
   renderTimeline();
   renderSiteBrief();
+  renderFloatWatchlist();
 
   document.getElementById('results').style.display='block';
   document.getElementById('watermark').style.display='flex'; // matches .watermark's own flex centering; report output is visible now, so this is where the draft watermark belongs
@@ -1254,7 +1303,7 @@ function renderTable(diff){
       const flagLabel = r.flag==='crit' ? 'CRITICAL' : r.flag==='warn' ? 'NEAR-CRIT' : 'STABLE';
       const varText = r.variance===0 ? '<span class="var-zero">0d</span>' : (r.variance>0 ? `<span class="var-pos">+${r.variance}d</span>` : `<span style="color:var(--ok)">${r.variance}d</span>`);
       tr.innerHTML = `
-        <td class="act-cell"><div class="act-code">${r.code}</div><div class="act-name">${r.name}</div>${r.notes.length ? '<div class="note-badge" title="'+r.notes.join(' | ').replace(/"/g,'&quot;')+'">NOTEBOOK ENTRY</div>' : ''}</td>
+        <td class="act-cell"><div class="act-code">${r.code}</div><div class="act-name">${r.name}</div>${r.notes.length ? '<div class="note-badge" title="'+r.notes.join(' | ').replace(/"/g,'&quot;')+'">NOTEBOOK ENTRY</div>' : ''}${(r.flag!=='ok' && isWeatherSensitive(r.name)) ? '<div class="weather-badge" title="Basic keyword match against outdoor/weather-sensitive work - not live weather data.">WEATHER-SENSITIVE</div>' : ''}</td>
         <td class="mono">${fmtDate(r.pEnd)}</td>
         <td class="mono">${fmtDate(r.cEnd)}</td>
         <td class="mono">${varText}</td>
@@ -1450,7 +1499,7 @@ function renderSiteBrief(){
     critBody.innerHTML = criticalNow.map(r=>{
       const flagLabel = r.flag==='crit' ? 'CRITICAL' : 'NEAR-CRIT';
       return `<tr class="${r.flag==='crit'?'crit-row':'warn-row'}">
-        <td class="act-cell"><div class="act-code">${r.code}</div><div class="act-name">${r.name}</div></td>
+        <td class="act-cell"><div class="act-code">${r.code}</div><div class="act-name">${r.name}</div>${isWeatherSensitive(r.name) ? '<div class="weather-badge" title="Basic keyword match against outdoor/weather-sensitive work - not live weather data.">WEATHER-SENSITIVE</div>' : ''}</td>
         <td class="mono">${r.wbs}</td>
         <td class="mono">${fmtDate(r.cEnd)}</td>
         <td class="mono">${r.cFloat}d</td>
@@ -1479,6 +1528,33 @@ function renderSiteBrief(){
       </tr>`;
     }).join('');
   }
+}
+
+// ---------- Float Watchlist ----------
+// floatChange = curr - prior (negative = float eroded, positive = float grew),
+// matching the same sign convention as the variance figures elsewhere. Sorted
+// by rate of erosion, not current float level - that's the whole point.
+function renderFloatWatchlist(){
+  const rows = lastDiff.rows.map(r=> ({...r, floatChange: r.cFloat - r.pFloat}))
+    .sort((a,b)=> a.floatChange - b.floatChange);
+
+  const tbody = document.getElementById('watchlistTableBody');
+  tbody.innerHTML = rows.map(r=>{
+    const erosion = -r.floatChange; // positive = days of float lost
+    let cls = '', label = 'STEADY', flagClass = 'ok';
+    if(erosion > 10){ cls='crit-row'; label='RAPID EROSION'; flagClass='crit'; }
+    else if(erosion > 5){ cls='warn-row'; label='ERODING'; flagClass='warn'; }
+    else if(erosion < 0){ label='IMPROVING'; flagClass='ok'; }
+    const changeText = r.floatChange===0 ? '0d' : (r.floatChange>0 ? `+${r.floatChange}d` : `${r.floatChange}d`);
+    return `<tr class="${cls}">
+      <td class="act-cell"><div class="act-code">${r.code}</div><div class="act-name">${r.name}</div></td>
+      <td class="mono">${r.wbs}</td>
+      <td class="mono">${r.pFloat}d</td>
+      <td class="mono">${r.cFloat}d</td>
+      <td class="mono">${changeText}</td>
+      <td><span class="flag ${flagClass}">${label}</span></td>
+    </tr>`;
+  }).join('');
 }
 
 // ---------- Critical Path Timeline (Gantt) ----------
@@ -1555,8 +1631,9 @@ function populateCrashWorkbench(){
   });
 }
 
-function runCrashAnalysis(){
-  const cpm = window._currentCPM, projectStart = window._projectStart;
+// Shared by runCrashAnalysis() and runScenarioComparison() - both read the
+// same per-activity cost/max-crash inputs from the crash-input table.
+function gatherCrashParams(cpm){
   const crashParams = {};
   cpm.order.forEach(code=>{
     const maxEl = document.getElementById('maxcrash-'+code);
@@ -1566,12 +1643,66 @@ function runCrashAnalysis(){
       if(max>0 && cost>=0 && !isNaN(max) && !isNaN(cost)) crashParams[code] = {maxCrash:max, costPerDay:cost};
     }
   });
+  return crashParams;
+}
+
+function runCrashAnalysis(){
+  const cpm = window._currentCPM, projectStart = window._projectStart;
+  const crashParams = gatherCrashParams(cpm);
   const target = parseFloat(document.getElementById('targetRecovery').value) || 0;
   if(Object.keys(crashParams).length===0){ alert("Enter max crash days and cost/day for at least one activity."); return; }
   if(target<=0){ alert("Enter a target recovery greater than 0 working days."); return; }
   const result = crashProject(currData.tasks, projectStart, crashParams, target);
   window._lastCrashResult = { target, ...result };
   renderCrashResults(result, target);
+}
+
+// ---------- Side-by-side crash scenarios ----------
+// Both scenarios run against the same underlying schedule/CPM via
+// crashProject() - unmodified, called twice with different inputs. Scenario B
+// applies an optional cost multiplier so "different cost/target inputs" is
+// possible without a second full cost-input table to keep in sync.
+function runScenarioComparison(){
+  const cpm = window._currentCPM, projectStart = window._projectStart;
+  const baseParams = gatherCrashParams(cpm);
+  if(Object.keys(baseParams).length===0){ alert("Enter max crash days and cost/day for at least one activity."); return; }
+
+  const targetA = parseFloat(document.getElementById('scenarioATarget').value) || 0;
+  const targetB = parseFloat(document.getElementById('scenarioBTarget').value) || 0;
+  const multiplierB = parseFloat(document.getElementById('scenarioBMultiplier').value) || 1;
+  if(targetA<=0 || targetB<=0){ alert("Enter a target recovery greater than 0 working days for both scenarios."); return; }
+
+  const paramsB = {};
+  Object.entries(baseParams).forEach(([code,p])=>{ paramsB[code] = { maxCrash: p.maxCrash, costPerDay: p.costPerDay * multiplierB }; });
+
+  const resultA = crashProject(currData.tasks, projectStart, baseParams, targetA);
+  const resultB = crashProject(currData.tasks, projectStart, paramsB, targetB);
+  renderScenarioComparison(resultA, targetA, resultB, targetB, multiplierB);
+}
+
+function renderScenarioComparison(resultA, targetA, resultB, targetB, multiplierB){
+  const scenarioCol = (label, target, result, note) => {
+    const touched = Object.entries(result.crashedSoFar).filter(([,d])=>d>0);
+    return `
+      <div class="scenario-col">
+        <div class="scenario-col-label">${label}</div>
+        <div class="scenario-stat"><span>Target</span><span>${target} wd</span></div>
+        <div class="scenario-stat"><span>Recovered</span><span class="${result.targetReached?'':'warn'}">${result.recovered} wd${result.targetReached?'':' (target not fully reached)'}</span></div>
+        <div class="scenario-stat"><span>Total Cost</span><span>$${result.totalCost.toLocaleString()}</span></div>
+        <div class="scenario-stat"><span>New Finish</span><span>${fmtDate(result.finalFinish)}</span></div>
+        <div class="scenario-stat"><span>Activities Touched</span><span>${touched.length}</span></div>
+        ${note ? `<div class="scenario-note">${note}</div>` : ''}
+        <div class="scenario-activities">${touched.length ? touched.map(([code,d])=> `${code} (${d}d)`).join(', ') : 'No activities crashed'}</div>
+      </div>
+    `;
+  };
+  document.getElementById('scenarioResults').innerHTML = `
+    <div class="scenario-compare-grid">
+      ${scenarioCol('Scenario A', targetA, resultA, null)}
+      ${scenarioCol('Scenario B', targetB, resultB, multiplierB!==1 ? `Costs &times; ${multiplierB} vs. Scenario A` : null)}
+    </div>
+  `;
+  document.getElementById('scenarioResults').style.display = 'block';
 }
 
 function renderCrashResults(result, target){
