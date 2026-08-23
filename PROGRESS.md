@@ -64,19 +64,96 @@ rows, cpmFloats, cpmDurDays, crashResult, crashActiveTaskTest) byte-identical to
 Phase-1 baseline. Net slip = 18 working days throughout.
 
 ## Phase 3 — Touches the CPM engine, extra care
-Status: NOT STARTED — DESIGN DISCUSSION REQUIRED BEFORE BUILDING
-7. Out-of-sequence progress detection (active/complete status vs. incomplete predecessor)
-   → Must walk the user through the detection approach and get confirmation before
-     implementing, per their explicit instruction (same pattern as the lag fix).
+Status: DONE, verified.
+7. Out-of-sequence progress detection — DONE. Detection-only (no CPM date math
+   touched): for each TK_Active/TK_Complete activity, its predecessor edges are
+   checked — an FS relationship flags if the predecessor isn't TK_Complete, an
+   SS relationship flags if the predecessor is still TK_NotStart, FF/SF are
+   excluded entirely. New `getOutOfSequenceIssues(task, tasksByCode)` sits next
+   to `isWeatherSensitive()` and reuses each task's existing `pred_edges` (code/
+   lag_hr/pred_type, already built in parseXER — no new parsing). Surfaced two
+   places: an amber "OUT-OF-SEQUENCE" badge (new `.oos-badge` CSS, distinct from
+   both the copper weather-badge and the red/black CRITICAL hazard stripe) on
+   Activity Variance Register rows, with a tooltip naming the offending
+   predecessor(s) and explaining the FS/SS/FF-SF rule; and a new DCMA-style
+   check #15 ("Out-of-Sequence Progress") on the Schedule Health Check tab,
+   next to the existing 14-point checklist.
+   Verified: harness run before/after (before_phase3.json, after_phase3.json
+   in the scratchpad dir) both byte-identical to baseline_phase2.json — every
+   core field (netSlip, rows, cpmFloats, cpmDurDays, crashResult,
+   crashActiveTaskTest) unchanged, net slip still 18 working days. The demo
+   data itself has zero real out-of-sequence cases (every predecessor in both
+   XER files is PR_FS and the schedule progressed in logical order — confirmed
+   by hand-checking A2030 "Bulk excavation - Stage 1": its only predecessor,
+   A2020 "Capping beam installation", is TK_Complete in both files, so
+   correctly not flagged), so the detection logic itself was verified with a
+   synthetic in-process test (7 hand-built cases covering FS-flag, FS-clear,
+   SS-flag, SS-clear, FF-excluded, SF-excluded, and not-started-self) run
+   against the actual `getOutOfSequenceIssues` function extracted from the
+   real file — all 7 matched the confirmed design exactly.
 
 ## Phase 4 — Accepting more than 2 files
-Status: NOT STARTED — DESIGN DISCUSSION REQUIRED BEFORE BUILDING
-8. Baseline mode (3rd file upload, closes CPLI/BEI "Not assessable" gaps)
-9. Multi-update trend tracking (N files, float erosion/finish drift over time)
-   → Open design question to raise with the user before implementing: how to
-     handle an activity code that doesn't appear in every file in the series
-     (added mid-project, or dropped from scope). Propose an approach, get
-     confirmation, then build.
+Status: BUILT, not yet reviewed by user (design question below was resolved by
+explicit user instruction rather than a live back-and-forth, so flag for a
+close look before treating this as fully signed off).
+
+8. Baseline mode — DONE. Added a 3rd, optional dropzone (Baseline (.xer)) beside
+   Previous/Current. Wholly additive: `baselineData` is a new global that nothing
+   else reads, so the existing previous/current flow is untouched when it's null
+   (verified - see below). When present, `computeCPLIBEI()` runs the same `runCPM`
+   engine against the baseline file to get its own critical-path length, and
+   compares baseline-due-by-data-date activities against actual TK_Complete status
+   in the current file - wires real numbers into DCMA checks 13 (CPLI) and 14
+   (BEI), which previously always read "Not assessable". Both checks still read
+   "Not assessable - no baseline file loaded" (their prior static message,
+   unchanged) when no baseline is supplied.
+9. Multi-update trend tracking — DONE. New "Update Trend" tab, wholly separate
+   from the 2-file prevData/currData/lastDiff pipeline (its own N-file upload
+   widget, own state array `trendSeries`, own render functions) so it can't
+   affect the existing comparison flow. Files are parsed with the unmodified
+   `parseXER`, then auto-sorted by each file's own ERMHDR data date (no manual
+   ordering required). `computeTrendRows()` unions every activity code seen
+   across the whole series and walks each one's presence array to find its
+   first/last appearance.
+   → Design question resolution: per the user's instruction accompanying this
+     task, activities that don't appear in every update are flagged explicitly
+     - "ADDED @ UPDATE n" (first index > 0) or "DROPPED AFTER UPDATE n" (last
+     index < series length - 1) - shown as a badge on the activity row, not
+     silently dropped and not shown as a blank gap. Table sorts by total float
+     change (first appearance to last), reusing the Float Watchlist's severity
+     tiers (RAPID EROSION / ERODING / IMPROVING / STEADY) and row-highlight
+     convention for consistency.
+
+Verification done (documented in full in the session's final report):
+- Real headless-browser check (Load Demo + Run Variance Analysis, no baseline
+  file supplied): Net Slip still reads +18 wd, matching SUMMARY.md's documented
+  baseline for this repo, confirming the no-baseline/2-file path is unchanged.
+- Real headless-browser check with a hand-built synthetic baseline XER (reusing
+  the demo project's task/calendar structure, dated earlier, all TK_NotStart):
+  CPLI computed 1.00, BEI computed 0.86 (6/7 baseline-due activities complete) -
+  both now numeric instead of "Not assessable", and correctly revert to "Not
+  assessable - no baseline file loaded" when baselineData is cleared.
+- Real headless-browser check of the Update Trend tab with a 3-file synthetic
+  series (minimal 2-3 activity XERs built inline): file list, KPI counts,
+  ADDED/DROPPED badges, float-by-update series text, and severity sort all
+  rendered correctly with no console errors.
+- Node-level check (vm-sandboxed execution of the actual unmodified script
+  extracted from floatcheck.html, not a reimplementation): ran `computeTrendRows`
+  against three hand-built synthetic XERs derived from the repo's own demo files
+  (one with an activity dropped from the baseline, one with an activity dropped
+  from "current") - confirmed added/dropped flags, first/last-seen indices, and
+  per-activity float-by-update points all come out correct.
+- Limitation: this repo ships only two real demo XER files
+  (update_2026-06-01_previous.xer, update_2026-06-15_current.xer). No real
+  third/Nth-file XER existed to test against, so the baseline and trend
+  scenarios above use hand-built synthetic files derived from the real demo
+  data's structure (same task codes/calendar/WBS, edited durations/dates/
+  statuses) rather than genuine additional P6 exports. The CPLI/BEI formulas
+  themselves (a simplified DCMA-style CPLI using the current run's worst total
+  float, and a straightforward planned-vs-actual-complete BEI) are a reasonable
+  read of the standard definitions but haven't been checked against a real
+  contractor's baseline file or cross-checked with P6's own CPLI/BEI output -
+  worth a second look before relying on the exact numbers in a live claim.
 
 ## Phase 5 — New parsing capability
 Status: NOT STARTED — RISK ASSESSMENT REQUIRED BEFORE FULL COMMIT TO UI

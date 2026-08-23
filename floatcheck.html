@@ -22,6 +22,22 @@
     --crit-bg:rgba(209,84,76,0.12); --warn-bg:rgba(214,162,60,0.12); --ok-bg:rgba(111,162,133,0.12);
   }
   *{box-sizing:border-box;}
+
+  /* Motion & polish pass: every animation/transition added below is subtle
+     and purposeful (engineering-drawing draw-ins, gentle fades, a restrained
+     CRITICAL pulse) - this single rule is the safety net that satisfies
+     prefers-reduced-motion for all of them at once, rather than gating each
+     rule individually. Anything with a real end-state (opacity/transform/
+     stroke-dashoffset) still lands at its final value, just effectively
+     instantly - nothing gets stuck mid-animation. */
+  @media (prefers-reduced-motion: reduce){
+    *, *::before, *::after{
+      animation-duration:0.001ms !important;
+      animation-iteration-count:1 !important;
+      transition-duration:0.001ms !important;
+      scroll-behavior:auto !important;
+    }
+  }
   body{
     margin:0;background-color:var(--bg);color:var(--text);
     font-family:'IBM Plex Sans',sans-serif;-webkit-font-smoothing:antialiased;
@@ -92,9 +108,10 @@
   .wrap{position:relative;z-index:1;}
 
   /* Upload row */
-  .uploads{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;}
-  .dropzone{border:1px dashed var(--line);padding:22px 16px;text-align:center;cursor:pointer;transition:border-color .15s, background .15s;position:relative;background:var(--panel);}
-  .dropzone:hover{border-color:var(--accent);background:var(--panel-raised);}
+  .uploads{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px;}
+  @media (max-width:760px){ .uploads{grid-template-columns:1fr;} }
+  .dropzone{border:1px dashed var(--line);padding:22px 16px;text-align:center;cursor:pointer;transition:border-color .15s, background .15s, transform .15s ease;position:relative;background:var(--panel);}
+  .dropzone:hover{border-color:var(--accent);background:var(--panel-raised);transform:translateY(-2px);}
   .dropzone.filled{border-style:solid;border-color:var(--ok);background:var(--ok-bg);}
   .dz-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:8px;}
   .dz-file{font-size:13px;color:var(--text);word-break:break-all;}
@@ -104,11 +121,14 @@
   .parse-warning{border:1px solid var(--warn);background:var(--warn-bg);color:var(--warn);padding:10px 14px;font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1.6;margin-bottom:16px;}
 
   .actions{display:flex;gap:10px;align-items:center;margin-bottom:30px;flex-wrap:wrap;}
-  button{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:12px;letter-spacing:0.5px;text-transform:uppercase;border-radius:0;border:1px solid var(--line);background:var(--panel-raised);color:var(--text);padding:10px 18px;cursor:pointer;transition:border-color .15s, background .15s, color .15s;}
-  button:hover:not(:disabled){border-color:var(--accent);color:var(--accent);}
+  button{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:12px;letter-spacing:0.5px;text-transform:uppercase;border-radius:0;border:1px solid var(--line);background:var(--panel-raised);color:var(--text);padding:10px 18px;cursor:pointer;transition:border-color .15s, background .15s, color .15s, transform .15s ease;}
+  button:hover:not(:disabled){border-color:var(--accent);color:var(--accent);transform:translateY(-1px);}
+  button:active:not(:disabled){transform:translateY(0);}
   button.primary{background:var(--accent);border-color:var(--accent);color:#14171A;}
   button.primary:hover:not(:disabled){background:var(--accent-hi);border-color:var(--accent-hi);color:#14171A;}
   button:disabled{opacity:0.4;cursor:not-allowed;}
+  .run-loading{display:inline-flex;align-items:center;gap:8px;}
+  .run-loading .dot{background:currentColor;}
   .demo-link{font-size:12px;color:var(--muted);text-decoration:underline;cursor:pointer;background:none;border:none;padding:0;font-weight:400;font-family:'IBM Plex Sans',sans-serif;}
   .demo-link:hover{color:var(--accent);}
 
@@ -125,11 +145,29 @@
 
   .tool-menu-eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin:0 0 14px;padding-left:10px;border-left:2px solid var(--accent);}
   .tool-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:36px;}
-  .tool-card{border:1px solid var(--line);background:var(--panel);padding:28px 26px 30px;cursor:pointer;transition:border-color .15s, background .15s;}
-  .tool-card:hover, .tool-card:focus-visible{border-color:var(--accent);background:var(--panel-raised);outline:none;}
+  .tool-card{border:1px solid var(--line);background:var(--panel);padding:28px 26px 30px;cursor:pointer;transition:border-color .15s, background .15s, transform .2s ease, box-shadow .2s ease;}
+  .tool-card:hover, .tool-card:focus-visible{border-color:var(--accent);background:var(--panel-raised);outline:none;transform:translateY(-3px);box-shadow:0 10px 22px -12px rgba(201,134,46,0.45);}
   .tool-icon{width:36px;height:36px;color:var(--accent);margin-bottom:16px;display:block;}
+  /* Hand-drawn line-art icons "draw themselves in" on hover/focus, in keeping
+     with the drafting-pen theme - stroke-dasharray larger than any of these
+     40x40 icon's path lengths, so the whole line is hidden then swept in. */
+  .tool-icon line, .tool-icon path{stroke-dasharray:120;stroke-dashoffset:120;transition:stroke-dashoffset .5s ease;}
+  .tool-icon > *:nth-child(1){transition-delay:0s;}
+  .tool-icon > *:nth-child(2){transition-delay:.06s;}
+  .tool-icon > *:nth-child(3){transition-delay:.12s;}
+  .tool-icon > *:nth-child(4){transition-delay:.18s;}
+  .tool-icon > *:nth-child(5){transition-delay:.24s;}
+  .tool-card:hover .tool-icon line, .tool-card:hover .tool-icon path,
+  .tool-card:focus-visible .tool-icon line, .tool-card:focus-visible .tool-icon path{stroke-dashoffset:0;}
+  .tool-card.reveal{transition:opacity .5s ease, transform .5s ease, border-color .15s, background .15s, box-shadow .2s ease;}
+  .tool-card.reveal.revealed:hover, .tool-card.reveal.revealed:focus-visible{transform:translateY(-3px);}
   .tool-card-label{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;letter-spacing:0.3px;text-transform:uppercase;color:var(--text);margin-bottom:10px;}
   .tool-card-desc{font-size:14px;line-height:1.6;color:var(--muted);}
+
+  /* Generic scroll-reveal, used by initScrollReveal() for elements that don't
+     need the tool-card's own hover-lift treatment (e.g. the footer). */
+  .reveal{opacity:0;transform:translateY(14px);transition:opacity .5s ease, transform .5s ease;}
+  .reveal.revealed{opacity:1;transform:translateY(0);}
 
   .site-footer{border-top:1px solid var(--line);padding-top:16px;font-size:12px;color:var(--muted2);}
   .site-footer a{color:var(--accent);text-decoration:underline;}
@@ -179,6 +217,19 @@
   .dimline-panel h3{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin:0 0 14px;font-weight:600;}
   svg text{font-family:'IBM Plex Mono',monospace;}
 
+  /* Dimension-check reveal: the baseline draws in first (this IS a drafting
+     dimension line, so a literal draw-in fits the motif), then the tick
+     marks/labels settle in, then the delta figure counts up from 0 via JS
+     (see animateDimlineCountUp). Dasharray is sized comfortably above this
+     SVG's real line lengths (viewBox is 1000x90) so the sweep reads clean. */
+  .dimline-panel svg .dim-main-line{stroke-dasharray:1000;stroke-dashoffset:1000;animation:dimDraw .7s ease forwards;}
+  .dimline-panel svg .dim-tick{opacity:0;animation:dimFadeIn .3s ease forwards;animation-delay:.45s;}
+  .dimline-panel svg .dim-tick-label{opacity:0;animation:dimFadeIn .3s ease forwards;animation-delay:.55s;}
+  .dimline-panel svg .dim-arrow-line, .dimline-panel svg .dim-arrow-cap{stroke-dasharray:400;stroke-dashoffset:400;animation:dimDraw .5s ease forwards;animation-delay:.6s;}
+  .dimline-panel svg .dim-delta-label{opacity:0;animation:dimFadeIn .3s ease forwards;animation-delay:.85s;}
+  @keyframes dimDraw{to{stroke-dashoffset:0;}}
+  @keyframes dimFadeIn{to{opacity:1;}}
+
   /* Activity table - tightened toward an actual P6 activity grid: dense rows,
      zebra shading, and WBS shown as grouping bands (P6's "group & sort by WBS"
      view) with activities indented beneath, rather than a repeated column. */
@@ -187,6 +238,7 @@
   th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.8px;text-transform:uppercase;color:var(--muted);border-bottom:2px solid var(--line);padding:6px 10px;font-weight:500;}
   td{padding:5px 10px;border-bottom:1px solid var(--line);vertical-align:top;}
   tbody tr:nth-child(even) td{background:rgba(255,255,255,0.018);}
+  tbody tr:not(.wbs-band):hover td{background:rgba(201,134,46,0.07);transition:background .12s ease;}
   tr.wbs-band td{background:var(--panel-raised);font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted);padding:5px 10px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
   tr.wbs-band:first-child td{border-top:none;}
   td.act-cell{padding-left:20px;border-left:2px solid var(--line);}
@@ -197,11 +249,24 @@
   .act-code{font-family:'IBM Plex Mono',monospace;color:var(--muted);font-size:11px;}
   .act-name{font-weight:500;}
   .flag{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;padding:2px 7px;letter-spacing:0.5px;border:1px solid currentColor;background:transparent;}
-  .flag.crit{background:repeating-linear-gradient(45deg, var(--crit) 0 6px, #14171A 6px 12px);color:var(--text);border-color:var(--crit);font-weight:700;}
+  .flag.crit{background:repeating-linear-gradient(45deg, var(--crit) 0 6px, #14171A 6px 12px);color:var(--text);border-color:var(--crit);font-weight:700;animation:critPulse 2.4s ease-in-out infinite;}
   .flag.warn{color:var(--warn);}
   .flag.ok{color:var(--ok);}
+  /* Reserved for genuine CRITICAL flags only (see .flag.crit above) - a slow,
+     quiet glow, not a blink, so it reads as "pay attention here" rather than
+     an alarm. NEAR-CRIT/STABLE never get this, preserving what the flag means. */
+  @keyframes critPulse{0%,100%{box-shadow:0 0 0 rgba(209,84,76,0);}50%{box-shadow:0 0 7px rgba(209,84,76,0.55);}}
+
+  /* Table rows stagger in on first render of a fresh result set - a quiet
+     cascade rather than a static dump of a table. animation-delay is set
+     per-row in JS (renderTable), capped so a long table doesn't make the
+     user wait to see its last rows. */
+  @keyframes rowFadeIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+  tbody tr.row-anim{animation:rowFadeIn .32s ease both;}
   .note-badge{display:inline-block;font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--accent);border:1px solid var(--accent);padding:1px 5px;margin-top:5px;cursor:help;}
   .weather-badge{display:inline-block;font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--accent);border:1px solid var(--accent);padding:1px 5px;margin-top:5px;margin-left:5px;cursor:help;}
+  .oos-badge{display:inline-block;font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--warn);border:1px solid var(--warn);padding:1px 5px;margin-top:5px;margin-left:5px;cursor:help;}
+  .trend-badge{display:inline-block;font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--warn);border:1px solid var(--warn);padding:1px 5px;margin-top:3px;cursor:help;}
   .var-pos{color:var(--crit);font-weight:600;}
   .var-zero{color:var(--muted2);}
 
@@ -262,7 +327,8 @@
   .tab-btn{background:none;border:none;border-radius:0;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.8px;text-transform:uppercase;padding:11px 16px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;}
   .tab-btn:hover{color:var(--text);border-color:var(--line);}
   .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600;}
-  .tab-panel{display:block;}
+  .tab-panel{display:block;animation:tabFadeIn .28s ease;}
+  @keyframes tabFadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
 
   /* Health check */
   .health-pass{color:var(--ok);} .health-warn{color:var(--warn);} .health-fail{color:var(--crit);} .health-na{color:var(--muted2);}
@@ -296,6 +362,7 @@
     .report-panel::before, .report-panel::after,
     .dimline-panel::before, .dimline-panel::after,
     .crash-panel::before, .crash-panel::after{display:none !important;}
+    .dimline-panel svg *{animation:none !important;stroke-dashoffset:0 !important;opacity:1 !important;}
     .section-title{color:#111;border-left-color:#111;}
     #reportBody, #fullReportBody{color:#111;}
     #reportBody h3, #fullReportBody h3{color:#111;margin:12px 0 6px;}
@@ -305,7 +372,9 @@
     th{color:#333;border-bottom-color:#333;}
     td{border-bottom-color:#ccc;color:#111;}
     tr{page-break-inside:avoid;}
-    .flag, .status-pill{background:none !important;color:#111 !important;border-color:#111 !important;}
+    .flag, .status-pill{background:none !important;color:#111 !important;border-color:#111 !important;animation:none !important;box-shadow:none !important;}
+    .tab-panel{animation:none !important;}
+    tbody tr.row-anim{animation:none !important;}
     a{color:#111;text-decoration:underline;}
     .report-header-block{border-bottom-color:#333;margin-bottom:10px;padding-bottom:8px;}
     .report-header-label, .report-header-value{color:#111;}
@@ -429,6 +498,12 @@
       <div class="dz-hint">Latest data date</div>
       <input type="file" id="fileCurr" accept=".xer">
     </div>
+    <div class="dropzone" id="dzBaseline" onclick="document.getElementById('fileBaseline').click()">
+      <div class="dz-label">Baseline (.xer) &mdash; optional</div>
+      <div class="dz-file" id="dzBaselineText">Click or drop file</div>
+      <div class="dz-hint">Enables CPLI / BEI in the Health Check</div>
+      <input type="file" id="fileBaseline" accept=".xer">
+    </div>
   </div>
 
   <div id="parseWarnings" class="parse-warning" style="display:none;"></div>
@@ -448,6 +523,7 @@
       <button class="tab-btn" data-tab="report" onclick="switchTab('report')">Full Report</button>
       <button class="tab-btn" data-tab="brief" onclick="switchTab('brief')">Site Brief</button>
       <button class="tab-btn" data-tab="watchlist" onclick="switchTab('watchlist')">Float Watchlist</button>
+      <button class="tab-btn" data-tab="trend" onclick="switchTab('trend')">Update Trend</button>
     </div>
 
     <div class="tab-panel" id="tab-comparison">
@@ -630,6 +706,40 @@
         <thead><tr><th>Activity</th><th>WBS</th><th>Prior TF</th><th>Curr. TF</th><th>&Delta; Float</th><th>Trend</th></tr></thead>
         <tbody id="watchlistTableBody"></tbody>
       </table>
+    </div>
+
+    <div class="tab-panel" id="tab-trend" style="display:none;">
+      <div class="section-title">Multi-Update Trend Tracking</div>
+      <p class="crash-intro">Independent of the two-file comparison above &mdash; load three or more updates from the same
+        project (any order; they're sorted automatically by each file's own data date) to see how float and finish
+        dates move activity-by-activity across the whole series, not just between two snapshots. Activities that don't
+        appear in every file (added mid-project, or dropped from scope) are flagged explicitly rather than silently
+        skipped or shown as a blank gap.</p>
+      <div class="dropzone" id="dzTrend" onclick="document.getElementById('fileTrend').click()" style="text-align:left;">
+        <div class="dz-label">Update Series (3+ .xer files, any order)</div>
+        <div class="dz-file" id="dzTrendText">Click or drop files</div>
+        <div class="dz-hint">Each file's own data date determines its position in the series</div>
+        <input type="file" id="fileTrend" accept=".xer" multiple>
+      </div>
+      <div id="trendFileList" class="parse-warning" style="display:none;"></div>
+      <div class="actions" style="margin:14px 0 22px;">
+        <button class="primary" id="trendRunBtn" disabled onclick="runTrendAnalysis()">Run Trend Analysis</button>
+      </div>
+      <div id="trendResults" style="display:none;">
+        <div class="kpis">
+          <div class="kpi"><div class="k-label">Updates in Series</div><div class="k-val" id="trendUpdateCount">&mdash;</div></div>
+          <div class="kpi"><div class="k-label">Activities Tracked</div><div class="k-val" id="trendActCount">&mdash;</div></div>
+          <div class="kpi"><div class="k-label">Added Mid-Series</div><div class="k-val warn" id="trendAddedCount">&mdash;</div></div>
+          <div class="kpi"><div class="k-label">Dropped Mid-Series</div><div class="k-val warn" id="trendDroppedCount">&mdash;</div></div>
+        </div>
+        <div class="section-title" style="margin-top:18px;">Float Erosion &amp; Finish Drift Across the Series</div>
+        <p class="crash-intro">Sorted by total float lost from an activity's first appearance in the series to its last (or
+          to its drop point), the same convention as the Float Watchlist &mdash; worst erosion first.</p>
+        <table>
+          <thead><tr><th>Activity</th><th>WBS</th><th>Float by Update</th><th>&Delta; Float (Total)</th><th>Finish Drift</th><th>Status</th></tr></thead>
+          <tbody id="trendTableBody"></tbody>
+        </table>
+      </div>
     </div>
   </div>
   </div><!-- /appShell -->
@@ -1008,6 +1118,12 @@ function crashProject(tasks, projectStart, crashParams, targetRecoveryDays){
 
 // ---------- State ----------
 let prevData=null, currData=null;
+// Baseline is a genuinely separate concept from "previous update" - it's the
+// original target schedule (for CPLI/BEI), not the last progress snapshot.
+// Wholly optional and additive: nothing above reads baselineData, so the
+// existing two-file previous/current flow is byte-for-byte unchanged when
+// no baseline is supplied.
+let baselineData=null;
 
 // ---------- Landing page navigation ----------
 // The five tool-menu cards don't each own a separate upload widget - every
@@ -1029,6 +1145,33 @@ const WEATHER_SENSITIVE_KEYWORDS = [
 function isWeatherSensitive(name){
   const n = (name||'').toLowerCase();
   return WEATHER_SENSITIVE_KEYWORDS.some(k=> n.includes(k));
+}
+
+// Out-of-sequence progress detection (Phase 3, item 7). Only checked for
+// activities that have actually started/finished (TK_Active or TK_Complete) -
+// a not-started activity can't be "out of sequence" yet. For each of that
+// activity's predecessor relationships:
+//   - FS (Finish-to-Start): flagged if the predecessor is NOT TK_Complete -
+//     progress has been logged before the driving predecessor actually finished.
+//   - SS (Start-to-Start): flagged if the predecessor IS TK_NotStart - this
+//     activity has started before its concurrent-start partner started at all.
+//   - FF/SF: deliberately excluded from this check (design decision, not an
+//     oversight) - a start-based read of status can't reliably judge sequence
+//     at the finish end of those relationship types.
+// This is detection/flagging only - it never touches CPM date math.
+function getOutOfSequenceIssues(task, tasksByCode){
+  if(task.status_code!=='TK_Active' && task.status_code!=='TK_Complete') return [];
+  const issues = [];
+  (task.pred_edges||[]).forEach(e=>{
+    const pt = tasksByCode[e.code];
+    if(!pt) return;
+    if(e.pred_type==='PR_FS' && pt.status_code!=='TK_Complete'){
+      issues.push(`${e.code} — ${pt.task_name} (FS predecessor not complete, status: ${pt.status_code})`);
+    } else if(e.pred_type==='PR_SS' && pt.status_code==='TK_NotStart'){
+      issues.push(`${e.code} — ${pt.task_name} (SS predecessor not started)`);
+    }
+  });
+  return issues;
 }
 const TOOL_TAB_MAP = { comparison:'comparison', health:'health', lookahead:'lookahead', crash:'comparison', timeline:'timeline' };
 
@@ -1061,14 +1204,23 @@ function exitToLanding(){
 
 document.getElementById('filePrev').addEventListener('change', e=> handleFile(e.target.files[0], 'prev'));
 document.getElementById('fileCurr').addEventListener('change', e=> handleFile(e.target.files[0], 'curr'));
-['dzPrev','dzCurr'].forEach(id=>{
+document.getElementById('fileBaseline').addEventListener('change', e=> handleFile(e.target.files[0], 'baseline'));
+document.getElementById('fileTrend').addEventListener('change', e=> handleTrendFiles(e.target.files));
+(()=>{
+  const el = document.getElementById('dzTrend');
+  el.addEventListener('dragover', e=>{ e.preventDefault(); el.style.borderColor='var(--accent)'; });
+  el.addEventListener('dragleave', ()=> el.style.borderColor='');
+  el.addEventListener('drop', e=>{ e.preventDefault(); handleTrendFiles(e.dataTransfer.files); });
+})();
+['dzPrev','dzCurr','dzBaseline'].forEach(id=>{
   const el = document.getElementById(id);
   el.addEventListener('dragover', e=>{ e.preventDefault(); el.style.borderColor='var(--accent)'; });
   el.addEventListener('dragleave', ()=> el.style.borderColor='');
   el.addEventListener('drop', e=>{
     e.preventDefault();
     const f = e.dataTransfer.files[0];
-    handleFile(f, id==='dzPrev' ? 'prev':'curr');
+    const which = id==='dzPrev' ? 'prev' : (id==='dzCurr' ? 'curr' : 'baseline');
+    handleFile(f, which);
   });
 });
 
@@ -1080,7 +1232,8 @@ function handleFile(file, which){
     try{
       const parsed = parseXER(reader.result);
       if(which==='prev'){ prevData=parsed; document.getElementById('dzPrevText').textContent=file.name; document.getElementById('dzPrev').classList.add('filled'); }
-      else { currData=parsed; document.getElementById('dzCurrText').textContent=file.name; document.getElementById('dzCurr').classList.add('filled'); }
+      else if(which==='curr'){ currData=parsed; document.getElementById('dzCurrText').textContent=file.name; document.getElementById('dzCurr').classList.add('filled'); }
+      else { baselineData=parsed; document.getElementById('dzBaselineText').textContent=file.name; document.getElementById('dzBaseline').classList.add('filled'); }
       updateRunButton();
       updateParseWarnings();
     }catch(err){
@@ -1115,6 +1268,9 @@ function updateParseWarnings(){
   if(currData && currData.duplicateCodes && currData.duplicateCodes.length){
     msgs.push(`Current update file has duplicate activity codes (the later row silently overrides the earlier one in every calculation): ${currData.duplicateCodes.join(', ')}`);
   }
+  if(baselineData && baselineData.duplicateCodes && baselineData.duplicateCodes.length){
+    msgs.push(`Baseline file has duplicate activity codes (the later row silently overrides the earlier one in every calculation): ${baselineData.duplicateCodes.join(', ')}`);
+  }
   if(msgs.length){
     el.innerHTML = msgs.map(m=> `&#9888; ${m}`).join('<br>');
     el.style.display = 'block';
@@ -1126,7 +1282,26 @@ function updateParseWarnings(){
 // ---------- Analysis ----------
 let lastDiff = null;
 
+// Button-click entry point: shows a brief, tasteful loading state (reusing
+// the same three-dot pulse used elsewhere for AI generation) before handing
+// off to the real, synchronous analysis in doRunAnalysis() below - purely a
+// perceptual transition so a click doesn't feel like an instant table dump.
+// Skips the artificial delay entirely for prefers-reduced-motion.
 function runAnalysis(){
+  const btn = document.getElementById('runBtn');
+  const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(prefersReduced){ doRunAnalysis(); return; }
+  const originalLabel = btn.textContent;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="run-loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>';
+  setTimeout(()=>{
+    doRunAnalysis();
+    btn.disabled = false;
+    btn.textContent = originalLabel;
+  }, 380);
+}
+
+function doRunAnalysis(){
   const prevMap = {}; prevData.tasks.forEach(t=> prevMap[t.task_code]=t);
   const currMap = {}; currData.tasks.forEach(t=> currMap[t.task_code]=t);
 
@@ -1146,10 +1321,12 @@ function runAnalysis(){
     let flag = 'ok';
     if(cFloat <= 0) flag='crit'; else if(cFloat <= 5) flag='warn';
     if(flag!=='ok' && pFloat > 5) newlyCritical++;
+    const oosIssues = getOutOfSequenceIssues(ct, currMap);
     rows.push({
       code: ct.task_code, name: ct.task_name, wbs: ct.wbs_name,
       pEnd, cEnd, variance, pFloat, cFloat, flag,
-      notes: ct.notes||[]
+      notes: ct.notes||[],
+      oosIssues
     });
   });
   rows.sort((a,b)=> b.variance - a.variance);
@@ -1254,28 +1431,59 @@ function renderDimline(diff){
   const scaleX = x => pad + (x-minT)/span * (w-2*pad);
   const xPrev = scaleX(t0), xCurr = scaleX(t1);
   const y=45;
-  const slipLabel = (diff.netSlip>0?'+':'') + diff.netSlip + ' working days';
   let svg = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}">`;
-  svg += `<line x1="${pad-20}" y1="${y}" x2="${w-pad+20}" y2="${y}" stroke="#333B44" stroke-width="1"/>`;
+  svg += `<line class="dim-main-line" x1="${pad-20}" y1="${y}" x2="${w-pad+20}" y2="${y}" stroke="#333B44" stroke-width="1"/>`;
   // prior tick
-  svg += `<line x1="${xPrev}" y1="${y-12}" x2="${xPrev}" y2="${y+12}" stroke="#93897A" stroke-width="1.5"/>`;
-  svg += `<text x="${xPrev}" y="${y-20}" fill="#93897A" font-size="11" text-anchor="middle">PRIOR</text>`;
-  svg += `<text x="${xPrev}" y="${y+28}" fill="#93897A" font-size="11" text-anchor="middle">${fmtDate(diff.prevFinish)}</text>`;
+  svg += `<line class="dim-tick" x1="${xPrev}" y1="${y-12}" x2="${xPrev}" y2="${y+12}" stroke="#93897A" stroke-width="1.5"/>`;
+  svg += `<text class="dim-tick-label" x="${xPrev}" y="${y-20}" fill="#93897A" font-size="11" text-anchor="middle">PRIOR</text>`;
+  svg += `<text class="dim-tick-label" x="${xPrev}" y="${y+28}" fill="#93897A" font-size="11" text-anchor="middle">${fmtDate(diff.prevFinish)}</text>`;
   // curr tick
   const currColor = diff.netSlip>0 ? '#D1544C' : '#6FA285';
-  svg += `<line x1="${xCurr}" y1="${y-12}" x2="${xCurr}" y2="${y+12}" stroke="${currColor}" stroke-width="2"/>`;
-  svg += `<text x="${xCurr}" y="${y-20}" fill="${currColor}" font-size="11" text-anchor="middle" font-weight="600">CURRENT</text>`;
-  svg += `<text x="${xCurr}" y="${y+28}" fill="${currColor}" font-size="11" text-anchor="middle" font-weight="600">${fmtDate(diff.currFinish)}</text>`;
+  svg += `<line class="dim-tick" x1="${xCurr}" y1="${y-12}" x2="${xCurr}" y2="${y+12}" stroke="${currColor}" stroke-width="2"/>`;
+  svg += `<text class="dim-tick-label" x="${xCurr}" y="${y-20}" fill="${currColor}" font-size="11" text-anchor="middle" font-weight="600">CURRENT</text>`;
+  svg += `<text class="dim-tick-label" x="${xCurr}" y="${y+28}" fill="${currColor}" font-size="11" text-anchor="middle" font-weight="600">${fmtDate(diff.currFinish)}</text>`;
   // dimension arrows between
   if(Math.abs(xCurr-xPrev) > 4){
     const xa=Math.min(xPrev,xCurr), xb=Math.max(xPrev,xCurr);
-    svg += `<line x1="${xa}" y1="${y+40}" x2="${xb}" y2="${y+40}" stroke="${currColor}" stroke-width="1"/>`;
-    svg += `<line x1="${xa}" y1="${y+36}" x2="${xa}" y2="${y+44}" stroke="${currColor}" stroke-width="1"/>`;
-    svg += `<line x1="${xb}" y1="${y+36}" x2="${xb}" y2="${y+44}" stroke="${currColor}" stroke-width="1"/>`;
-    svg += `<text x="${(xa+xb)/2}" y="${y+58}" fill="${currColor}" font-size="12" text-anchor="middle" font-weight="600">${slipLabel}</text>`;
+    svg += `<line class="dim-arrow-line" x1="${xa}" y1="${y+40}" x2="${xb}" y2="${y+40}" stroke="${currColor}" stroke-width="1"/>`;
+    svg += `<line class="dim-arrow-cap" x1="${xa}" y1="${y+36}" x2="${xa}" y2="${y+44}" stroke="${currColor}" stroke-width="1"/>`;
+    svg += `<line class="dim-arrow-cap" x1="${xb}" y1="${y+36}" x2="${xb}" y2="${y+44}" stroke="${currColor}" stroke-width="1"/>`;
+    svg += `<text class="dim-delta-label" id="dimDeltaLabel" x="${(xa+xb)/2}" y="${y+58}" fill="${currColor}" font-size="12" text-anchor="middle" font-weight="600"></text>`;
   }
   svg += `</svg>`;
   document.getElementById('dimlineSvg').innerHTML = svg;
+
+  const deltaLabel = document.getElementById('dimDeltaLabel');
+  if(deltaLabel) animateDimlineCountUp(deltaLabel, diff.netSlip);
+}
+
+// Counts the "+N working days" delta label up from 0 to its real value after
+// the dimension line has drawn itself in - purely a presentation touch, the
+// underlying netSlip value driving it is unchanged and already rendered
+// elsewhere (KPI strip) with the real number, so there's nothing here for a
+// reduced-motion user to miss out on except the count itself.
+function animateDimlineCountUp(el, target){
+  const sign = target>0 ? '+' : '';
+  const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(prefersReduced || target===0){
+    el.textContent = sign + target + ' working days';
+    return;
+  }
+  // Starts once the CSS reveal (see .dim-delta-label, delay .85s) has made
+  // the label visible, so the whole count plays out in view rather than
+  // finishing invisibly before the fade-in catches up.
+  setTimeout(()=>{
+    const duration = 500, start = performance.now();
+    function tick(now){
+      const p = Math.min((now-start)/duration, 1);
+      const eased = 1 - Math.pow(1-p, 3);
+      const val = Math.round(target * eased);
+      el.textContent = sign + val + ' working days';
+      if(p<1) requestAnimationFrame(tick);
+      else el.textContent = sign + target + ' working days';
+    }
+    requestAnimationFrame(tick);
+  }, 850);
 }
 
 function renderTable(diff){
@@ -1291,6 +1499,7 @@ function renderTable(diff){
     if(!groups.has(key)) groups.set(key, []);
     groups.get(key).push(r);
   });
+  let rowIdx = 0; // used only to stagger the entrance animation below - purely presentational
   groups.forEach((rows, wbsName)=>{
     const bandTr = document.createElement('tr');
     bandTr.className = 'wbs-band';
@@ -1300,10 +1509,13 @@ function renderTable(diff){
       const tr = document.createElement('tr');
       if(r.flag==='crit') tr.className='crit-row';
       else if(r.flag==='warn') tr.className='warn-row';
+      tr.classList.add('row-anim');
+      tr.style.animationDelay = Math.min(rowIdx*18, 320) + 'ms';
+      rowIdx++;
       const flagLabel = r.flag==='crit' ? 'CRITICAL' : r.flag==='warn' ? 'NEAR-CRIT' : 'STABLE';
       const varText = r.variance===0 ? '<span class="var-zero">0d</span>' : (r.variance>0 ? `<span class="var-pos">+${r.variance}d</span>` : `<span style="color:var(--ok)">${r.variance}d</span>`);
       tr.innerHTML = `
-        <td class="act-cell"><div class="act-code">${r.code}</div><div class="act-name">${r.name}</div>${r.notes.length ? '<div class="note-badge" title="'+r.notes.join(' | ').replace(/"/g,'&quot;')+'">NOTEBOOK ENTRY</div>' : ''}${(r.flag!=='ok' && isWeatherSensitive(r.name)) ? '<div class="weather-badge" title="Basic keyword match against outdoor/weather-sensitive work - not live weather data.">WEATHER-SENSITIVE</div>' : ''}</td>
+        <td class="act-cell"><div class="act-code">${r.code}</div><div class="act-name">${r.name}</div>${r.notes.length ? '<div class="note-badge" title="'+r.notes.join(' | ').replace(/"/g,'&quot;')+'">NOTEBOOK ENTRY</div>' : ''}${(r.flag!=='ok' && isWeatherSensitive(r.name)) ? '<div class="weather-badge" title="Basic keyword match against outdoor/weather-sensitive work - not live weather data.">WEATHER-SENSITIVE</div>' : ''}${(r.oosIssues && r.oosIssues.length) ? '<div class="oos-badge" title="'+('Progress logged against an incomplete predecessor. FS relationships require the predecessor to be complete; SS relationships require the predecessor to have at least started. FF/SF relationships are excluded from this check. Affected predecessor(s): '+r.oosIssues.join(' | ')).replace(/"/g,'&quot;')+'">OUT-OF-SEQUENCE</div>' : ''}</td>
         <td class="mono">${fmtDate(r.pEnd)}</td>
         <td class="mono">${fmtDate(r.cEnd)}</td>
         <td class="mono">${varText}</td>
@@ -1314,6 +1526,46 @@ function renderTable(diff){
       tbody.appendChild(tr);
     });
   });
+}
+
+// ---------- Baseline mode: CPLI / BEI (Phase 4, item 8) ----------
+// CPLI = (Baseline Critical Path Length + current driving Total Float) / Baseline Critical
+// Path Length. Baseline CPL is the baseline schedule's own data-date-to-finish span along its
+// critical path (computed with the same runCPM engine used everywhere else, so it's the same
+// CPM logic, just applied to the baseline file). Current driving float uses the worst (most
+// negative/least positive) total float in the *current* CPM run, standing in for "float of the
+// activity actually driving project completion" the way DCMA's simplified formula intends.
+// BEI = activities actually TK_Complete in the current file / activities the baseline itself
+// scheduled to finish on or before the current data date. Both are additive read-only
+// computations - they don't touch runCPM, parseXER, or any existing comparison logic, and are
+// only ever called when baselineData is non-null (see renderHealthCheck).
+function computeCPLIBEI(baseline, curr, currCPM, dataDate){
+  const baselineStart = parseDate(baseline.project.plan_start_date) || parseDate(baseline.header.date);
+  const baselineCPM = runCPM(baseline.tasks, baselineStart);
+  const baselineDataDate = parseDate(baseline.header.date);
+  const baselineCPL = (baselineDataDate && baselineCPM.projFinish) ? workdaysBetween(baselineDataDate, baselineCPM.projFinish) : 0;
+
+  let currTF = null;
+  currCPM.order.forEach(code=>{
+    const tf = currCPM.TF[code];
+    if(currTF===null || tf<currTF) currTF = tf;
+  });
+  const cpli = (baselineCPL>0 && currTF!==null) ? (baselineCPL + currTF) / baselineCPL : null;
+
+  const baselineMap = {}; baseline.tasks.forEach(t=> baselineMap[t.task_code]=t);
+  let plannedComplete=0, actualComplete=0;
+  curr.tasks.forEach(ct=>{
+    const bt = baselineMap[ct.task_code];
+    if(!bt) return; // not in baseline scope - can't judge against a baseline date it never had
+    const bFinish = parseDate(bt.early_end_date);
+    if(bFinish && dataDate && bFinish <= dataDate){
+      plannedComplete++;
+      if(ct.status_code === 'TK_Complete') actualComplete++;
+    }
+  });
+  const bei = plannedComplete>0 ? actualComplete/plannedComplete : null;
+
+  return { cpli, bei, baselineCPL, currTF, plannedComplete, actualComplete };
 }
 
 // ---------- DCMA 14-Point Schedule Health Check ----------
@@ -1385,9 +1637,31 @@ function renderHealthCheck(){
   });
   checks.push({ n:12, name:'Critical Path Test (Float Consistency)', value:`${mismatches} activities differ >2d from schedule's own float`, threshold:'0 (recomputed CPM should match P6\u2019s stored float)', status: mismatches===0?'pass':(mismatches<=3?'warn':'fail') });
 
-  // 13/14. CPLI / BEI - not assessable (need baseline schedule)
-  checks.push({ n:13, name:'CPLI (Critical Path Length Index)', value:'Not assessable', threshold:'\u2265 0.95', status:'na' });
-  checks.push({ n:14, name:'BEI (Baseline Execution Index)', value:'Not assessable', threshold:'\u2265 0.95', status:'na' });
+  // 13/14. CPLI / BEI - need a baseline schedule (3rd, optional file upload).
+  // Both stay "Not assessable" exactly as before when no baseline is loaded -
+  // this branch only fires when baselineData is present, so the no-baseline
+  // path through this function is untouched.
+  const baselineMetrics = baselineData ? computeCPLIBEI(baselineData, currData, cpm, dataDate) : null;
+  if(baselineMetrics && baselineMetrics.cpli!==null){
+    const cpliVal = baselineMetrics.cpli;
+    checks.push({ n:13, name:'CPLI (Critical Path Length Index)', value:`${cpliVal.toFixed(2)} (baseline CPL ${baselineMetrics.baselineCPL}wd, current driving float ${baselineMetrics.currTF>=0?'+':''}${baselineMetrics.currTF}wd)`, threshold:'\u2265 0.95', status: cpliVal>=0.95?'pass':(cpliVal>=0.85?'warn':'fail') });
+  } else {
+    checks.push({ n:13, name:'CPLI (Critical Path Length Index)', value: baselineData ? 'Not assessable (baseline critical path length is zero)' : 'Not assessable \u2014 no baseline file loaded', threshold:'\u2265 0.95', status:'na' });
+  }
+  if(baselineMetrics && baselineMetrics.bei!==null){
+    const beiVal = baselineMetrics.bei;
+    checks.push({ n:14, name:'BEI (Baseline Execution Index)', value:`${beiVal.toFixed(2)} (${baselineMetrics.actualComplete} of ${baselineMetrics.plannedComplete} baseline-due activities actually complete)`, threshold:'\u2265 0.95', status: beiVal>=0.95?'pass':(beiVal>=0.85?'warn':'fail') });
+  } else {
+    checks.push({ n:14, name:'BEI (Baseline Execution Index)', value: baselineData ? 'Not assessable (no activities were baseline-due by the current data date)' : 'Not assessable \u2014 no baseline file loaded', threshold:'\u2265 0.95', status:'na' });
+  }
+
+  // 15. Out-of-Sequence Progress - active/complete activities with an FS
+  // predecessor that isn't TK_Complete, or an SS predecessor that's still
+  // TK_NotStart (FF/SF excluded - see getOutOfSequenceIssues()).
+  const tasksByCodeForOOS = {}; tasks.forEach(t=> tasksByCodeForOOS[t.task_code]=t);
+  const oosActivities = tasks.filter(t=> getOutOfSequenceIssues(t, tasksByCodeForOOS).length>0);
+  const oosPct = total ? Math.round(100*oosActivities.length/total) : 0;
+  checks.push({ n:15, name:'Out-of-Sequence Progress', value:`${oosActivities.length} activities (${oosPct}%)`, threshold:'0 (progress logged against an incomplete predecessor)', status: oosActivities.length===0?'pass':(oosActivities.length<=2?'warn':'fail') });
 
   window._lastHealthChecks = checks; // for exportHealthCheckToExcel()
 
@@ -1555,6 +1829,127 @@ function renderFloatWatchlist(){
       <td><span class="flag ${flagClass}">${label}</span></td>
     </tr>`;
   }).join('');
+}
+
+// ---------- Multi-Update Trend Tracking (Phase 4, item 9) ----------
+// Wholly separate from prevData/currData/lastDiff - this is its own N-file
+// series with its own upload UI, so nothing about the existing two-file
+// comparison flow is touched by any of this section existing.
+let trendSeries = []; // [{fileName, data}], kept sorted by each file's own header.date after every add
+
+function handleTrendFiles(fileList){
+  const files = Array.from(fileList || []);
+  if(!files.length) return;
+  let remaining = files.length;
+  files.forEach(file=>{
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      try{
+        const parsed = parseXER(reader.result);
+        trendSeries.push({ fileName:file.name, data:parsed });
+      }catch(err){
+        alert('Could not parse '+file.name+': '+err.message);
+      }
+      remaining--;
+      if(remaining===0){
+        trendSeries.sort((a,b)=> parseDate(a.data.header.date) - parseDate(b.data.header.date));
+        renderTrendFileList();
+        updateTrendRunButton();
+      }
+    };
+    reader.readAsText(file);
+  });
+}
+
+function renderTrendFileList(){
+  const el = document.getElementById('trendFileList');
+  if(!trendSeries.length){ el.style.display='none'; return; }
+  el.innerHTML = trendSeries.map((u,i)=> `&#9998; Update ${i+1}: ${u.fileName} &mdash; data date ${u.data.header.date || '—'}`).join('<br>');
+  el.style.display = 'block';
+  document.getElementById('dzTrendText').textContent = `${trendSeries.length} file${trendSeries.length===1?'':'s'} loaded`;
+  document.getElementById('dzTrend').classList.toggle('filled', trendSeries.length>=3);
+}
+
+function updateTrendRunButton(){
+  document.getElementById('trendRunBtn').disabled = trendSeries.length < 3;
+}
+
+// Union of every activity code seen across the whole series. For each, walk its
+// points array (one slot per update, null where absent) to find first/last
+// presence - that's how "added mid-series" / "dropped mid-series" gets flagged,
+// per the confirmed design: never silently drop, never show a blank gap without
+// a marker explaining it.
+function computeTrendRows(){
+  const n = trendSeries.length;
+  const codeMap = new Map();
+  trendSeries.forEach((upd, idx)=>{
+    upd.data.tasks.forEach(t=>{
+      if(!codeMap.has(t.task_code)){
+        codeMap.set(t.task_code, { code:t.task_code, name:t.task_name, wbs:t.wbs_name, points:new Array(n).fill(null) });
+      }
+      const entry = codeMap.get(t.task_code);
+      entry.name = t.task_name; entry.wbs = t.wbs_name; // last-seen name/wbs wins, cosmetic only
+      const tf = Math.round((parseFloat(t.total_float_hr_cnt)||0)/8);
+      const finish = parseDate(t.early_end_date);
+      entry.points[idx] = { tf, finish };
+    });
+  });
+
+  const rows = [];
+  codeMap.forEach(entry=>{
+    const presentIdx = [];
+    entry.points.forEach((p,i)=>{ if(p) presentIdx.push(i); });
+    if(!presentIdx.length) return;
+    const firstIdx = presentIdx[0], lastIdx = presentIdx[presentIdx.length-1];
+    const firstPt = entry.points[firstIdx], lastPt = entry.points[lastIdx];
+    const addedMidSeries = firstIdx > 0;
+    const droppedBeforeEnd = lastIdx < n-1;
+    const floatChange = lastPt.tf - firstPt.tf;
+    const finishDriftDays = workdaysBetween(firstPt.finish, lastPt.finish);
+    rows.push({ ...entry, firstIdx, lastIdx, addedMidSeries, droppedBeforeEnd, floatChange, finishDriftDays, presentCount: presentIdx.length });
+  });
+  rows.sort((a,b)=> a.floatChange - b.floatChange);
+  return rows;
+}
+
+function runTrendAnalysis(){
+  if(trendSeries.length < 3) return;
+  const rows = computeTrendRows();
+  window._lastTrendRows = rows;
+
+  document.getElementById('trendUpdateCount').textContent = trendSeries.length;
+  document.getElementById('trendActCount').textContent = rows.length;
+  document.getElementById('trendAddedCount').textContent = rows.filter(r=>r.addedMidSeries).length;
+  document.getElementById('trendDroppedCount').textContent = rows.filter(r=>r.droppedBeforeEnd).length;
+
+  const tbody = document.getElementById('trendTableBody');
+  tbody.innerHTML = rows.map(r=>{
+    const erosion = -r.floatChange;
+    let cls='', label='STEADY', flagClass='ok';
+    if(erosion > 10){ cls='crit-row'; label='RAPID EROSION'; flagClass='crit'; }
+    else if(erosion > 5){ cls='warn-row'; label='ERODING'; flagClass='warn'; }
+    else if(erosion < 0){ label='IMPROVING'; flagClass='ok'; }
+    const changeText = r.floatChange===0 ? '0d' : (r.floatChange>0 ? `+${r.floatChange}d` : `${r.floatChange}d`);
+    const driftText = r.finishDriftDays===0 ? '0d' : (r.finishDriftDays>0 ? `+${r.finishDriftDays}d` : `${r.finishDriftDays}d`);
+    const floatSeries = r.points.map(p=> p ? `${p.tf}d` : '—').join(' → ');
+    let badges = '';
+    if(r.addedMidSeries){
+      badges += `<div class="trend-badge" title="Not present in the earlier update(s) - first appears in this file.">ADDED @ UPDATE ${r.firstIdx+1}</div>`;
+    }
+    if(r.droppedBeforeEnd){
+      badges += `<div class="trend-badge" title="Not present in the later update(s) - last appears in this file, then drops out of the series (removed from scope or renumbered).">DROPPED AFTER UPDATE ${r.lastIdx+1}</div>`;
+    }
+    return `<tr class="${cls}">
+      <td class="act-cell"><div class="act-code">${r.code}</div><div class="act-name">${r.name}</div>${badges}</td>
+      <td class="mono">${r.wbs}</td>
+      <td class="mono" style="font-size:11px;">${floatSeries}</td>
+      <td class="mono">${changeText}</td>
+      <td class="mono">${driftText}</td>
+      <td><span class="flag ${flagClass}">${label}</span></td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('trendResults').style.display = 'block';
 }
 
 // ---------- Critical Path Timeline (Gantt) ----------
@@ -1984,6 +2379,35 @@ Do not fabricate any fact, date, or number beyond what is given in the JSON. If 
     reportBody.innerHTML = aiUnavailableHTML();
   }
 }
+
+// Landing-page entrance: staggers the 5 tool cards (and the footer) in as
+// they come into view, rather than the whole menu appearing at once. Uses
+// IntersectionObserver so it works the same whether the cards are already
+// in the first viewport or the user has to scroll to them. Purely visual -
+// doesn't touch enterApp()/routing, and every element still ends at its
+// normal, fully-visible state even if JS or the observer never fires.
+function initScrollReveal(){
+  const targets = Array.from(document.querySelectorAll('.tool-card, .site-footer'));
+  if(!targets.length) return;
+  const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(prefersReduced || !('IntersectionObserver' in window)){
+    return; // leave them in their normal, always-visible state
+  }
+  targets.forEach((t,i)=>{
+    t.classList.add('reveal');
+    t.style.transitionDelay = Math.min(i*60, 240) + 'ms';
+  });
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        entry.target.classList.add('revealed');
+        io.unobserve(entry.target);
+      }
+    });
+  }, {threshold:0.15});
+  targets.forEach(t=> io.observe(t));
+}
+document.addEventListener('DOMContentLoaded', initScrollReveal);
 
 function copyFullReport(){
   const text = document.getElementById('fullReportHeader').innerText + '\n\n' + document.getElementById('fullReportBody').innerText;
