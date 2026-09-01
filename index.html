@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Planning Toolkit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* Same palette, fonts and component recipes as floatcheck.html/leadtime.html
+     - tokens below are copied verbatim from floatcheck.html's :root, not
+     reinvented, so clicking between all three pages reads as one product.
+     This page is still an app-shell layout (top bar / sidebar / workspace /
+     status bar), not those two pages' scrolling document layout - only the
+     structure differs, not the palette or type. The shell layout, hover
+     states and component styling live in lib/toolkit-ui.css so a third tool
+     only means editing the TOOLS array below plus that one CSS file. */
+  :root{
+    --bg:#14171A; --panel:#1B1F23; --panel-raised:#242A31; --line:#333B44;
+    --text:#EDE9DE; --muted:#93897A; --muted2:#5F5A50;
+    --crit:#D1544C; --warn:#D6A23C; --ok:#6FA285; --accent:#C9862E; --accent-hi:#E0A050;
+    --crit-bg:rgba(209,84,76,0.12); --warn-bg:rgba(214,162,60,0.12); --ok-bg:rgba(111,162,133,0.12);
+  }
+  html, body{margin:0;padding:0;background:var(--bg);height:100%;}
+  body{-webkit-font-smoothing:antialiased;font-family:'IBM Plex Sans',sans-serif;}
+  ::selection{background:var(--accent);color:#14171A;}
+  *::-webkit-scrollbar{width:10px;height:10px;}
+  *::-webkit-scrollbar-thumb{background:var(--line);}
+  *::-webkit-scrollbar-track{background:transparent;}
+</style>
+<link rel="stylesheet" href="lib/toolkit-ui.css">
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- TOP BAR -->
+  <div class="shell-topbar">
+    <div class="shell-topbar-left">
+      <a class="shell-brand" href="index.html">PLANNING TOOLKIT</a>
+      <div class="shell-tool-switch">
+        <a class="shell-tool-switch-item" href="floatcheck.html">T-01 FLOATCHECK</a>
+        <a class="shell-tool-switch-item" href="leadtime.html">T-02 LEADTIME</a>
+      </div>
+    </div>
+    <div class="shell-topbar-right">
+      <div class="shell-signin" title="Not built yet - visual only, no account exists">SIGN IN</div>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="shell-body">
+
+    <!-- SIDEBAR: TOOL REGISTER -->
+    <div class="shell-sidebar">
+      <div class="shell-sidebar-title"><span>TOOL REGISTER</span><span id="toolCount">&mdash;</span></div>
+      <div id="toolList"></div>
+      <div class="shell-sidebar-footer">
+        <div class="shell-divider"></div>
+        <div class="shell-session-label">LOCAL SESSION</div>
+        <div class="shell-session-note">Files are parsed in this tab. Signing in stores your saved views and nothing else.</div>
+      </div>
+    </div>
+
+    <!-- WORKSPACE -->
+    <div class="shell-workspace">
+
+      <!-- PRIMARY: DROP TARGET -->
+      <div class="shell-drop-section">
+        <div class="shell-eyebrow">T-02 LEADTIME / NO FILE LOADED</div>
+        <div class="shell-dropzone">
+          <div>
+            <div class="shell-dropzone-headline">DROP A PROGRAMME FILE HERE</div>
+            <p class="shell-dropzone-desc">A Primavera P6 (.xer) export. The activity table, relationships and lead-time codes are read on load.</p>
+            <div class="shell-dropzone-actions">
+              <a class="shell-btn-primary" href="leadtime.html">SELECT FILE</a>
+              <a class="shell-btn-outline" href="leadtime.html">TRY THE DEMO</a>
+            </div>
+          </div>
+          <div class="shell-dropzone-facts">
+            <div><span>PARSE</span><span>IN-TAB</span></div>
+            <div><span>UPLOAD</span><span>NONE</span></div>
+            <div><span>ACCOUNT</span><span>NOT REQUIRED</span></div>
+            <div><span>COST</span><span>0.00</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECONDARY: DEMO OUTPUT PREVIEW -->
+      <div class="shell-output-section">
+        <div class="shell-output-header">
+          <div class="shell-eyebrow">DEMO OUTPUT / RANKED ORDER REGISTER</div>
+          <div class="shell-output-meta">DATA DATE 2026-06-15 &middot; 4 ROWS</div>
+        </div>
+        <div class="shell-table-wrap">
+          <table class="shell-table">
+            <thead>
+              <tr>
+                <th>#</th><th>MATERIAL</th><th>ACT ID</th><th class="num">LEAD</th><th class="num">ORDER BY</th><th class="num">DAYS REM</th><th class="num">TF</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="is-urgent">
+                <td>01</td><td class="material-cell">Lifts / elevators</td><td>A5040</td><td class="num">30w</td><td class="num">2026-04-23</td><td class="num"><span class="shell-flag shell-flag-overdue">53d OVERDUE</span></td><td class="num">59d</td>
+              </tr>
+              <tr>
+                <td>02</td><td>Switchboards / switchgear</td><td>A5030B</td><td class="num">24w</td><td class="num">2026-07-14</td><td class="num"><span class="shell-flag shell-flag-ok">29d</span></td><td class="num">36d</td>
+              </tr>
+              <tr>
+                <td>03</td><td>Structural steel</td><td>A4040</td><td class="num">16w</td><td class="num">2026-08-06</td><td class="num"><span class="shell-flag shell-flag-ok">52d</span></td><td class="num">39d</td>
+              </tr>
+              <tr>
+                <td>04</td><td>Roofing</td><td>A4050</td><td class="num">8w</td><td class="num">2026-10-29</td><td class="num"><span class="shell-flag shell-flag-ok">136d</span></td><td class="num">39d</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="shell-table-footnote">Red = overdue. Sorted by days remaining, then by total float. TF in working days.</div>
+        </div>
+      </div>
+
+      <!-- TERTIARY: TECHNICAL NOTE -->
+      <div class="shell-note-section">
+        <div class="shell-divider"></div>
+        <div class="shell-note-grid">
+          <div class="shell-note-labels">
+            <div>ONE ENGINE</div>
+            <div>DETERMINISTIC</div>
+            <div>NO UPLOAD</div>
+          </div>
+          <div class="shell-note-body">
+            <p>Every tool reads one forward and backward pass. Early and late dates and total float are calculated once from the imported logic, so diagnostics and the order register never disagree. The same file returns the same numbers every time, and any figure traces back to the activities that produced it.</p>
+            <p>A language model writes only the narrative over numbers already computed. It does not calculate float, rank items or see the file.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- STATUS BAR -->
+  <div class="shell-statusbar">
+    <div class="shell-status-left"><span class="shell-status-dot"></span>NO FILE LOADED</div>
+    <div class="shell-status-right">
+      <span>OFFLINE-CAPABLE</span>
+      <span class="shell-status-strong">SIGNED OUT</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// Sidebar is driven entirely from this array - adding a third tool is one
+// entry here, nothing else in this file changes. (Stress-tested with 8
+// dummy entries during build to confirm the sidebar layout holds up before
+// reverting to the real 2 - see the build notes, not left in this file.)
+const TOOLS = [
+  { id: 'T-01', name: 'FLOATCHECK', tag: 'LIVE', question: 'What moved since the last update, and does the schedule pass DCMA 14?', href: 'floatcheck.html', active: false },
+  { id: 'T-02', name: 'LEADTIME', tag: 'LIVE', question: 'What has to be ordered this week for the dates to hold?', href: 'leadtime.html', active: true },
+];
+
+function renderToolList(){
+  const list = document.getElementById('toolList');
+  document.getElementById('toolCount').textContent = String(TOOLS.length).padStart(2, '0');
+  list.innerHTML = TOOLS.map(t => `
+    <a class="shell-tool-row${t.active ? ' is-active' : ''}" href="${t.href}">
+      <div class="shell-tool-row-id">${t.id}</div>
+      <div>
+        <div class="shell-tool-row-head">
+          <div class="shell-tool-row-name">${t.name}</div>
+          <div class="shell-tool-row-tag">${t.tag}</div>
+        </div>
+        <div class="shell-tool-row-question">${t.question}</div>
+      </div>
+    </a>
+  `).join('');
+}
+renderToolList();
+</script>
+
+</body>
+</html>

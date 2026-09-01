@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>LeadTime</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="lib/toolkit-ui.css">
+<style>
+  /* Palette, base rules, dropzone/button/kpi/table styling copied verbatim
+     from floatcheck.html's <style> block, trimmed to what this page actually
+     uses (no title block, no watermark, no tabs, no report/crash panels -
+     LeadTime is a single-purpose procurement list, not a multi-tab report).
+     Same tokens, same values - so the two tools read as one product. */
+  :root{
+    --bg:#14171A; --panel:#1B1F23; --panel-raised:#242A31; --line:#333B44;
+    --text:#EDE9DE; --muted:#93897A; --muted2:#5F5A50;
+    --crit:#D1544C; --warn:#D6A23C; --ok:#6FA285; --accent:#C9862E; --accent-hi:#E0A050;
+    --crit-bg:rgba(209,84,76,0.12); --warn-bg:rgba(214,162,60,0.12); --ok-bg:rgba(111,162,133,0.12);
+  }
+  *{box-sizing:border-box;}
+  @media (prefers-reduced-motion: reduce){
+    *, *::before, *::after{ animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important; }
+  }
+  body{
+    margin:0;background-color:var(--bg);color:var(--text);
+    font-family:'IBM Plex Sans',sans-serif;-webkit-font-smoothing:antialiased;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(147,137,122,0.05) 0 1px, transparent 1px 32px),
+      repeating-linear-gradient(90deg, rgba(147,137,122,0.05) 0 1px, transparent 1px 32px);
+  }
+  .wrap{max-width:1100px;margin:0 auto;padding:28px 20px 80px;}
+  .mono{font-family:'IBM Plex Mono',monospace;font-size:12px;font-variant-numeric:tabular-nums;}
+
+  .hero{padding:0 0 34px;border-bottom:1px solid var(--line);margin-bottom:28px;}
+  .wordmark{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:56px;line-height:0.95;letter-spacing:0.5px;text-transform:uppercase;margin:0 0 14px;}
+  .wm-a{color:var(--text);}
+  .wm-b{color:var(--accent);}
+  .hero-pitch{font-family:'IBM Plex Sans',sans-serif;font-size:19px;font-weight:600;color:var(--text);margin:0 0 12px;line-height:1.4;max-width:680px;}
+  .hero-trust{max-width:640px;font-size:13px;line-height:1.65;color:var(--muted);margin:0;}
+
+  .section-title{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin:28px 0 12px;font-weight:600;padding-left:10px;border-left:2px solid var(--accent);}
+  .section-title:first-of-type{margin-top:0;}
+
+  /* Upload */
+  .uploads{display:grid;grid-template-columns:1fr;gap:14px;margin-bottom:16px;max-width:420px;}
+  .dropzone{border:1px dashed var(--line);padding:22px 16px;text-align:center;cursor:pointer;transition:border-color .15s, background .15s, transform .15s ease;position:relative;background:var(--panel);}
+  .dropzone:hover{border-color:var(--accent);background:var(--panel-raised);transform:translateY(-2px);}
+  .dropzone.filled{border-style:solid;border-color:var(--ok);background:var(--ok-bg);}
+  .dz-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:8px;}
+  .dz-file{font-size:13px;color:var(--text);word-break:break-all;}
+  .dz-hint{font-size:12px;color:var(--muted2);margin-top:4px;}
+  input[type=file]{display:none;}
+
+  .parse-warning{border:1px solid var(--warn);background:var(--warn-bg);color:var(--warn);padding:10px 14px;font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1.6;margin-bottom:16px;}
+  .page-error{border:1px solid var(--crit);background:var(--crit-bg);color:var(--crit);padding:10px 14px;font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1.6;margin-bottom:16px;}
+
+  .field-row{display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;margin-bottom:18px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);}
+  .field input[type=date], .field select, .field input[type=number], .field input[type=text]{
+    background:var(--panel-raised);border:1px solid var(--line);color:var(--text);
+    font-family:'IBM Plex Mono',monospace;font-size:13px;padding:7px 9px;border-radius:0;
+  }
+  .field input:focus, .field select:focus{outline:none;border-color:var(--accent);}
+
+  .actions{display:flex;gap:10px;align-items:center;margin-bottom:26px;flex-wrap:wrap;}
+  button{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:12px;letter-spacing:0.5px;text-transform:uppercase;border-radius:0;border:1px solid var(--line);background:var(--panel-raised);color:var(--text);padding:10px 18px;cursor:pointer;transition:border-color .15s, background .15s, color .15s, transform .15s ease;}
+  button:hover:not(:disabled){border-color:var(--accent);color:var(--accent);transform:translateY(-1px);}
+  button:active:not(:disabled){transform:translateY(0);}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#14171A;}
+  button.primary:hover:not(:disabled){background:var(--accent-hi);border-color:var(--accent-hi);color:#14171A;}
+  button:disabled{opacity:0.4;cursor:not-allowed;}
+  button.small{font-size:10.5px;padding:5px 10px;}
+  .demo-link{font-size:12px;color:var(--muted);text-decoration:underline;cursor:pointer;background:none;border:none;padding:0;font-weight:400;font-family:'IBM Plex Sans',sans-serif;}
+  .demo-link:hover{color:var(--accent);}
+
+  .disclaimer{font-size:11.5px;color:var(--muted2);margin:0 0 20px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:10px 0;line-height:1.6;}
+
+  /* KPI strip */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);overflow:hidden;margin-bottom:24px;}
+  @media (max-width:700px){ .kpis{grid-template-columns:repeat(2,1fr);} }
+  .kpi{background:var(--panel);padding:16px 18px;border-top:2px solid var(--line);}
+  .kpi .k-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;}
+  .kpi .k-val{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;}
+  .kpi .k-val.crit{color:var(--crit);}
+  .kpi .k-val.warn{color:var(--warn);}
+
+  .table-actions{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px;}
+  .table-actions button{font-size:11px;padding:6px 12px;}
+  .color-legend{display:flex;gap:18px;align-items:center;flex-wrap:wrap;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);}
+  .legend-item{display:flex;align-items:center;gap:7px;}
+  .legend-swatch{width:11px;height:11px;display:inline-block;flex-shrink:0;}
+  .legend-swatch.legend-crit{background:repeating-linear-gradient(45deg, var(--crit) 0 3px, #14171A 3px 6px);}
+  .legend-swatch.legend-warn{background:var(--warn);}
+  .legend-swatch.legend-ok{background:var(--ok);}
+
+  table{width:100%;border-collapse:collapse;font-size:12.5px;margin-bottom:20px;}
+  th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.8px;text-transform:uppercase;color:var(--muted);border-bottom:2px solid var(--line);padding:6px 10px;font-weight:500;}
+  td{padding:6px 10px;border-bottom:1px solid var(--line);vertical-align:top;}
+  tbody tr:nth-child(even) td{background:rgba(255,255,255,0.018);}
+  tbody tr:hover td{background:rgba(201,134,46,0.07);transition:background .12s ease;}
+  tr.crit-row td{background:var(--crit-bg);}
+  tr.warn-row td{background:var(--warn-bg);}
+  tr.crit-row td.act-cell{position:relative;border-left:none;}
+  tr.crit-row td.act-cell::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:repeating-linear-gradient(45deg, var(--crit) 0 4px, #14171A 4px 8px);}
+  td.act-cell{padding-left:20px;border-left:2px solid var(--line);}
+  .act-code{font-family:'IBM Plex Mono',monospace;color:var(--muted);font-size:11px;}
+  .act-name{font-weight:500;}
+  .flag{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;padding:2px 7px;letter-spacing:0.5px;border:1px solid currentColor;background:transparent;}
+  .flag.warn{color:var(--warn);}
+  .flag.ok{color:var(--ok);}
+  /* Overdue gets its own solid-fill badge, not FloatCheck's hazard-stripe -
+     that pattern is reserved for genuine CPM CRITICAL float there, and
+     "overdue on a procurement deadline" is a different concept. The
+     diagonal stripe also made the "Nd OVERDUE" text wrap and go illegible
+     at this badge's width - found during a visual check, fixed here. */
+  .flag.overdue{background:var(--crit);color:#14171A;border-color:var(--crit);font-weight:700;white-space:nowrap;}
+  .lead-input{width:56px;}
+  .remove-btn{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);background:none;border:1px solid var(--line);padding:3px 8px;cursor:pointer;}
+  .remove-btn:hover{border-color:var(--crit);color:var(--crit);}
+  .float-note{font-size:10.5px;color:var(--muted2);}
+  .not-computable{color:var(--muted2);font-style:italic;}
+  .manual-badge{display:inline-block;font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--muted);border:1px solid var(--muted);padding:1px 5px;margin-left:6px;letter-spacing:0.5px;}
+
+  .add-panel{border:1px solid var(--line);background:var(--panel);padding:16px 18px;margin-bottom:28px;}
+  .add-panel-title{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
+
+  /* .site-footer / .site-footer a / .site-footer p now live in
+     lib/toolkit-ui.css, shared with floatcheck.html and index.html. */
+
+  #results{display:none;}
+</style>
+</head>
+<body>
+<nav class="toolkit-nav">
+  <div class="toolkit-nav-inner">
+    <a class="toolkit-nav-brand" href="index.html">Planning <span class="tnb-accent">Toolkit</span></a>
+    <div class="toolkit-nav-tools">
+      <a class="toolkit-nav-tool" href="floatcheck.html">FloatCheck</a>
+      <span class="toolkit-nav-tool active">LeadTime</span>
+    </div>
+  </div>
+</nav>
+<div class="wrap">
+
+
+  <div class="hero">
+    <h1 class="wordmark"><span class="wm-a">Lead</span><span class="wm-b">Time</span></h1>
+    <p class="hero-pitch">What needs to be ordered this week so the schedule doesn't slip.</p>
+    <p class="hero-trust">Every date and every float value here comes from the same deterministic CPM engine as FloatCheck &mdash; no AI, no estimates, nothing guessed at runtime. The only judgement calls are the default lead times below, which are general defaults, not live supplier data &mdash; verify them against your actual suppliers.</p>
+  </div>
+
+  <div class="section-title">Upload Programme</div>
+  <div class="uploads">
+    <div class="dropzone" id="dzFile" onclick="document.getElementById('fileInput').click()">
+      <div class="dz-label">Programme (.xer)</div>
+      <div class="dz-file" id="dzFileText">Click or drop file</div>
+      <div class="dz-hint">A single P6 export &mdash; not a before/after pair</div>
+      <input type="file" id="fileInput" accept=".xer">
+    </div>
+  </div>
+
+  <div id="parseWarnings" class="parse-warning" style="display:none;"></div>
+  <div id="pageError" class="page-error" style="display:none;"></div>
+
+  <div class="field-row">
+    <div class="field">
+      <label for="dataDateInput">Data Date</label>
+      <input type="date" id="dataDateInput" onchange="onDataDateChange()">
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="primary" id="runBtn" disabled onclick="runLeadTime()">Run Lead-Time Check</button>
+    <button class="demo-link" onclick="loadDemo()">Load demo programme &rarr;</button>
+  </div>
+
+  <div id="results">
+    <div class="kpis">
+      <div class="kpi"><div class="k-label">Overdue</div><div class="k-val crit" id="kpiOverdue">&mdash;</div></div>
+      <div class="kpi"><div class="k-label">Due Within 14 Days</div><div class="k-val warn" id="kpiDueSoon">&mdash;</div></div>
+      <div class="kpi"><div class="k-label">Matched Items</div><div class="k-val" id="kpiTotal">&mdash;</div></div>
+      <div class="kpi"><div class="k-label">Data Date In Use</div><div class="k-val" id="kpiDataDate" style="font-size:18px;">&mdash;</div></div>
+    </div>
+
+    <div class="disclaimer">
+      <strong>Two calendars are deliberately mixed here.</strong> "Date required on site" is the CPM engine's early-start date, computed on the project's working-day calendar. Lead time is subtracted in real calendar days, not workdays &mdash; suppliers don't work your site calendar. That's intentional, not a bug, but it means the order-by date won't match a naive hand calculation using only one calendar. Total float is likewise computed on the project's working-day calendar by the same engine FloatCheck uses &mdash; <strong>float calculated by the FloatCheck CPM engine.</strong>
+    </div>
+
+    <div class="section-title">Add / Edit Matches</div>
+    <div class="add-panel">
+      <div class="add-panel-title">Manually tag an activity (or re-tag one auto-matched incorrectly by adding it again with a different material)</div>
+      <div class="field-row" style="margin-bottom:0;">
+        <div class="field" style="min-width:320px;">
+          <label for="manualActivity">Activity</label>
+          <select id="manualActivity"></select>
+        </div>
+        <div class="field" style="min-width:220px;">
+          <label for="manualMaterial">Material</label>
+          <select id="manualMaterial" onchange="onManualMaterialChange()"></select>
+        </div>
+        <div class="field">
+          <label for="manualWeeks">Lead Time (wks)</label>
+          <input type="number" id="manualWeeks" min="0" step="1" style="width:70px;">
+        </div>
+        <div class="field">
+          <label>&nbsp;</label>
+          <button onclick="addManualMatch()">Add to List</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">Order-By Ranking</div>
+    <div class="table-actions">
+      <div class="color-legend">
+        <span class="legend-item"><span class="legend-swatch legend-crit"></span> Overdue</span>
+        <span class="legend-item"><span class="legend-swatch legend-warn"></span> Due within 14 days</span>
+        <span class="legend-item"><span class="legend-swatch legend-ok"></span> Not urgent yet</span>
+      </div>
+      <button onclick="exportCSV()">Export CSV</button>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Material</th>
+          <th>Activity</th>
+          <th>Lead Time</th>
+          <th>Required On Site</th>
+          <th>Order By</th>
+          <th>Days Remaining</th>
+          <th>Total Float <span class="float-note">(FloatCheck CPM)</span></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="leadTableBody"></tbody>
+    </table>
+  </div>
+
+  <footer class="site-footer">
+    <p>Part of the <a href="index.html">Planning Toolkit</a>. FloatCheck and LeadTime share the same CPM engine and the same demo project data.</p>
+    <p>Float values on this page are calculated by the FloatCheck CPM engine, not estimated. Default lead times are general industry defaults, not live supplier quotes &mdash; verify with your actual suppliers before acting on them.</p>
+    <p>Currently supports Primavera P6 (.xer) files only, single-file upload. <a href="https://github.com/sashreek33-sudo/floatcheck" target="_blank" rel="noopener">View source on GitHub</a> &middot; <a href="privacy.html">Privacy</a> &middot; <a href="mailto:Sashreek33@gmail.com">Email</a> &middot; <a href="https://www.linkedin.com/in/sashreek-vijayakumar-449529267" target="_blank" rel="noopener">LinkedIn</a>.</p>
+  </footer>
+</div>
+
+<!-- Shared XER parsing / CPM / float logic - same /lib as FloatCheck, not
+     duplicated. Plain scripts (not type="module"), same file://-compatibility
+     reasoning as floatcheck.html. -->
+<script src="lib/xer-parser.js"></script>
+<script src="lib/float.js"></script>
+<script src="lib/cpm-engine.js"></script>
+
+<script>
+const { parseXER, parseDate, runCPM } = window.FloatCheckLib;
+
+// ---------- Default long-lead material library ----------
+// Keyword matching is a simple case-insensitive substring test against the
+// activity name - not AI, not fuzzy matching. Lead times are general
+// industry defaults (Australian context), not live supplier data - stated
+// explicitly in the UI. Every default here is editable per-matched-row
+// before or after adding it to the list.
+const MATERIAL_LIBRARY = [
+  { key:'steel',       label:'Structural steel',            keywords:['structural steel','steel erection','steel frame','steelwork'], defaultWeeks:16 },
+  { key:'facade',      label:'Façade / curtain wall',        keywords:['facade','façade','curtain wall','cladding'], defaultWeeks:16 },
+  { key:'lifts',       label:'Lifts / elevators',            keywords:['lift','elevator'], defaultWeeks:30 },
+  { key:'switchboard', label:'Switchboards / switchgear',    keywords:['switchboard','switchgear','main switch','msb'], defaultWeeks:24 },
+  { key:'hvac',        label:'HVAC plant',                   keywords:['hvac','air handling','ahu','chiller','cooling tower'], defaultWeeks:16 },
+  { key:'precast',     label:'Precast / tilt panels',        keywords:['precast','tilt panel','tilt-up','structural precast'], defaultWeeks:12 },
+  { key:'windows',     label:'Windows / glazing',            keywords:['window','glazing','glaze'], defaultWeeks:10 },
+  { key:'roofing',     label:'Roofing',                      keywords:['roof sheet','roofing','metal deck'], defaultWeeks:8 },
+  { key:'generators',  label:'Generators',                   keywords:['generator','genset'], defaultWeeks:18 },
+  { key:'fire',        label:'Fire services (pumps/tanks)',  keywords:['fire pump','fire tank','sprinkler tank','fire services'], defaultWeeks:14 },
+  { key:'substation',  label:'Substation / HV switchgear',   keywords:['substation','hv switchgear','high voltage switchgear'], defaultWeeks:30 },
+];
+
+// ---------- Demo data ----------
+// Same demo project as FloatCheck's "current" file (data literal only, not
+// logic - the parser/CPM this runs through is the shared /lib, not a copy).
+const DEMO_XER = `
+ERMHDR	18.8	2026-06-15	Project	Update 15-Jun-2026 (Current)	sashreek720@gmail.com	RMIT Portfolio	Project Management	GMT
+%T	PROJECT
+%F	proj_id	proj_short_name	plan_start_date	plan_end_date	last_recalc_date
+%R	1001	SRL-STNBOX	2026-03-02 08:00	2027-03-03 08:00	2026-06-15 08:00
+%E
+%T	PROJWBS
+%F	wbs_id	proj_id	wbs_short_name	wbs_name
+%R	9000	1001	FINISH	FINISH works
+%R	9001	1001	MEP	MEP works
+%R	9002	1001	PREP	PREP works
+%R	9003	1001	SHAFT	SHAFT works
+%R	9004	1001	STRUCT	STRUCT works
+%R	9005	1001	TBM	TBM works
+%E
+%T	CALENDAR
+%F	clndr_id	clndr_name	day_hr_cnt
+%R	1	Standard 5 Day Week	8
+%E
+%T	TASK
+%F	task_id	proj_id	wbs_id	task_code	task_name	status_code	target_drtn_hr_cnt	early_start_date	early_end_date	act_start_date	act_end_date	total_float_hr_cnt	phys_complete_pct
+%R	5000	1001	9002	A1000	Site establishment & enabling works	TK_Complete	80	2026-03-02 08:00	2026-03-16 08:00	2026-03-02 08:00	2026-03-16 08:00	2016	100
+%R	5001	1001	9002	A1010	Utility diversions	TK_Complete	120	2026-03-16 08:00	2026-04-06 08:00	2026-03-16 08:00	2026-04-06 08:00	1896	100
+%R	5002	1001	9002	A1020	Piling mat construction	TK_Complete	64	2026-04-06 08:00	2026-04-16 08:00	2026-04-06 08:00	2026-04-16 08:00	1832	100
+%R	5003	1001	9003	A2000	Secant pile wall - North	TK_Complete	160	2026-04-16 08:00	2026-05-14 08:00	2026-04-16 08:00	2026-05-14 08:00	1672	100
+%R	5004	1001	9003	A2010	Secant pile wall - South	TK_Complete	208	2026-04-16 08:00	2026-05-22 08:00	2026-04-16 08:00	2026-05-22 08:00	1624	100
+%R	5005	1001	9003	A2020	Capping beam installation	TK_Complete	80	2026-05-22 08:00	2026-06-05 08:00	2026-05-22 08:00	2026-06-05 08:00	1544	100
+%R	5006	1001	9003	A2030	Bulk excavation - Stage 1 (to L1 prop)	TK_Active	96	2026-06-05 08:00	2026-06-23 08:00	2026-06-05 08:00		1448	56
+%R	5007	1001	9003	A2040	Prop installation - Level 1	TK_NotStart	48	2026-06-23 08:00	2026-07-01 08:00			1400	0
+%R	5008	1001	9003	A2050	Bulk excavation - Stage 2 (to L2 prop)	TK_NotStart	144	2026-07-01 08:00	2026-07-27 08:00			1256	0
+%R	5009	1001	9003	A2060	Prop installation - Level 2	TK_NotStart	48	2026-07-27 08:00	2026-08-04 08:00			1208	0
+%R	5010	1001	9003	A2070	Bulk excavation - Stage 3 (formation level)	TK_NotStart	128	2026-08-04 08:00	2026-08-26 08:00			1080	0
+%R	5011	1001	9004	A3000	Base slab reinforcement & pour	TK_NotStart	96	2026-08-26 08:00	2026-09-11 08:00			984	0
+%R	5012	1001	9005	A3010	TBM launch chamber fit-out	TK_NotStart	120	2026-09-11 08:00	2026-10-02 08:00			864	0
+%R	5013	1001	9005	A3020	TBM delivery & assembly	TK_NotStart	208	2026-10-02 08:00	2026-11-09 08:00			656	0
+%R	5014	1001	9005	A3030	TBM launch & initial drive	TK_NotStart	80	2026-11-09 08:00	2026-11-23 08:00			576	0
+%R	5015	1001	9005	A3040	TBM drive - Section 1	TK_NotStart	200	2026-11-23 08:00	2026-12-28 08:00			376	0
+%R	5016	1001	9005	A3050	TBM drive - Section 2	TK_NotStart	200	2026-12-28 08:00	2027-02-01 08:00			176	0
+%R	5017	1001	9004	A4000	Station box walls - concourse level	TK_NotStart	160	2026-09-11 08:00	2026-10-09 08:00			824	0
+%R	5018	1001	9004	A4010	Station box slab - concourse level	TK_NotStart	112	2026-10-09 08:00	2026-10-29 08:00			712	0
+%R	5019	1001	9004	A4020	Station box walls - platform level	TK_NotStart	160	2026-10-29 08:00	2026-11-26 08:00			552	0
+%R	5020	1001	9004	A4030	Waterproofing - platform level	TK_NotStart	64	2026-11-26 08:00	2026-12-08 08:00			488	0
+%R	5021	1001	9001	A5000	MEP first fix - concourse	TK_NotStart	120	2026-10-29 08:00	2026-11-19 08:00			592	0
+%R	5022	1001	9001	A5010	MEP first fix - platform	TK_NotStart	120	2026-12-08 08:00	2026-12-29 08:00			368	0
+%R	5023	1001	9000	A5020	Backfill & reinstatement	TK_NotStart	80	2027-02-01 08:00	2027-02-15 08:00			96	0
+%R	5024	1001	9000	A5030	Final finishes & handover prep	TK_NotStart	96	2027-02-15 08:00	2027-03-03 08:00			0	0
+%R	5025	1001	9004	A4040	Structural steel erection - roof level plant deck	TK_NotStart	160	2026-11-26 08:00	2026-12-17 08:00			488	0
+%R	5026	1001	9001	A5030B	Main switchboard (MSB) installation	TK_NotStart	80	2026-12-29 08:00	2027-01-12 08:00			368	0
+%R	5027	1001	9001	A5040	Passenger lift installation	TK_NotStart	120	2026-11-19 08:00	2026-12-10 08:00			592	0
+%R	5028	1001	9004	A4050	Roofing - metal deck and membrane	TK_NotStart	80	2026-12-17 08:00	2026-12-31 08:00			488	0
+%E
+%T	TASKPRED
+%F	task_pred_id	task_id	pred_task_id	proj_id	pred_type	lag_hr_cnt
+%R	8000	5001	5000	1001	PR_FS	0
+%R	8001	5002	5001	1001	PR_FS	0
+%R	8002	5003	5002	1001	PR_FS	0
+%R	8003	5004	5002	1001	PR_FS	0
+%R	8004	5005	5003	1001	PR_FS	0
+%R	8005	5005	5004	1001	PR_FS	0
+%R	8006	5006	5005	1001	PR_FS	0
+%R	8007	5007	5006	1001	PR_FS	0
+%R	8008	5008	5007	1001	PR_FS	0
+%R	8009	5009	5008	1001	PR_FS	0
+%R	8010	5010	5009	1001	PR_FS	0
+%R	8011	5011	5010	1001	PR_FS	0
+%R	8012	5012	5011	1001	PR_FS	0
+%R	8013	5013	5012	1001	PR_FS	0
+%R	8014	5014	5013	1001	PR_FS	0
+%R	8015	5015	5014	1001	PR_FS	0
+%R	8016	5016	5015	1001	PR_FS	0
+%R	8017	5017	5011	1001	PR_FS	0
+%R	8018	5018	5017	1001	PR_FS	0
+%R	8019	5019	5018	1001	PR_FS	0
+%R	8020	5020	5019	1001	PR_FS	0
+%R	8021	5021	5018	1001	PR_FS	0
+%R	8022	5022	5020	1001	PR_FS	0
+%R	8023	5023	5020	1001	PR_FS	0
+%R	8024	5023	5016	1001	PR_FS	0
+%R	8025	5024	5022	1001	PR_FS	0
+%R	8026	5024	5023	1001	PR_FS	0
+%R	8027	5025	5019	1001	PR_FS	0
+%R	8028	5026	5022	1001	PR_FS	0
+%R	8029	5027	5021	1001	PR_FS	0
+%R	8030	5028	5025	1001	PR_FS	0
+%E
+`;
+
+// ---------- State ----------
+let programmeData = null;   // parseXER() output
+let cpm = null;             // runCPM() output
+let dataDate = null;        // Date, editable, defaults to the file's own data date
+let matches = [];           // { id, materialKey, materialLabel, code, leadWeeks, source: 'auto'|'manual' }
+let matchIdCounter = 1;
+
+document.getElementById('fileInput').addEventListener('change', e => handleFile(e.target.files[0]));
+(() => {
+  const el = document.getElementById('dzFile');
+  el.addEventListener('dragover', e => { e.preventDefault(); el.style.borderColor = 'var(--accent)'; });
+  el.addEventListener('dragleave', () => el.style.borderColor = '');
+  el.addEventListener('drop', e => { e.preventDefault(); handleFile(e.dataTransfer.files[0]); });
+})();
+
+function handleFile(file){
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const parsed = parseXER(reader.result);
+      loadProgramme(parsed, file.name);
+    }catch(err){
+      alert('Could not parse this XER file: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+function loadDemo(){
+  const parsed = parseXER(DEMO_XER);
+  loadProgramme(parsed, 'update_2026-06-15_current.xer (demo, extended with long-lead activities)');
+}
+
+function loadProgramme(parsed, label){
+  programmeData = parsed;
+  document.getElementById('dzFileText').textContent = label;
+  document.getElementById('dzFile').classList.add('filled');
+
+  const el = document.getElementById('parseWarnings');
+  if(parsed.duplicateCodes && parsed.duplicateCodes.length){
+    el.innerHTML = `&#9888; This file has duplicate activity codes (the later row silently overrides the earlier one in every calculation): ${parsed.duplicateCodes.join(', ')}`;
+    el.style.display = 'block';
+  } else {
+    el.style.display = 'none';
+  }
+
+  // Data date defaults to the file's own ERMHDR date, editable afterwards -
+  // everything downstream (overdue/days-remaining) is relative to this
+  // field's value, not the browser's real "today".
+  const fileDataDate = parseDate(parsed.header.date);
+  dataDate = fileDataDate;
+  document.getElementById('dataDateInput').value = toDateInputValue(fileDataDate);
+
+  document.getElementById('runBtn').disabled = false;
+  document.getElementById('pageError').style.display = 'none';
+  document.getElementById('results').style.display = 'none';
+}
+
+function onDataDateChange(){
+  const v = document.getElementById('dataDateInput').value;
+  if(!v) return;
+  dataDate = new Date(v + 'T00:00:00Z');
+  if(cpm) renderResults(); // just re-render, no need to re-run CPM
+}
+
+function toDateInputValue(d){
+  if(!d) return '';
+  const y = d.getUTCFullYear(), m = String(d.getUTCMonth()+1).padStart(2,'0'), day = String(d.getUTCDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+
+// Word-boundary matching, not plain substring - "roofing" as a bare substring
+// test would wrongly match inside "Waterproofing" (found during testing: every
+// waterproofing activity in the demo file matched Roofing). \b anchors each
+// keyword phrase to real word edges so "roofing" only matches as its own word.
+function escapeRegExp(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+function matchesKeyword(name, keywords){
+  const n = name || '';
+  return keywords.some(k => new RegExp('\\b' + escapeRegExp(k) + '\\b', 'i').test(n));
+}
+
+function runLeadTime(){
+  if(!programmeData) return;
+  document.getElementById('pageError').style.display = 'none';
+  try{
+    const projectStart = parseDate(programmeData.project.plan_start_date);
+    cpm = runCPM(programmeData.tasks, projectStart);
+  }catch(err){
+    document.getElementById('results').style.display = 'none';
+    const el = document.getElementById('pageError');
+    el.textContent = 'Could not compute the critical path for this file: ' + err.message + ' — no lead-time ranking can be produced until the schedule logic is fixed.';
+    el.style.display = 'block';
+    return;
+  }
+
+  // Auto-match: every non-complete activity tested against the keyword
+  // library. TK_Complete activities are excluded here - see "manual add"
+  // below for why they're not silently unavailable either.
+  matches = [];
+  matchIdCounter = 1;
+  programmeData.tasks.forEach(t => {
+    if(t.status_code === 'TK_Complete') return;
+    MATERIAL_LIBRARY.forEach(mat => {
+      if(matchesKeyword(t.task_name, mat.keywords)){
+        matches.push({ id: matchIdCounter++, materialKey: mat.key, materialLabel: mat.label, code: t.task_code, leadWeeks: mat.defaultWeeks, source: 'auto' });
+      }
+    });
+  });
+
+  populateManualActivityPicker();
+  populateManualMaterialPicker();
+  renderResults();
+  document.getElementById('results').style.display = 'block';
+}
+
+function populateManualActivityPicker(){
+  const sel = document.getElementById('manualActivity');
+  sel.innerHTML = '';
+  programmeData.tasks
+    .filter(t => t.status_code !== 'TK_Complete')
+    .forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t.task_code;
+      opt.textContent = `${t.task_code} — ${t.task_name}`;
+      sel.appendChild(opt);
+    });
+}
+
+function populateManualMaterialPicker(){
+  const sel = document.getElementById('manualMaterial');
+  sel.innerHTML = '';
+  MATERIAL_LIBRARY.forEach(mat => {
+    const opt = document.createElement('option');
+    opt.value = mat.key;
+    opt.textContent = `${mat.label} (default ${mat.defaultWeeks} wks)`;
+    sel.appendChild(opt);
+  });
+  const custom = document.createElement('option');
+  custom.value = '__custom';
+  custom.textContent = 'Custom / other material';
+  sel.appendChild(custom);
+  onManualMaterialChange();
+}
+
+function onManualMaterialChange(){
+  const key = document.getElementById('manualMaterial').value;
+  const mat = MATERIAL_LIBRARY.find(m => m.key === key);
+  document.getElementById('manualWeeks').value = mat ? mat.defaultWeeks : 0;
+}
+
+function addManualMatch(){
+  const code = document.getElementById('manualActivity').value;
+  const materialKey = document.getElementById('manualMaterial').value;
+  const weeks = parseFloat(document.getElementById('manualWeeks').value) || 0;
+  if(!code) return;
+  const mat = MATERIAL_LIBRARY.find(m => m.key === materialKey);
+  const materialLabel = mat ? mat.label : 'Custom / other material';
+  matches.push({ id: matchIdCounter++, materialKey: materialKey, materialLabel, code, leadWeeks: weeks, source: 'manual' });
+  renderResults();
+}
+
+function removeMatch(id){
+  matches = matches.filter(m => m.id !== id);
+  renderResults();
+}
+
+function updateLeadWeeks(id, value){
+  const m = matches.find(x => x.id === id);
+  if(!m) return;
+  m.leadWeeks = parseFloat(value) || 0;
+  renderResults();
+}
+
+// Total float and early-start both come straight out of the FloatCheck CPM
+// engine's own output (cpm.TF / cpm.ES) - nothing recomputed here.
+function computeRow(m){
+  const task = cpm.byCode[m.code];
+  if(!task){
+    return { ...m, error: 'Activity not found in this file.' };
+  }
+  const earlyStart = cpm.ES[m.code];
+  const totalFloat = cpm.TF[m.code];
+  if(!earlyStart){
+    return { ...m, taskName: task.task_name, error: 'Early-start date could not be computed for this activity (it may be disconnected from the schedule network).' };
+  }
+  const orderByDate = new Date(earlyStart.getTime() - m.leadWeeks * 7 * 86400000);
+  const daysRemaining = Math.round((orderByDate - dataDate) / 86400000);
+  return {
+    ...m,
+    taskName: task.task_name,
+    status: task.status_code,
+    earlyStart,
+    orderByDate,
+    daysRemaining,
+    totalFloat,
+    error: null,
+  };
+}
+
+function renderResults(){
+  const rows = matches.map(computeRow);
+
+  // Sort: your confirmed formula - days_remaining ascending is the primary
+  // key (the deadline that arrives soonest wins), total_float ascending only
+  // breaks ties on an identical countdown. Overdue items (days_remaining<0)
+  // are pinned above everything else, using the same rule within that group.
+  // Rows with an error (no computable date) sort to the very end, excluded
+  // from the ranking entirely rather than guessed at.
+  const withDate = rows.filter(r => !r.error);
+  const withError = rows.filter(r => r.error);
+  withDate.sort((a,b) => {
+    const aOverdue = a.daysRemaining < 0, bOverdue = b.daysRemaining < 0;
+    if(aOverdue !== bOverdue) return aOverdue ? -1 : 1;
+    if(a.daysRemaining !== b.daysRemaining) return a.daysRemaining - b.daysRemaining;
+    return a.totalFloat - b.totalFloat;
+  });
+  const sorted = [...withDate, ...withError];
+
+  const overdueCount = withDate.filter(r => r.daysRemaining < 0).length;
+  const dueSoonCount = withDate.filter(r => r.daysRemaining >= 0 && r.daysRemaining <= 14).length;
+  document.getElementById('kpiOverdue').textContent = overdueCount;
+  document.getElementById('kpiDueSoon').textContent = dueSoonCount;
+  document.getElementById('kpiTotal').textContent = matches.length;
+  document.getElementById('kpiDataDate').textContent = fmtDate(dataDate);
+
+  const tbody = document.getElementById('leadTableBody');
+  if(sorted.length === 0){
+    tbody.innerHTML = '<tr><td colspan="8" style="color:var(--muted);text-align:center;padding:20px;">No matched activities. Long-lead keywords didn\'t match anything in this file, or every match was removed &mdash; use "Add / Edit Matches" above to tag activities manually.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = sorted.map(r => {
+    const manualBadge = r.source === 'manual' ? '<span class="manual-badge">MANUAL</span>' : '';
+    if(r.error){
+      return `<tr>
+        <td>${r.materialLabel}${manualBadge}</td>
+        <td class="act-cell"><span class="act-code">${r.code}</span><br><span class="act-name">${r.taskName||'—'}</span></td>
+        <td>${r.leadWeeks} wks</td>
+        <td colspan="4" class="not-computable">${r.error}</td>
+        <td><button class="remove-btn" onclick="removeMatch(${r.id})">Remove</button></td>
+      </tr>`;
+    }
+    const rowClass = r.daysRemaining < 0 ? 'crit-row' : (r.daysRemaining <= 14 ? 'warn-row' : '');
+    const daysLabel = r.daysRemaining < 0
+      ? `<span class="flag overdue">${Math.abs(r.daysRemaining)}d OVERDUE</span>`
+      : (r.daysRemaining <= 14 ? `<span class="flag warn">${r.daysRemaining}d</span>` : `<span class="flag ok">${r.daysRemaining}d</span>`);
+    return `<tr class="${rowClass}">
+      <td>${r.materialLabel}${manualBadge}</td>
+      <td class="act-cell"><span class="act-code">${r.code}</span><br><span class="act-name">${r.taskName}</span></td>
+      <td><input type="number" class="lead-input" min="0" step="1" value="${r.leadWeeks}" onchange="updateLeadWeeks(${r.id}, this.value)"> wks</td>
+      <td>${fmtDate(r.earlyStart)}</td>
+      <td>${fmtDate(r.orderByDate)}</td>
+      <td>${daysLabel}</td>
+      <td>${r.totalFloat}d</td>
+      <td><button class="remove-btn" onclick="removeMatch(${r.id})">Remove</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function fmtDate(d){
+  if(!d) return '—';
+  return d.toLocaleDateString('en-AU', { day:'2-digit', month:'short', year:'numeric', timeZone:'UTC' });
+}
+
+function exportCSV(){
+  const rows = matches.map(computeRow);
+  const withDate = rows.filter(r => !r.error);
+  const withError = rows.filter(r => r.error);
+  withDate.sort((a,b) => {
+    const aOverdue = a.daysRemaining < 0, bOverdue = b.daysRemaining < 0;
+    if(aOverdue !== bOverdue) return aOverdue ? -1 : 1;
+    if(a.daysRemaining !== b.daysRemaining) return a.daysRemaining - b.daysRemaining;
+    return a.totalFloat - b.totalFloat;
+  });
+  const sorted = [...withDate, ...withError];
+
+  const esc = v => `"${String(v==null?'':v).replace(/"/g,'""')}"`;
+  const header = ['Material','Activity Code','Activity Name','Lead Time (wks)','Date Required On Site','Order By Date','Days Remaining','Overdue','Total Float (d, FloatCheck CPM engine)','Source','Note'];
+  const lines = [header.map(esc).join(',')];
+  sorted.forEach(r => {
+    if(r.error){
+      lines.push([r.materialLabel, r.code, r.taskName||'', r.leadWeeks, '', '', '', '', '', r.source, r.error].map(esc).join(','));
+    } else {
+      lines.push([
+        r.materialLabel, r.code, r.taskName, r.leadWeeks,
+        fmtDate(r.earlyStart), fmtDate(r.orderByDate),
+        r.daysRemaining < 0 ? '' : r.daysRemaining,
+        r.daysRemaining < 0 ? Math.abs(r.daysRemaining) : '',
+        r.totalFloat, r.source, ''
+      ].map(esc).join(','));
+    }
+  });
+  const csv = lines.join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `leadtime-order-list-${toDateInputValue(dataDate)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>

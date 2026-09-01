@@ -5,6 +5,7 @@
 <title>FloatCheck</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="lib/toolkit-ui.css">
 <style>
   /*
     Palette: graphite ground + copper/amber accent, named as drafting materials
@@ -169,8 +170,8 @@
   .reveal{opacity:0;transform:translateY(14px);transition:opacity .5s ease, transform .5s ease;}
   .reveal.revealed{opacity:1;transform:translateY(0);}
 
-  .site-footer{border-top:1px solid var(--line);padding-top:16px;font-size:12px;color:var(--muted2);}
-  .site-footer a{color:var(--accent);text-decoration:underline;}
+  /* .site-footer / .site-footer a now live in lib/toolkit-ui.css, shared
+     with leadtime.html and index.html - not redeclared here. */
   .ai-privacy-note{font-size:11px;color:var(--muted2);margin-bottom:12px;}
   .ai-privacy-note a{color:var(--accent);text-decoration:underline;}
   .color-legend{display:flex;gap:22px;align-items:center;flex-wrap:wrap;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);margin:0 0 14px;}
@@ -354,7 +355,7 @@
   @media print{
     body{background:#fff !important;background-image:none !important;color:#111;}
     .watermark, .titleblock, .tabbar, .back-link, .app-shell-context,
-    .uploads, #parseWarnings, .actions, button, .ai-privacy-note{display:none !important;}
+    .uploads, #parseWarnings, .actions, button, .ai-privacy-note, .toolkit-nav{display:none !important;}
     .tab-panel{display:none !important;}
     .tab-panel.print-target{display:block !important;}
     /* The tab's own section-title/intro paragraph are app navigation chrome
@@ -409,6 +410,15 @@
 </style>
 </head>
 <body>
+<nav class="toolkit-nav">
+  <div class="toolkit-nav-inner">
+    <a class="toolkit-nav-brand" href="index.html">Planning <span class="tnb-accent">Toolkit</span></a>
+    <div class="toolkit-nav-tools">
+      <span class="toolkit-nav-tool active">FloatCheck</span>
+      <a class="toolkit-nav-tool" href="leadtime.html">LeadTime</a>
+    </div>
+  </div>
+</nav>
 <div class="watermark" id="watermark" aria-hidden="true" style="display:none;"><div class="watermark-inner">DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE<br>DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE<br>DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE<br>DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE<br>DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE<br>DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE<br>DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE<br>DRAFT &mdash; NOT FOR ISSUE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DRAFT &mdash; NOT FOR ISSUE</div></div>
 <div class="wrap">
 
@@ -480,6 +490,7 @@
     </section>
 
     <footer class="site-footer">
+      <p>Part of the <a href="index.html">Planning Toolkit</a>. FloatCheck and LeadTime share the same CPM engine and the same demo project data.</p>
       <p>Currently supports Primavera P6 (.xer) files only. <a href="https://github.com/sashreek33-sudo/floatcheck" target="_blank" rel="noopener">View source on GitHub</a> &middot; <a href="privacy.html">Privacy</a> &middot; <a href="mailto:Sashreek33@gmail.com">Email</a> &middot; <a href="https://www.linkedin.com/in/sashreek-vijayakumar-449529267" target="_blank" rel="noopener">LinkedIn</a>.</p>
     </footer>
   </div>
