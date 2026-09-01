@@ -93,24 +93,54 @@
           <div class="shell-output-meta">DATA DATE 2026-06-15 &middot; 4 ROWS</div>
         </div>
         <div class="shell-table-wrap">
+          <!-- Column set matches leadtime.html's real results table exactly
+               (Material / Activity / Lead Time / Required On Site / Order By /
+               Days Remaining / Total Float) - this is a preview of the actual
+               tool's output, not a simplified mockup of it. The real table's
+               trailing empty th (its Remove-button column) is dropped here
+               since this preview isn't interactive. -->
           <table class="shell-table">
             <thead>
               <tr>
-                <th>#</th><th>MATERIAL</th><th>ACT ID</th><th class="num">LEAD</th><th class="num">ORDER BY</th><th class="num">DAYS REM</th><th class="num">TF</th>
+                <th>Material</th><th>Activity</th><th>Lead Time</th><th>Required On Site</th><th>Order By</th><th>Days Remaining</th><th>Total Float <span class="shell-float-note">(FloatCheck CPM)</span></th>
               </tr>
             </thead>
             <tbody>
               <tr class="is-urgent">
-                <td>01</td><td class="material-cell">Lifts / elevators</td><td>A5040</td><td class="num">30w</td><td class="num">2026-04-23</td><td class="num"><span class="shell-flag shell-flag-overdue">53d OVERDUE</span></td><td class="num">59d</td>
+                <td class="material-cell">Lifts / elevators</td>
+                <td><span class="act-code">A5040</span><br><span class="act-name">Passenger lift installation</span></td>
+                <td>30 wks</td>
+                <td>19 Nov 2026</td>
+                <td>23 Apr 2026</td>
+                <td><span class="shell-flag shell-flag-overdue">53d OVERDUE</span></td>
+                <td>59d</td>
               </tr>
               <tr>
-                <td>02</td><td>Switchboards / switchgear</td><td>A5030B</td><td class="num">24w</td><td class="num">2026-07-14</td><td class="num"><span class="shell-flag shell-flag-ok">29d</span></td><td class="num">36d</td>
+                <td>Switchboards / switchgear</td>
+                <td><span class="act-code">A5030B</span><br><span class="act-name">Main switchboard (MSB) installation</span></td>
+                <td>24 wks</td>
+                <td>29 Dec 2026</td>
+                <td>14 Jul 2026</td>
+                <td><span class="shell-flag shell-flag-ok">29d</span></td>
+                <td>36d</td>
               </tr>
               <tr>
-                <td>03</td><td>Structural steel</td><td>A4040</td><td class="num">16w</td><td class="num">2026-08-06</td><td class="num"><span class="shell-flag shell-flag-ok">52d</span></td><td class="num">39d</td>
+                <td>Structural steel</td>
+                <td><span class="act-code">A4040</span><br><span class="act-name">Structural steel erection &ndash; roof level plant deck</span></td>
+                <td>16 wks</td>
+                <td>26 Nov 2026</td>
+                <td>06 Aug 2026</td>
+                <td><span class="shell-flag shell-flag-ok">52d</span></td>
+                <td>39d</td>
               </tr>
               <tr>
-                <td>04</td><td>Roofing</td><td>A4050</td><td class="num">8w</td><td class="num">2026-10-29</td><td class="num"><span class="shell-flag shell-flag-ok">136d</span></td><td class="num">39d</td>
+                <td>Roofing</td>
+                <td><span class="act-code">A4050</span><br><span class="act-name">Roofing &ndash; metal deck and membrane</span></td>
+                <td>8 wks</td>
+                <td>24 Dec 2026</td>
+                <td>29 Oct 2026</td>
+                <td><span class="shell-flag shell-flag-ok">136d</span></td>
+                <td>39d</td>
               </tr>
             </tbody>
           </table>

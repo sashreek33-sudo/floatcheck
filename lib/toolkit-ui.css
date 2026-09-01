@@ -165,8 +165,11 @@
    preview reads as a screenshot of the actual tool, not a mockup of it. */
 .shell-table{min-width:640px;width:100%;border-collapse:collapse;font-size:12.5px;}
 .shell-table th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.8px;text-transform:uppercase;color:var(--muted);border-bottom:2px solid var(--line);padding:6px 8px;font-weight:500;}
-.shell-table th.num, .shell-table td.num{text-align:right;}
 .shell-table td{padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--text);}
+/* Same act-code/act-name split as leadtime.html's real Activity column. */
+.shell-table .act-code{font-family:'IBM Plex Mono',monospace;color:var(--muted);font-size:11px;}
+.shell-table .act-name{font-weight:500;}
+.shell-float-note{font-size:10.5px;color:var(--muted2);}
 .shell-table tbody tr:nth-child(even) td{background:rgba(255,255,255,0.018);}
 .shell-table tbody tr:hover td{background:rgba(201,134,46,0.07);transition:background .12s ease;}
 .shell-table tr.is-urgent td{background:var(--crit-bg);}
