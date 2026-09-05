@@ -30,116 +30,109 @@
   <section class="home-hero">
     <h1>Are you sure your project is on time?</h1>
     <p>A programme says a date. This tells you whether to believe it.</p>
-    <div class="home-dropzone-actions" style="margin-top:24px;">
-      <a class="home-btn home-btn-primary" href="#upload">Upload your programme</a>
-      <a class="home-btn home-btn-outline" href="#upload" onclick="setTimeout(loadHomeDemo, 350);">Try the demo</a>
+    <div class="home-dropzone-actions">
+      <a class="home-btn home-btn-primary" href="#questions">Upload your programme</a>
+      <a class="home-btn home-btn-outline" href="floatcheck.html">Try the demo</a>
     </div>
   </section>
 
-  <section class="home-step1" id="upload">
-    <div class="home-step1-grid">
-      <div class="home-dropzone" id="homeDropzone">
-        <div class="home-eyebrow">STEP 01 / LOAD A PROGRAMME</div>
-        <h2>Drop a programme file here</h2>
-        <p>Takes a Primavera P6 (.xer) export. The activity table, relationships and lead-time codes are read on load.</p>
-        <div class="home-dropzone-actions">
-          <button type="button" class="home-btn home-btn-primary" onclick="document.getElementById('fileInput').click()">SELECT FILE</button>
-          <button type="button" class="home-btn home-btn-outline" onclick="loadHomeDemo()">TRY THE DEMO</button>
-        </div>
-        <input type="file" id="fileInput" accept=".xer" style="display:none;">
-        <div class="home-dropzone-status" id="dropzoneStatus"></div>
+  <!-- Questions replace the old STEP 01 (upload) / STEP 02 (pick a tool)
+       split - those were two separate structures a visitor had to connect
+       themselves. Each row here is a question a planner actually asks,
+       paired with the engine that answers it and a real link straight into
+       that engine's own page (where the actual upload happens - each tool
+       already has its own working dropzone, unchanged). -->
+  <section class="home-questions" id="questions">
+    <div class="home-eyebrow">WHAT DO YOU NEED TO KNOW</div>
+    <div class="home-questions-grid">
+
+      <div class="home-questions-row">
+        <span class="home-questions-text">What changed between two updates?</span>
+        <span class="home-questions-engine">FLOATCHECK ENGINE</span>
+        <a class="home-questions-link" href="floatcheck.html">Run it &rarr;</a>
       </div>
-      <dl class="home-facts">
-        <dt>PARSE</dt><dd>IN-TAB</dd>
-        <dt>UPLOAD</dt><dd>NONE</dd>
-        <dt>ACCOUNT</dt><dd>NOT REQUIRED</dd>
-        <dt>COST</dt><dd>0.00</dd>
-      </dl>
+
+      <div class="home-questions-row">
+        <span class="home-questions-text">Is this schedule structurally sound? (DCMA 14)</span>
+        <span class="home-questions-engine">FLOATCHECK ENGINE</span>
+        <a class="home-questions-link" href="floatcheck.html">Run it &rarr;</a>
+      </div>
+
+      <div class="home-questions-row">
+        <span class="home-questions-text">What's happening in the next three weeks?</span>
+        <span class="home-questions-engine">FLOATCHECK ENGINE</span>
+        <a class="home-questions-link" href="floatcheck.html">Run it &rarr;</a>
+      </div>
+
+      <div class="home-questions-row">
+        <span class="home-questions-text">Where's the critical path, and what's near it?</span>
+        <span class="home-questions-engine">FLOATCHECK ENGINE</span>
+        <a class="home-questions-link" href="floatcheck.html">Run it &rarr;</a>
+      </div>
+
+      <div class="home-questions-row">
+        <span class="home-questions-text">What's the cheapest way to pull time back?</span>
+        <span class="home-questions-engine">FLOATCHECK ENGINE</span>
+        <a class="home-questions-link" href="floatcheck.html">Run it &rarr;</a>
+      </div>
+
+      <div class="home-questions-row">
+        <span class="home-questions-text">What has to be ordered this week?</span>
+        <span class="home-questions-engine">LEADTIME ENGINE</span>
+        <a class="home-questions-link" href="leadtime.html">Run it &rarr;</a>
+      </div>
+
     </div>
   </section>
 
-  <section class="home-step2">
-    <div class="home-step2-header">
-      <div class="home-eyebrow">STEP 02 / CHOOSE A TOOL TO RUN IT THROUGH</div>
-      <div class="home-step2-count">02 AVAILABLE</div>
-    </div>
-
+  <!-- Engines: what each one actually computes, not "click here to run it"
+       (that's the link column above) - and made explicit that both share
+       one CPM engine in /lib, so they never disagree with each other. -->
+  <section class="home-engines">
+    <div class="home-eyebrow">ENGINES</div>
     <div class="home-tool-grid">
 
       <article class="home-tool-card">
         <div>
           <div class="home-tool-card-head">
-            <span class="home-tool-card-id">T-01</span>
+            <span class="home-tool-card-id">E-01</span>
             <span class="home-tool-card-name">FLOATCHECK</span>
-            <span class="home-tool-card-tag">LIVE</span>
           </div>
-          <p class="home-tool-card-desc">What moved since the last update, and does the schedule pass DCMA 14?</p>
+          <p class="home-tool-card-desc">Parses a P6 (.xer) export, runs a forward and backward pass to get total float for every activity, then layers the DCMA 14-point health check and a greedy least-cost crashing model on top.</p>
         </div>
         <div class="home-tool-card-modules">
-          <div class="home-tool-card-modules-label">MODULES / 05</div>
+          <div class="home-tool-card-modules-label">COMPUTES</div>
           <ul>
-            <li>01&nbsp; update comparison</li>
-            <li>02&nbsp; DCMA 14-point health check</li>
-            <li>03&nbsp; 3-week look-ahead</li>
-            <li>04&nbsp; critical path timeline</li>
-            <li>05&nbsp; crashing workbench</li>
+            <li>01&nbsp; XER parsing (activities, relationships, WBS, calendars)</li>
+            <li>02&nbsp; CPM forward &amp; backward pass, total float</li>
+            <li>03&nbsp; DCMA 14-point schedule health check</li>
+            <li>04&nbsp; greedy least-cost crashing</li>
           </ul>
         </div>
-        <a class="home-tool-card-run" href="floatcheck.html">RUN FLOATCHECK &nbsp;&rarr;</a>
+        <a class="home-tool-card-run" href="floatcheck.html">OPEN FLOATCHECK &nbsp;&rarr;</a>
       </article>
 
       <article class="home-tool-card">
         <div>
           <div class="home-tool-card-head">
-            <span class="home-tool-card-id">T-02</span>
+            <span class="home-tool-card-id">E-02</span>
             <span class="home-tool-card-name">LEADTIME</span>
-            <span class="home-tool-card-tag">LIVE</span>
           </div>
-          <p class="home-tool-card-desc">What has to be ordered this week for the dates to hold?</p>
+          <p class="home-tool-card-desc">Takes the same CPM output and works backward from each material's lead time to an order-by date, then ranks every match against how much float it actually has.</p>
         </div>
         <div class="home-tool-card-modules">
-          <div class="home-tool-card-modules-label">OUTPUT</div>
+          <div class="home-tool-card-modules-label">COMPUTES</div>
           <ul>
-            <li>01&nbsp; order-by dates per material</li>
-            <li>02&nbsp; ranked by days remaining</li>
-            <li>03&nbsp; measured against total float</li>
+            <li>01&nbsp; keyword match to a long-lead material library</li>
+            <li>02&nbsp; backward pass from lead time to order-by date</li>
+            <li>03&nbsp; ranking by days remaining, tied against total float</li>
           </ul>
         </div>
-        <a class="home-tool-card-run" href="leadtime.html">RUN LEADTIME &nbsp;&rarr;</a>
+        <a class="home-tool-card-run" href="leadtime.html">OPEN LEADTIME &nbsp;&rarr;</a>
       </article>
 
     </div>
-  </section>
-
-  <section class="home-checks">
-    <div class="home-eyebrow">WHAT GETS CHECKED</div>
-    <div class="home-checks-grid">
-
-      <div class="home-checks-row">
-        <span class="home-checks-num">01</span>
-        <span class="home-checks-name">Update Comparison</span>
-        <span class="home-checks-desc">What moved between two P6 exports of the same programme, and what just went critical.</span>
-      </div>
-
-      <div class="home-checks-row">
-        <span class="home-checks-num">02</span>
-        <span class="home-checks-name">Schedule integrity</span>
-        <span class="home-checks-desc">The DCMA 14-point audit, plus logic and float-consistency checks against the file's own numbers.</span>
-      </div>
-
-      <div class="home-checks-row">
-        <span class="home-checks-num">03</span>
-        <span class="home-checks-name">Float</span>
-        <span class="home-checks-desc">What is critical now, and what is quietly heading there.</span>
-      </div>
-
-      <div class="home-checks-row">
-        <span class="home-checks-num">04</span>
-        <span class="home-checks-name">Procurement</span>
-        <span class="home-checks-desc">Long-lead items past their order-by date.</span>
-      </div>
-
-    </div>
+    <p class="home-engines-note">Both engines share one CPM implementation (<code>/lib/xer-parser.js</code>, <code>/lib/cpm-engine.js</code>, <code>/lib/float.js</code>) &mdash; the same forward/backward pass and the same float, not two separate calculations that could quietly disagree.</p>
   </section>
 
   <!-- The block below is a real preview: every figure in it comes from
@@ -201,72 +194,15 @@
 
 </div>
 
-<!-- Shared XER parsing + session store - same /lib as both tools. Plain
-     scripts (not type="module"), same file://-compatibility reasoning as
-     floatcheck.html/leadtime.html. This page only ever parses and stores a
-     file; it never runs CPM itself. -->
-<script src="lib/xer-parser.js"></script>
+<!-- Session store only (read-only here) - reflects a file already loaded via
+     floatcheck.html or leadtime.html in the status bar above. This page has
+     no upload control of its own any more (each tool's own dropzone is the
+     real upload path), so nothing here ever writes to the session. -->
 <script src="lib/session.js"></script>
 <script>
-const { parseXER, session } = window.FloatCheckLib;
-
-function applyParsedHome(parsed, fileName){
-  session.save('current', parsed, fileName);
-  document.getElementById('dropzoneStatus').textContent = `${fileName} — parsed, ready for a tool below`;
-  document.getElementById('homeDropzone').classList.add('home-dropzone-filled');
-  document.getElementById('homeFooterFile').textContent = `${fileName} LOADED`;
-}
-
-function handleHomeFile(file){
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    try{
-      applyParsedHome(parseXER(reader.result), file.name);
-    }catch(err){
-      document.getElementById('dropzoneStatus').textContent = `Could not parse this file: ${err.message}`;
-    }
-  };
-  reader.readAsText(file);
-}
-
-// "Try the demo" fetches demo-extended.xer - the same extended demo project
-// LeadTime's own "Load demo programme" button uses (29 activities, including
-// the long-lead-material activities LeadTime needs to have anything to
-// match), saved to its own file here so this page can fetch it without
-// duplicating LeadTime's embedded copy. Using FloatCheck's plainer two-file
-// demo instead would leave LeadTime with nothing to match on arrival, and
-// wouldn't reproduce the numbers in the sample output above.
-function loadHomeDemo(){
-  fetch('demo-extended.xer')
-    .then(res => res.text())
-    .then(text => applyParsedHome(parseXER(text), 'update_2026-06-15_current.xer (demo, extended with long-lead activities)'))
-    .catch(err => {
-      document.getElementById('dropzoneStatus').textContent = `Could not load the demo file: ${err.message}`;
-    });
-}
-
-document.getElementById('fileInput').addEventListener('change', e => handleHomeFile(e.target.files[0]));
 (() => {
-  const el = document.getElementById('homeDropzone');
-  el.addEventListener('dragover', e => { e.preventDefault(); el.classList.add('home-dropzone-hover'); });
-  el.addEventListener('dragleave', () => el.classList.remove('home-dropzone-hover'));
-  el.addEventListener('drop', e => {
-    e.preventDefault();
-    el.classList.remove('home-dropzone-hover');
-    handleHomeFile(e.dataTransfer.files[0]);
-  });
-})();
-
-// Reflect an already-populated session (e.g. coming back from a tool) so the
-// homepage doesn't claim "no file loaded" when one is in fact held.
-(() => {
-  const cur = session.load('current');
-  if(cur){
-    document.getElementById('dropzoneStatus').textContent = `${cur.fileName} — parsed, ready for a tool below`;
-    document.getElementById('homeDropzone').classList.add('home-dropzone-filled');
-    document.getElementById('homeFooterFile').textContent = `${cur.fileName} LOADED`;
-  }
+  const cur = window.FloatCheckLib.session.load('current');
+  if(cur) document.getElementById('homeFooterFile').textContent = `${cur.fileName} LOADED`;
 })();
 </script>
 

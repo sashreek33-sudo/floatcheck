@@ -21,7 +21,6 @@ dist/
 *.xer
 !update_2026-06-01_previous.xer
 !update_2026-06-15_current.xer
-!demo-extended.xer
 
 # Internal session bookkeeping — not public-facing documentation
 PROGRESS.md

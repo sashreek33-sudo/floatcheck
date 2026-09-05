@@ -108,41 +108,16 @@
 .home-hero{padding:52px 32px 40px;}
 .home-hero h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:62px;line-height:0.94;letter-spacing:0.005em;margin:0 0 14px;}
 .home-hero p{font-size:14px;line-height:1.5;margin:0;max-width:640px;color:var(--home-body);}
+.home-hero .home-dropzone-actions{margin-top:24px;}
 
-.home-step1{background:var(--home-alt-bg);border-top:1px solid var(--home-border-strong);border-bottom:1px solid var(--home-border-strong);padding:34px 32px 38px;}
-.home-step1-grid{display:grid;grid-template-columns:minmax(0,1fr) 232px;gap:40px;align-items:start;}
-@media (max-width:760px){ .home-step1-grid{grid-template-columns:1fr;} }
-
-.home-dropzone{border:1px dashed var(--home-dropzone-border);border-radius:2px;background:var(--home-dropzone-bg);padding:40px 36px 36px;}
 .home-eyebrow{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.18em;color:var(--home-muted);margin-bottom:18px;}
-.home-dropzone h2{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:40px;line-height:1;margin:0 0 12px;letter-spacing:0.01em;}
-.home-dropzone p{font-size:13px;line-height:1.55;margin:0 0 26px;max-width:480px;color:#3C382D;}
 .home-dropzone-actions{display:flex;gap:10px;flex-wrap:wrap;}
 .home-btn{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.14em;border-radius:2px;padding:12px 26px;cursor:pointer;text-decoration:none;display:inline-block;transition:background .15s ease, border-color .15s ease, color .15s ease;}
 .home-btn:hover{text-decoration:none;}
-/* .home-btn is also used on a real <button> (the upload control) alongside
-   the <a> tags it was first written for - this resets the handful of native
-   button defaults .home-btn doesn't already override, so both render
-   identically. */
-button.home-btn{margin:0;font:inherit;letter-spacing:inherit;}
 .home-btn-primary{background:var(--home-accent);color:var(--home-accent-ink);border:1px solid var(--home-accent-hover);}
 .home-btn-primary:hover{background:var(--home-accent-hover);color:var(--home-accent-ink);}
 .home-btn-outline{background:transparent;color:var(--home-ink);border:1px solid var(--home-dropzone-border);}
 .home-btn-outline:hover{border-color:var(--home-ink);color:var(--home-ink);}
-
-.home-facts{font-family:'IBM Plex Mono',monospace;font-size:11px;margin:4px 0 0;display:grid;grid-template-columns:auto 1fr;row-gap:9px;column-gap:16px;}
-.home-facts dt{color:var(--home-muted2);letter-spacing:0.12em;}
-.home-facts dd{margin:0;color:var(--home-ink);}
-
-/* Upload feedback for the homepage dropzone - a real drag/drop + parse
-   target now, not just links out to a tool's own upload screen. */
-.home-dropzone.home-dropzone-hover{border-color:var(--home-ink);background:var(--home-alt-bg);}
-.home-dropzone.home-dropzone-filled{border-style:solid;border-color:#2F6236;}
-.home-dropzone-status{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--home-muted2);margin-top:16px;min-height:1.4em;}
-
-.home-step2{padding:30px 32px 44px;}
-.home-step2-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;}
-.home-step2-count{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.18em;color:var(--home-muted3);}
 
 .home-tool-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:20px;}
 .home-tool-card{background:var(--home-card-bg);border:1px solid var(--home-border);border-radius:2px;padding:28px 28px 26px;display:flex;flex-direction:column;gap:20px;transition:border-color .15s ease;}
@@ -163,16 +138,29 @@ button.home-btn{margin:0;font:inherit;letter-spacing:inherit;}
 .home-note-label{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.14em;color:var(--home-ink);padding-top:2px;}
 .home-note-grid p{font-size:13px;line-height:1.6;margin:0;color:var(--home-body);}
 
-/* "What gets checked" - four real tools/checks, numbered like a spec sheet.
-   Same row-based rhythm as .home-note-grid but three columns (number / name
-   / description) rather than two, matching the wider reference layout. */
-.home-checks{padding:64px 32px 68px;}
-.home-checks-grid{display:grid;gap:0;max-width:1040px;}
-.home-checks-row{display:grid;grid-template-columns:52px minmax(0,220px) minmax(0,1fr);gap:20px;align-items:baseline;padding:22px 0;border-bottom:1px solid var(--home-border);}
-.home-checks-row:first-child{border-top:1px solid var(--home-border);}
-.home-checks-num{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--home-muted2);}
-.home-checks-name{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:24px;letter-spacing:0.01em;color:var(--home-ink);}
-.home-checks-desc{font-size:14px;line-height:1.5;color:var(--home-body);}
+/* Questions section - replaces the old STEP 01/STEP 02 split. Each row is a
+   question a planner actually asks, paired with the engine that answers it
+   and a real link through to that engine's page - the surface (questions)
+   and the underlying engines are shown as one connected list, not two
+   separate structures a visitor has to mentally reconcile themselves. */
+.home-questions{padding:64px 32px 68px;}
+.home-questions-grid{display:grid;gap:0;max-width:1040px;}
+.home-questions-row{display:grid;grid-template-columns:minmax(0,1fr) 150px 150px;gap:20px;align-items:center;padding:20px 0;border-bottom:1px solid var(--home-border);}
+.home-questions-row:first-child{border-top:1px solid var(--home-border);}
+.home-questions-text{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:21px;letter-spacing:0.005em;color:var(--home-ink);}
+.home-questions-engine{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.1em;color:var(--home-muted2);}
+.home-questions-link{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.06em;color:var(--home-ink);text-align:right;}
+.home-questions-link:hover{text-decoration:underline;}
+@media (max-width:700px){
+  .home-questions-row{grid-template-columns:1fr;gap:6px;padding:18px 0;}
+  .home-questions-link{text-align:left;}
+}
+
+/* Engines section - reuses the tool-card component (same visual language as
+   the questions-to-tools link above), describing what each engine actually
+   computes rather than "click here to run it". */
+.home-engines{background:var(--home-alt-bg);border-top:1px solid var(--home-border-strong);border-bottom:1px solid var(--home-border-strong);padding:56px 32px 60px;}
+.home-engines-note{font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:0.06em;color:var(--home-muted2);margin:28px 0 0;max-width:70ch;}
 
 /* Sample output card - a real preview of both tools' actual output on the
    bundled demo project (not a live-generated report - see the eyebrow note
