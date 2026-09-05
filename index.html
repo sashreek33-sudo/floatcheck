@@ -28,11 +28,15 @@
   </header>
 
   <section class="home-hero">
-    <h1>Planning Toolkit</h1>
-    <p>Schedule analysis tools for planning engineers, running entirely in the browser.</p>
+    <h1>Are you sure your project is on time?</h1>
+    <p>A programme says a date. This tells you whether to believe it.</p>
+    <div class="home-dropzone-actions" style="margin-top:24px;">
+      <a class="home-btn home-btn-primary" href="#upload">Upload your programme</a>
+      <a class="home-btn home-btn-outline" href="#upload" onclick="setTimeout(loadHomeDemo, 350);">Try the demo</a>
+    </div>
   </section>
 
-  <section class="home-step1">
+  <section class="home-step1" id="upload">
     <div class="home-step1-grid">
       <div class="home-dropzone" id="homeDropzone">
         <div class="home-eyebrow">STEP 01 / LOAD A PROGRAMME</div>
@@ -40,7 +44,7 @@
         <p>Takes a Primavera P6 (.xer) export. The activity table, relationships and lead-time codes are read on load.</p>
         <div class="home-dropzone-actions">
           <button type="button" class="home-btn home-btn-primary" onclick="document.getElementById('fileInput').click()">SELECT FILE</button>
-          <a class="home-btn home-btn-outline" href="leadtime.html">TRY THE DEMO</a>
+          <button type="button" class="home-btn home-btn-outline" onclick="loadHomeDemo()">TRY THE DEMO</button>
         </div>
         <input type="file" id="fileInput" accept=".xer" style="display:none;">
         <div class="home-dropzone-status" id="dropzoneStatus"></div>
@@ -107,14 +111,86 @@
     </div>
   </section>
 
+  <section class="home-checks">
+    <div class="home-eyebrow">WHAT GETS CHECKED</div>
+    <div class="home-checks-grid">
+
+      <div class="home-checks-row">
+        <span class="home-checks-num">01</span>
+        <span class="home-checks-name">Update Comparison</span>
+        <span class="home-checks-desc">What moved between two P6 exports of the same programme, and what just went critical.</span>
+      </div>
+
+      <div class="home-checks-row">
+        <span class="home-checks-num">02</span>
+        <span class="home-checks-name">Schedule integrity</span>
+        <span class="home-checks-desc">The DCMA 14-point audit, plus logic and float-consistency checks against the file's own numbers.</span>
+      </div>
+
+      <div class="home-checks-row">
+        <span class="home-checks-num">03</span>
+        <span class="home-checks-name">Float</span>
+        <span class="home-checks-desc">What is critical now, and what is quietly heading there.</span>
+      </div>
+
+      <div class="home-checks-row">
+        <span class="home-checks-num">04</span>
+        <span class="home-checks-name">Procurement</span>
+        <span class="home-checks-desc">Long-lead items past their order-by date.</span>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- The block below is a real preview: every figure in it comes from
+       actually running FloatCheck's and LeadTime's own logic (the same
+       lib/xer-parser.js, lib/cpm-engine.js and lib/float.js this page loads
+       below) against the bundled demo file. It is NOT a live, generated
+       report - there's no single "one-click assessment" feature that
+       produces a combined document like this yet, so the numbers are
+       computed once and written in here rather than regenerated on load. -->
+  <section class="home-output">
+    <div class="home-eyebrow">SAMPLE OUTPUT &mdash; FROM THE BUNDLED DEMO FILE, NOT LIVE-GENERATED</div>
+    <h2>What both tools actually find on one demo programme.</h2>
+    <p class="home-output-note">Compiled by hand from a real run of both tools against the demo file below - not a feature either tool has today. Every number is real output, not invented for this page.</p>
+
+    <div class="home-output-card">
+      <div class="home-output-head">
+        <span>DEMO FILE</span>
+        <span>UPDATE_2026-06-15_CURRENT.XER (EXTENDED) &middot; SRL-STNBOX &middot; 29 ACTIVITIES</span>
+      </div>
+      <div class="home-output-body">
+        <div class="home-output-title">PROGRAMME SUMMARY &mdash; SRL-STNBOX</div>
+        <div class="home-output-sub">Data date 15 Jun 2026 &middot; 29 activities, 31 relationships</div>
+
+        <div class="home-output-rule"></div>
+
+        <div class="home-output-rows">
+          <div class="home-output-row"><span class="home-output-tag na">CLAIMED</span><span>Completion date <strong>03 Mar 2027</strong>, per the file's own forward pass.</span></div>
+          <div class="home-output-row"><span class="home-output-tag ok">OK</span><span>21% complete by activity count, 22% duration-weighted &mdash; the two measures agree closely.</span></div>
+          <div class="home-output-row"><span class="home-output-tag warn">WARN</span><span>1 of 14 DCMA checks fails outright (critical-path/float consistency); 2 sit in the warning band (open-ended logic, high-float share).</span></div>
+          <div class="home-output-row"><span class="home-output-tag na">NOT ASSESSABLE</span><span>4 of 14 DCMA checks need data this file doesn't carry (hard constraints, resources, baseline CPLI/BEI).</span></div>
+          <div class="home-output-row"><span class="home-output-tag crit">CRITICAL</span><span>Passenger lift installation is 53 days past its order-by date. 3 other long-lead items are still within lead time.</span></div>
+          <div class="home-output-row"><span class="home-output-tag warn">FLAG</span><span>18 of 29 activities carry 5 days total float or less &mdash; 62% of the programme, a genuinely tight schedule.</span></div>
+        </div>
+
+        <div class="home-output-row" style="margin-top:18px;padding-top:16px;border-top:1px solid var(--home-border);">
+          <span class="home-output-tag na">NO DATA</span><span>Not cost-loaded &mdash; earned value analysis unavailable.</span>
+        </div>
+
+        <div class="home-output-summary">This demo project's completion measures agree with each other and its logic mostly holds. The one real flag is a lift package already 53 days late to order, sitting inside a schedule where most activities have five days of float or less to absorb any further slip.</div>
+      </div>
+    </div>
+  </section>
+
   <section class="home-note">
     <div class="home-note-grid">
-      <div class="home-note-label">ONE ENGINE</div>
-      <p>Both tools read one forward and backward pass, so they never disagree.</p>
       <div class="home-note-label">DETERMINISTIC</div>
-      <p>Same file, same numbers, every figure traceable to the activities that produced it.</p>
-      <div class="home-note-label">NO UPLOAD</div>
-      <p>Parsing and calculation happen in the browser tab.</p>
+      <p>Every number is calculated by code from the uploaded file. The same file produces the same result every time.</p>
+      <div class="home-note-label">IN-BROWSER</div>
+      <p>Nothing is uploaded to a server. The file is parsed and analysed in the browser tab.</p>
+      <div class="home-note-label">AI SCOPE</div>
+      <p>AI writes only the plain-English summary over numbers already computed. It never produces the numbers themselves.</p>
     </div>
   </section>
 
@@ -134,21 +210,40 @@
 <script>
 const { parseXER, session } = window.FloatCheckLib;
 
+function applyParsedHome(parsed, fileName){
+  session.save('current', parsed, fileName);
+  document.getElementById('dropzoneStatus').textContent = `${fileName} — parsed, ready for a tool below`;
+  document.getElementById('homeDropzone').classList.add('home-dropzone-filled');
+  document.getElementById('homeFooterFile').textContent = `${fileName} LOADED`;
+}
+
 function handleHomeFile(file){
   if(!file) return;
   const reader = new FileReader();
   reader.onload = () => {
     try{
-      const parsed = parseXER(reader.result);
-      session.save('current', parsed, file.name);
-      document.getElementById('dropzoneStatus').textContent = `${file.name} — parsed, ready for a tool below`;
-      document.getElementById('homeDropzone').classList.add('home-dropzone-filled');
-      document.getElementById('homeFooterFile').textContent = `${file.name} LOADED`;
+      applyParsedHome(parseXER(reader.result), file.name);
     }catch(err){
       document.getElementById('dropzoneStatus').textContent = `Could not parse this file: ${err.message}`;
     }
   };
   reader.readAsText(file);
+}
+
+// "Try the demo" fetches demo-extended.xer - the same extended demo project
+// LeadTime's own "Load demo programme" button uses (29 activities, including
+// the long-lead-material activities LeadTime needs to have anything to
+// match), saved to its own file here so this page can fetch it without
+// duplicating LeadTime's embedded copy. Using FloatCheck's plainer two-file
+// demo instead would leave LeadTime with nothing to match on arrival, and
+// wouldn't reproduce the numbers in the sample output above.
+function loadHomeDemo(){
+  fetch('demo-extended.xer')
+    .then(res => res.text())
+    .then(text => applyParsedHome(parseXER(text), 'update_2026-06-15_current.xer (demo, extended with long-lead activities)'))
+    .catch(err => {
+      document.getElementById('dropzoneStatus').textContent = `Could not load the demo file: ${err.message}`;
+    });
 }
 
 document.getElementById('fileInput').addEventListener('change', e => handleHomeFile(e.target.files[0]));

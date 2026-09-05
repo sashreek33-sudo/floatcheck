@@ -163,5 +163,38 @@ button.home-btn{margin:0;font:inherit;letter-spacing:inherit;}
 .home-note-label{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.14em;color:var(--home-ink);padding-top:2px;}
 .home-note-grid p{font-size:13px;line-height:1.6;margin:0;color:var(--home-body);}
 
+/* "What gets checked" - four real tools/checks, numbered like a spec sheet.
+   Same row-based rhythm as .home-note-grid but three columns (number / name
+   / description) rather than two, matching the wider reference layout. */
+.home-checks{padding:64px 32px 68px;}
+.home-checks-grid{display:grid;gap:0;max-width:1040px;}
+.home-checks-row{display:grid;grid-template-columns:52px minmax(0,220px) minmax(0,1fr);gap:20px;align-items:baseline;padding:22px 0;border-bottom:1px solid var(--home-border);}
+.home-checks-row:first-child{border-top:1px solid var(--home-border);}
+.home-checks-num{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--home-muted2);}
+.home-checks-name{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:24px;letter-spacing:0.01em;color:var(--home-ink);}
+.home-checks-desc{font-size:14px;line-height:1.5;color:var(--home-body);}
+
+/* Sample output card - a real preview of both tools' actual output on the
+   bundled demo project (not a live-generated report - see the eyebrow note
+   in the markup), styled as a compact drawing-adjacent status sheet rather
+   than a dashboard widget. */
+.home-output{background:var(--home-alt-bg);border-top:1px solid var(--home-border-strong);padding:64px 32px 72px;}
+.home-output h2{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:32px;line-height:1.1;margin:16px 0 0;max-width:22em;color:var(--home-ink);}
+.home-output-note{font-size:13px;line-height:1.5;color:var(--home-muted2);margin:12px 0 0;max-width:60ch;}
+.home-output-card{margin-top:32px;max-width:920px;background:var(--home-card-bg);border:1px solid var(--home-border);border-radius:2px;}
+.home-output-head{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:12px 22px;border-bottom:1px solid var(--home-border);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.1em;color:var(--home-muted2);flex-wrap:wrap;}
+.home-output-body{padding:26px 22px 30px;font-family:'IBM Plex Mono',monospace;font-size:13.5px;line-height:1.8;}
+.home-output-title{color:var(--home-ink);font-weight:600;letter-spacing:0.02em;font-size:14px;}
+.home-output-sub{color:var(--home-muted2);margin-top:3px;}
+.home-output-rule{height:1px;background:var(--home-border);margin:18px 0;}
+.home-output-rows{display:grid;gap:8px;}
+.home-output-row{display:grid;grid-template-columns:88px minmax(0,1fr);gap:16px;}
+.home-output-tag{font-size:10.5px;letter-spacing:0.1em;}
+.home-output-tag.ok{color:#2F6236;}
+.home-output-tag.warn{color:#6B5200;}
+.home-output-tag.crit{color:#A32A1C;}
+.home-output-tag.na{color:var(--home-muted2);}
+.home-output-summary{margin-top:20px;padding-top:16px;border-top:1px solid var(--home-border);color:var(--home-body);max-width:68ch;}
+
 .home-footer{background:var(--home-ink);color:var(--home-muted3);font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.16em;padding:0 32px;height:30px;display:flex;align-items:center;justify-content:space-between;}
 .home-footer-right{display:flex;gap:26px;}
