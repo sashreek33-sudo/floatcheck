@@ -34,14 +34,16 @@
 
   <section class="home-step1">
     <div class="home-step1-grid">
-      <div class="home-dropzone">
+      <div class="home-dropzone" id="homeDropzone">
         <div class="home-eyebrow">STEP 01 / LOAD A PROGRAMME</div>
         <h2>Drop a programme file here</h2>
         <p>Takes a Primavera P6 (.xer) export. The activity table, relationships and lead-time codes are read on load.</p>
         <div class="home-dropzone-actions">
-          <a class="home-btn home-btn-primary" href="leadtime.html">SELECT FILE</a>
+          <button type="button" class="home-btn home-btn-primary" onclick="document.getElementById('fileInput').click()">SELECT FILE</button>
           <a class="home-btn home-btn-outline" href="leadtime.html">TRY THE DEMO</a>
         </div>
+        <input type="file" id="fileInput" accept=".xer" style="display:none;">
+        <div class="home-dropzone-status" id="dropzoneStatus"></div>
       </div>
       <dl class="home-facts">
         <dt>PARSE</dt><dd>IN-TAB</dd>
@@ -117,11 +119,61 @@
   </section>
 
   <footer class="home-footer">
-    <span>NO FILE LOADED</span>
+    <span id="homeFooterFile">NO FILE LOADED</span>
     <span class="home-footer-right"><span>OFFLINE-CAPABLE</span><span>SIGNED OUT</span></span>
   </footer>
 
 </div>
+
+<!-- Shared XER parsing + session store - same /lib as both tools. Plain
+     scripts (not type="module"), same file://-compatibility reasoning as
+     floatcheck.html/leadtime.html. This page only ever parses and stores a
+     file; it never runs CPM itself. -->
+<script src="lib/xer-parser.js"></script>
+<script src="lib/session.js"></script>
+<script>
+const { parseXER, session } = window.FloatCheckLib;
+
+function handleHomeFile(file){
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const parsed = parseXER(reader.result);
+      session.save('current', parsed, file.name);
+      document.getElementById('dropzoneStatus').textContent = `${file.name} — parsed, ready for a tool below`;
+      document.getElementById('homeDropzone').classList.add('home-dropzone-filled');
+      document.getElementById('homeFooterFile').textContent = `${file.name} LOADED`;
+    }catch(err){
+      document.getElementById('dropzoneStatus').textContent = `Could not parse this file: ${err.message}`;
+    }
+  };
+  reader.readAsText(file);
+}
+
+document.getElementById('fileInput').addEventListener('change', e => handleHomeFile(e.target.files[0]));
+(() => {
+  const el = document.getElementById('homeDropzone');
+  el.addEventListener('dragover', e => { e.preventDefault(); el.classList.add('home-dropzone-hover'); });
+  el.addEventListener('dragleave', () => el.classList.remove('home-dropzone-hover'));
+  el.addEventListener('drop', e => {
+    e.preventDefault();
+    el.classList.remove('home-dropzone-hover');
+    handleHomeFile(e.dataTransfer.files[0]);
+  });
+})();
+
+// Reflect an already-populated session (e.g. coming back from a tool) so the
+// homepage doesn't claim "no file loaded" when one is in fact held.
+(() => {
+  const cur = session.load('current');
+  if(cur){
+    document.getElementById('dropzoneStatus').textContent = `${cur.fileName} — parsed, ready for a tool below`;
+    document.getElementById('homeDropzone').classList.add('home-dropzone-filled');
+    document.getElementById('homeFooterFile').textContent = `${cur.fileName} LOADED`;
+  }
+})();
+</script>
 
 </body>
 </html>

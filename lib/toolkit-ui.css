@@ -120,6 +120,11 @@
 .home-dropzone-actions{display:flex;gap:10px;flex-wrap:wrap;}
 .home-btn{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.14em;border-radius:2px;padding:12px 26px;cursor:pointer;text-decoration:none;display:inline-block;transition:background .15s ease, border-color .15s ease, color .15s ease;}
 .home-btn:hover{text-decoration:none;}
+/* .home-btn is also used on a real <button> (the upload control) alongside
+   the <a> tags it was first written for - this resets the handful of native
+   button defaults .home-btn doesn't already override, so both render
+   identically. */
+button.home-btn{margin:0;font:inherit;letter-spacing:inherit;}
 .home-btn-primary{background:var(--home-accent);color:var(--home-accent-ink);border:1px solid var(--home-accent-hover);}
 .home-btn-primary:hover{background:var(--home-accent-hover);color:var(--home-accent-ink);}
 .home-btn-outline{background:transparent;color:var(--home-ink);border:1px solid var(--home-dropzone-border);}
@@ -128,6 +133,12 @@
 .home-facts{font-family:'IBM Plex Mono',monospace;font-size:11px;margin:4px 0 0;display:grid;grid-template-columns:auto 1fr;row-gap:9px;column-gap:16px;}
 .home-facts dt{color:var(--home-muted2);letter-spacing:0.12em;}
 .home-facts dd{margin:0;color:var(--home-ink);}
+
+/* Upload feedback for the homepage dropzone - a real drag/drop + parse
+   target now, not just links out to a tool's own upload screen. */
+.home-dropzone.home-dropzone-hover{border-color:var(--home-ink);background:var(--home-alt-bg);}
+.home-dropzone.home-dropzone-filled{border-style:solid;border-color:#2F6236;}
+.home-dropzone-status{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--home-muted2);margin-top:16px;min-height:1.4em;}
 
 .home-step2{padding:30px 32px 44px;}
 .home-step2-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;}

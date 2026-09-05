@@ -8,19 +8,31 @@
 <link rel="stylesheet" href="lib/toolkit-ui.css">
 <style>
   /*
-    Palette: graphite ground + copper/amber accent, named as drafting materials
-    rather than generic UI roles - this is a drawing sheet, not a dashboard.
-      --bg / --panel / --panel-raised / --line   graphite (the sheet + its rules)
-      --text                                     parchment (warm near-white ink)
-      --muted / --muted2                         pencil (faded graphite line)
-      --accent                                   copper (drafting-pen ochre - interactive only)
-      --crit / --warn / --ok                     status ink, kept distinct from accent
+    Re-themed light per the approved component reference sheet - same
+    mapping already applied to leadtime.html, extended here to FloatCheck's
+    larger component set (title block, tabs, health check, crash workbench,
+    report panels, print). Token values are copied verbatim from that
+    sheet, not invented. Copper (--accent) is unchanged; everything else
+    moved from the old dark graphite palette to this light one.
+
+    --panel-raised keeps its old name here (unlike leadtime.html's --inset)
+    but is repointed to the sheet's INSET value (#EFECE4) - FloatCheck has
+    far more rules referencing --panel-raised (crash inputs, select,
+    scenario cards, narrative boxes, WBS bands) than leadtime.html did, and
+    every one of those genuinely wants the INSET tone, so repointing the
+    existing token name was the lower-risk path per "change tokens first" -
+    only the two cases below that need a *different* tone (dropzone
+    default/hover, and the plain "secondary button" treatment) are handled
+    as their own rules, not via this token.
   */
   :root{
-    --bg:#14171A; --panel:#1B1F23; --panel-raised:#242A31; --line:#333B44;
-    --text:#EDE9DE; --muted:#93897A; --muted2:#5F5A50;
-    --crit:#D1544C; --warn:#D6A23C; --ok:#6FA285; --accent:#C9862E; --accent-hi:#E0A050;
-    --crit-bg:rgba(209,84,76,0.12); --warn-bg:rgba(214,162,60,0.12); --ok-bg:rgba(111,162,133,0.12);
+    --bg:#F3F1EC; --band:#E7E3D9; --panel:#FBFAF6; --panel-raised:#EFECE4; --line:#DAD5C8;
+    --line-dashed:#A9A292;
+    --text:#16150F; --body:#3C382D; --muted:#8A8271; --muted2:#7C7565;
+    --crit:#A32A1C; --warn:#6B5200; --ok:#2F6236; --accent:#C9862E; --accent-hi:#B0741F; --accent-ink:#FFFDF8;
+    --crit-bg:#F4DED8; --warn-bg:#F1E7CB; --ok-bg:#E0EADC;
+    --table-zebra:#F7F5EF; --table-row-line:#E9E3D6; --table-hover:#F1EEE5;
+    --dropzone-bg:#EFECE4; --dropzone-hover-bg:#E9E4D6;
   }
   *{box-sizing:border-box;}
 
@@ -94,7 +106,7 @@
     color:var(--crit);background:var(--bg);
     border:2px solid var(--crit);padding:3px 10px;
     transform:rotate(-5deg);
-    box-shadow:inset 0 0 0 1px rgba(209,84,76,0.35);
+    box-shadow:inset 0 0 0 1px rgba(163,42,28,0.35); /* new --crit as rgb */
   }
 
   /* Draft watermark - fixed so it stays put while the page scrolls, sits behind
@@ -108,25 +120,31 @@
   }
   .wrap{position:relative;z-index:1;}
 
-  /* Upload row */
+  /* Upload row - dropzone default/hover use their own dedicated tones
+     (component sheet section 09), not --panel/--panel-raised: default is
+     INSET, hover is a distinct near-inset tone, and hover border goes to
+     --text, explicitly not copper ("NEVER COPPER" per the reference). */
   .uploads{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px;}
   @media (max-width:760px){ .uploads{grid-template-columns:1fr;} }
-  .dropzone{border:1px dashed var(--line);padding:22px 16px;text-align:center;cursor:pointer;transition:border-color .15s, background .15s, transform .15s ease;position:relative;background:var(--panel);}
-  .dropzone:hover{border-color:var(--accent);background:var(--panel-raised);transform:translateY(-2px);}
+  .dropzone{border:1px dashed var(--line-dashed);padding:22px 16px;text-align:center;cursor:pointer;transition:border-color .15s, background .15s, transform .15s ease;position:relative;background:var(--dropzone-bg);}
+  .dropzone:hover{border-color:var(--text);background:var(--dropzone-hover-bg);transform:translateY(-2px);}
   .dropzone.filled{border-style:solid;border-color:var(--ok);background:var(--ok-bg);}
   .dz-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:8px;}
   .dz-file{font-size:13px;color:var(--text);word-break:break-all;}
-  .dz-hint{font-size:12px;color:var(--muted2);margin-top:4px;}
+  .dz-hint{font-size:12px;color:var(--body);margin-top:4px;}
   input[type=file]{display:none;}
 
   .parse-warning{border:1px solid var(--warn);background:var(--warn-bg);color:var(--warn);padding:10px 14px;font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1.6;margin-bottom:16px;}
 
   .actions{display:flex;gap:10px;align-items:center;margin-bottom:30px;flex-wrap:wrap;}
-  button{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:12px;letter-spacing:0.5px;text-transform:uppercase;border-radius:0;border:1px solid var(--line);background:var(--panel-raised);color:var(--text);padding:10px 18px;cursor:pointer;transition:border-color .15s, background .15s, color .15s, transform .15s ease;}
-  button:hover:not(:disabled){border-color:var(--accent);color:var(--accent);transform:translateY(-1px);}
+  /* Secondary buttons are transparent with a dashed-tone border, hover to
+     --text only (not copper) - component sheet section 10. Copper stays
+     exclusive to button.primary below. */
+  button{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:12px;letter-spacing:0.5px;text-transform:uppercase;border-radius:0;border:1px solid var(--line-dashed);background:transparent;color:var(--text);padding:10px 18px;cursor:pointer;transition:border-color .15s, background .15s, color .15s, transform .15s ease;}
+  button:hover:not(:disabled){border-color:var(--text);transform:translateY(-1px);}
   button:active:not(:disabled){transform:translateY(0);}
-  button.primary{background:var(--accent);border-color:var(--accent);color:#14171A;}
-  button.primary:hover:not(:disabled){background:var(--accent-hi);border-color:var(--accent-hi);color:#14171A;}
+  button.primary{background:var(--accent);border-color:var(--accent-hi);color:var(--accent-ink);}
+  button.primary:hover:not(:disabled){background:var(--accent-hi);border-color:var(--accent-hi);color:var(--accent-ink);}
   button:disabled{opacity:0.4;cursor:not-allowed;}
   .run-loading{display:inline-flex;align-items:center;gap:8px;}
   .run-loading .dot{background:currentColor;}
@@ -141,7 +159,7 @@
   .wm-a{color:var(--text);}
   .wm-b{color:var(--accent);}
   .hero-pitch{font-family:'IBM Plex Sans',sans-serif;font-size:27px;font-weight:600;color:var(--text);margin:0 0 18px;line-height:1.35;max-width:700px;}
-  .hero-trust{max-width:600px;font-size:13px;line-height:1.65;color:var(--muted);margin:0 0 22px;}
+  .hero-trust{max-width:600px;font-size:13px;line-height:1.65;color:var(--body);margin:0 0 22px;}
   .hero-demo-link{font-size:13px;}
 
   .tool-menu-eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin:0 0 14px;padding-left:10px;border-left:2px solid var(--accent);}
@@ -177,7 +195,7 @@
   .color-legend{display:flex;gap:22px;align-items:center;flex-wrap:wrap;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);margin:0 0 14px;}
   .legend-item{display:flex;align-items:center;gap:7px;}
   .legend-swatch{width:11px;height:11px;display:inline-block;flex-shrink:0;}
-  .legend-swatch.legend-crit{background:repeating-linear-gradient(45deg, var(--crit) 0 3px, #14171A 3px 6px);}
+  .legend-swatch.legend-crit{background:repeating-linear-gradient(45deg, var(--crit) 0 3px, var(--crit-bg) 3px 6px);}
   .legend-swatch.legend-warn{background:var(--warn);}
   .legend-swatch.legend-ok{background:var(--ok);}
   .legend-spacer{flex:1;}
@@ -235,28 +253,45 @@
      zebra shading, and WBS shown as grouping bands (P6's "group & sort by WBS"
      view) with activities indented beneath, rather than a repeated column. */
   .section-title{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin:0 0 12px;font-weight:600;padding-left:10px;border-left:2px solid var(--accent);}
+  /* Header/zebra/hover use their own explicit tones now (component sheet
+     section 02), not the dark theme's rgba-overlay tricks - a whisper of
+     white barely does anything visible over a light base the way it did
+     over dark. Hover goes to a neutral tone, not the copper tint the dark
+     theme used - never-copper-on-hover, same as the dropzone/buttons. */
   table{width:100%;border-collapse:collapse;font-size:12.5px;margin-bottom:28px;}
-  th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.8px;text-transform:uppercase;color:var(--muted);border-bottom:2px solid var(--line);padding:6px 10px;font-weight:500;}
-  td{padding:5px 10px;border-bottom:1px solid var(--line);vertical-align:top;}
-  tbody tr:nth-child(even) td{background:rgba(255,255,255,0.018);}
-  tbody tr:not(.wbs-band):hover td{background:rgba(201,134,46,0.07);transition:background .12s ease;}
+  th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.8px;text-transform:uppercase;color:var(--muted);background:var(--panel-raised);border-bottom:2px solid var(--line);padding:6px 10px;font-weight:500;}
+  td{padding:5px 10px;border-bottom:1px solid var(--table-row-line);vertical-align:top;}
+  tbody tr:nth-child(even) td{background:var(--table-zebra);}
+  tbody tr:not(.wbs-band):hover td{background:var(--table-hover);transition:background .12s ease;}
   tr.wbs-band td{background:var(--panel-raised);font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted);padding:5px 10px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
   tr.wbs-band:first-child td{border-top:none;}
   td.act-cell{padding-left:20px;border-left:2px solid var(--line);}
   tr.crit-row td{background:var(--crit-bg);}
   tr.warn-row td{background:var(--warn-bg);}
   tr.crit-row td.act-cell{position:relative;border-left:none;}
-  tr.crit-row td.act-cell::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:repeating-linear-gradient(45deg, var(--crit) 0 4px, #14171A 4px 8px);}
+  /* Hazard stripe's alternating colour was hardcoded to the old dark page
+     background so the "gap" between diagonal bars showed the page through -
+     on light that gap has to be the row's own tint (--crit-bg) instead, or
+     it reads as broken near-black squares. */
+  tr.crit-row td.act-cell::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:repeating-linear-gradient(45deg, var(--crit) 0 4px, var(--crit-bg) 4px 8px);}
   .act-code{font-family:'IBM Plex Mono',monospace;color:var(--muted);font-size:11px;}
   .act-name{font-weight:500;}
   .flag{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;padding:2px 7px;letter-spacing:0.5px;border:1px solid currentColor;background:transparent;}
-  .flag.crit{background:repeating-linear-gradient(45deg, var(--crit) 0 6px, #14171A 6px 12px);color:var(--text);border-color:var(--crit);font-weight:700;animation:critPulse 2.4s ease-in-out infinite;}
+  /* CRITICAL badge text sits across BOTH the dark-red and light-pink halves
+     of the diagonal stripe - a single text colour can't have good contrast
+     against both. --panel (light) text + a dark --crit text-shadow keeps it
+     legible on both halves; this is the one place a straight colour swap
+     genuinely wasn't enough, since the dark theme's light-on-mostly-dark
+     text doesn't have the same problem a light theme's dark/light stripe
+     pairing does. Print already flattens this to plain outlined black text
+     (see @media print), so this only matters on screen. */
+  .flag.crit{background:repeating-linear-gradient(45deg, var(--crit) 0 6px, var(--crit-bg) 6px 12px);color:var(--panel);text-shadow:0 0 2px var(--crit);border-color:var(--crit);font-weight:700;animation:critPulse 2.4s ease-in-out infinite;}
   .flag.warn{color:var(--warn);}
   .flag.ok{color:var(--ok);}
   /* Reserved for genuine CRITICAL flags only (see .flag.crit above) - a slow,
      quiet glow, not a blink, so it reads as "pay attention here" rather than
      an alarm. NEAR-CRIT/STABLE never get this, preserving what the flag means. */
-  @keyframes critPulse{0%,100%{box-shadow:0 0 0 rgba(209,84,76,0);}50%{box-shadow:0 0 7px rgba(209,84,76,0.55);}}
+  @keyframes critPulse{0%,100%{box-shadow:0 0 0 rgba(163,42,28,0);}50%{box-shadow:0 0 7px rgba(163,42,28,0.55);}}
 
   /* Table rows stagger in on first render of a fresh result set - a quiet
      cascade rather than a static dump of a table. animation-delay is set
@@ -282,7 +317,7 @@
   #reportBody ul, #fullReportBody ul, #narrativeExampleBody ul{margin:0 0 12px;padding-left:20px;}
   #reportBody li, #fullReportBody li, #narrativeExampleBody li{margin-bottom:6px;}
   #reportBody strong, #fullReportBody strong, #narrativeExampleBody strong{color:var(--text);}
-  .narrative-example-wrap{margin-top:18px;border:1px dashed var(--line);background:var(--panel-raised);padding:16px 18px;}
+  .narrative-example-wrap{margin-top:18px;border:1px dashed var(--line-dashed);background:var(--panel-raised);padding:16px 18px;}
   .example-label{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--accent);border:1px solid var(--accent);padding:3px 8px;margin-bottom:10px;}
   .example-note{font-size:12px;color:var(--muted2);margin-bottom:14px;}
   .report-actions{display:flex;justify-content:flex-end;gap:10px;margin-bottom:10px;}
@@ -311,7 +346,7 @@
   .crash-intro{font-size:12.5px;color:var(--muted);margin:0 0 14px;line-height:1.5;}
   .crash-panel table{margin-bottom:16px;}
   .crash-panel input[type=number]{background:var(--panel-raised);border:1px solid var(--line);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:13px;padding:5px 8px;border-radius:0;width:90px;}
-  .crash-panel input[type=number]:focus{outline:none;border-color:var(--accent);}
+  .crash-panel input[type=number]:focus{outline:none;border-color:var(--text);}
   .scenario-compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;}
   .scenario-col{border:1px solid var(--line);padding:16px 18px;background:var(--panel-raised);}
   .scenario-col-label{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;letter-spacing:0.3px;text-transform:uppercase;color:var(--accent);margin-bottom:12px;}
@@ -319,7 +354,7 @@
   .scenario-stat span:last-child{color:var(--text);font-weight:600;}
   .scenario-stat span.warn{color:var(--warn);}
   .scenario-note{font-size:11px;color:var(--muted2);margin-top:8px;}
-  .scenario-activities{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);line-height:1.6;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);}
+  .scenario-activities{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);line-height:1.6;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line-dashed);}
   .crash-controls{display:flex;align-items:center;gap:16px;padding-top:6px;border-top:1px solid var(--line);flex-wrap:wrap;}
   .crash-target-label{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);display:flex;align-items:center;gap:8px;letter-spacing:0.5px;text-transform:uppercase;}
   .crash-target-label input{width:70px;}
@@ -339,7 +374,10 @@
   .status-pill{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;padding:2px 7px;letter-spacing:0.5px;border:1px solid currentColor;background:transparent;}
   .status-pill.pass{color:var(--ok);}
   .status-pill.warn{color:var(--warn);}
-  .status-pill.fail{background:repeating-linear-gradient(45deg, var(--crit) 0 6px, #14171A 6px 12px);color:var(--text);border-color:var(--crit);font-weight:700;}
+  /* Same fix as .flag.crit above - stripe alternates --crit/--crit-bg on
+     light, and needs the light-text-with-dark-shadow treatment to stay
+     legible across both halves. */
+  .status-pill.fail{background:repeating-linear-gradient(45deg, var(--crit) 0 6px, var(--crit-bg) 6px 12px);color:var(--panel);text-shadow:0 0 2px var(--crit);border-color:var(--crit);font-weight:700;}
   .status-pill.na{color:var(--muted2);border-color:var(--line);}
 
   /* Look-ahead */
@@ -791,12 +829,13 @@
 <script src="lib/xer-parser.js"></script>
 <script src="lib/float.js"></script>
 <script src="lib/cpm-engine.js"></script>
+<script src="lib/session.js"></script>
 
 <script>
 // Pulled in from /lib (see the <script src> tags above) rather than defined
 // inline here - same functions, same maths, just extracted so a second tool
 // in this repo can share them without copy-pasting.
-const { parseXER, parseDate, workdaysBetween, addWorkdays, subWorkdays, offsetWorkdays, runCPM } = window.FloatCheckLib;
+const { parseXER, parseDate, workdaysBetween, addWorkdays, subWorkdays, offsetWorkdays, runCPM, session } = window.FloatCheckLib;
 
 // ---------- Demo data ----------
 const DEMO_PREV = `
@@ -1124,6 +1163,11 @@ document.getElementById('fileTrend').addEventListener('change', e=> handleTrendF
   });
 });
 
+// which: 'prev'|'curr'|'baseline' - maps onto the session store's slot names
+// ('prev' -> 'previous') since this file's internal naming predates the
+// shared session module and there was no reason to rename it everywhere.
+const SESSION_SLOT_FOR_WHICH = { prev:'previous', curr:'current', baseline:'baseline' };
+
 function handleFile(file, which){
   if(!file) return;
   window._isDemo = false;
@@ -1134,6 +1178,7 @@ function handleFile(file, which){
       if(which==='prev'){ prevData=parsed; document.getElementById('dzPrevText').textContent=file.name; document.getElementById('dzPrev').classList.add('filled'); }
       else if(which==='curr'){ currData=parsed; document.getElementById('dzCurrText').textContent=file.name; document.getElementById('dzCurr').classList.add('filled'); }
       else { baselineData=parsed; document.getElementById('dzBaselineText').textContent=file.name; document.getElementById('dzBaseline').classList.add('filled'); }
+      session.save(SESSION_SLOT_FOR_WHICH[which], parsed, file.name);
       updateRunButton();
       updateParseWarnings();
     }catch(err){
@@ -1142,6 +1187,40 @@ function handleFile(file, which){
   };
   reader.readAsText(file);
 }
+
+// Session hydration: if a previous page (index.html, or this same tool on an
+// earlier visit) already parsed a file into the shared session store, load
+// it straight into state on arrival rather than making the user re-upload.
+// The dropzone stays fully live afterwards - clicking or dropping a new file
+// on it goes through handleFile() exactly as normal and overwrites both the
+// in-memory data and the stored session slot. Demo data is deliberately not
+// written to the session (window._isDemo stays false-equivalent for real
+// uploads only), so loading the demo never clobbers a real session slot.
+function hydrateFromSession(){
+  const cur = session.load('current');
+  if(cur){
+    currData = cur.data;
+    document.getElementById('dzCurrText').textContent = cur.fileName + ' (from session)';
+    document.getElementById('dzCurr').classList.add('filled');
+  }
+  const prev = session.load('previous');
+  if(prev){
+    prevData = prev.data;
+    document.getElementById('dzPrevText').textContent = prev.fileName + ' (from session)';
+    document.getElementById('dzPrev').classList.add('filled');
+  }
+  const base = session.load('baseline');
+  if(base){
+    baselineData = base.data;
+    document.getElementById('dzBaselineText').textContent = base.fileName + ' (from session)';
+    document.getElementById('dzBaseline').classList.add('filled');
+  }
+  if(cur || prev || base){
+    updateRunButton();
+    updateParseWarnings();
+  }
+}
+hydrateFromSession();
 
 function loadDemo(){
   window._isDemo = true;
