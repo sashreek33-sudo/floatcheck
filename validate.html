@@ -227,6 +227,19 @@ function run(text, fileName, isSynthetic){
   }
   html += `</section>`;
 
+  // ---- Standing engine-limitations caveat. Unconditional - prints on every
+  // run regardless of what the file contains or whether anything mismatched,
+  // directly below SCHEDOPTIONS per instruction. Distinct from (and not a
+  // replacement for) the narrower "how this engine actually schedules" box
+  // further down, which restates some of this in more technical/code terms
+  // right next to the diff table itself. ----
+  html += `<section class="block"><div class="caveat-box" style="border-color:#666;">
+    <strong>ENGINE LIMITATIONS — results reflect the current engine's assumptions.</strong><br>
+    Calendar: Mon–Fri 5-day week assumed for all activities. Files with 6-day weeks, shift patterns, or public holidays will show systematic date and float deltas — this is expected, not a data error.<br>
+    Backward pass anchor: project finish computed as max Early Finish across all open activities. Files where P6 used an explicit must-finish date later than the longest path will show float deltas on open-ended chains.<br>
+    Progress: engine uses remain_drtn_hr_cnt for TK_Active but starts from plan_start_date, not data date. Progressed files will show early-start deltas on active activities.
+  </div></section>`;
+
   // ---- Criticality rule (PROJECT.critical_path_type / critical_drtn_hr_cnt) ----
   html += `<section class="block"><div class="block-title">Criticality Rule (PROJECT)</div>`;
   const cpType = fieldPresentInSchema(rawProject.headers, 'critical_path_type') ? data.project.critical_path_type : null;
