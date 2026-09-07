@@ -1,0 +1,53 @@
+ERMHDR	18.8	2026-04-08	Project	Synthetic Verification	validate@floatcheck.local	FloatCheck Validation Harness	Project Management	GMT
+%T	PROJECT
+%F	proj_id	proj_short_name	plan_start_date	plan_end_date	last_recalc_date	critical_path_type	critical_drtn_hr_cnt
+%R	9001	SYNTH-VERIFY	2026-04-01 08:00	2026-07-01 08:00	2026-04-08 08:00	CT_TotFloat	0
+%E
+%T	SCHEDOPTIONS
+%F	sched_float_type	sched_use_project_end_date_for_float	sched_open_critical_flag	sched_retained_logic	sched_progress_override	sched_calendar_on_relationship_lag	sched_outer_depend_type
+%R	FT_Min	N	Y	RetainedLogic	N	Calendar Of Predecessor Activity	OD_All
+%E
+%T	PROJWBS
+%F	wbs_id	proj_id	wbs_short_name	wbs_name
+%R	9001	9001	PREP	Site Preparation
+%R	9002	9001	OFFICE	Site Office & Handover
+%R	9003	9001	EARTH	Earthworks
+%R	9004	9001	MISC	Unplanned / Misc
+%E
+%T	CALENDAR
+%F	clndr_id	clndr_name	day_hr_cnt
+%R	1	Standard 5 Day Week	8
+%R	2	Extended 6 Day Week	8
+%E
+%T	TASK
+%F	task_id	proj_id	wbs_id	task_code	task_name	task_type	status_code	clndr_id	target_drtn_hr_cnt	remain_drtn_hr_cnt	early_start_date	early_end_date	late_start_date	late_end_date	act_start_date	act_end_date	total_float_hr_cnt	driving_path_flag	cstr_type	cstr_date	phys_complete_pct
+%R	6000	9001	9001	A100	Mobilise site	TT_Task	TK_NotStart	1	40		2026-04-01 08:00	2026-04-08 08:00	2026-04-01 08:00	2026-04-08 08:00			0	Y			0
+%R	6001	9001	9001	A110	Site clearance	TT_Task	TK_NotStart	1	80		2026-04-09 08:00	2026-04-22 08:00	2026-05-29 08:00	2026-06-12 08:00			296	N			0
+%R	6002	9001	9001	A120	Temp fencing	TT_Task	TK_NotStart	2	40		2026-04-10 08:00	2026-04-17 08:00	2026-04-23 08:00	2026-05-01 08:00			72	N			0
+%R	6003	9001	9002	A130	Site office fit-out	TT_Rsrc	TK_NotStart	1	24		2026-04-22 08:00	2026-04-27 08:00	2026-06-12 08:00	2026-06-17 08:00			296	N	CS_MEOB	2026-04-20 17:00	0
+%R	6004	9001	9001	A140	Enabling works complete	TT_Mile	TK_NotStart	1	0		2026-04-27 08:00	2026-04-17 08:00	2026-04-30 08:00	2026-05-10 08:00			152	N			0
+%R	6005	9001	9002	A150	Handover to construction	TT_FinMile	TK_NotStart	1	0		2026-05-05 08:00	2026-04-27 08:00	2026-06-17 08:00	2026-06-25 08:00			360	N	CS_ALAP		0
+%R	6006	9001	9003	A160	Bulk excavation	TT_Task	TK_Active	1	160	64	2026-04-23 08:00	2026-04-29 08:00	2026-04-30 08:00	2026-05-18 08:00	2026-04-06 08:00		120	N			0
+%R	6007	9001	9003	A210	Piling mat	TT_Task	TK_NotStart	1	48		2026-05-03 08:00	2026-05-07 08:00	2026-05-12 08:00	2026-05-24 08:00			104	N			0
+%R	6008	9001	9003	A220	Secant piling	TT_Task	TK_NotStart	2	96		2026-05-10 08:00	2026-05-25 08:00	2026-05-20 08:00	2026-06-08 08:00			96	N			0
+%R	6009	9001	9003	A230	Capping beam	TT_Task	TK_NotStart	1	64		2026-05-27 08:00	2026-06-04 08:00	2026-06-05 08:00	2026-06-19 08:00			88	N			0
+%R	6010	9001	9001	A170	Site supervision (LOE)	TT_LOE	TK_NotStart	1	400		2026-04-08 08:00	2026-06-17 08:00	2026-04-08 08:00	2026-06-17 08:00			0	N			0
+%R	6011	9001	9001	A180	Enabling Works (WBS)	TT_WBS	TK_NotStart	1	0		2026-04-01 08:00	2026-04-01 08:00	2026-06-17 08:00	2026-06-17 08:00			440	N			0
+%R	6012	9001	9001	A190	Utility survey	TT_Task	TK_Complete	1	24		2026-04-08 08:00	2026-04-13 08:00	2026-06-12 08:00	2026-06-17 08:00	2026-03-10 08:00	2026-03-12 16:00	376	N			100
+%R	6013	9001	9004	A200	Unplanned scope item	TT_Task	TK_NotStart	1	32				2026-06-11 08:00	2026-06-17 08:00			368	N			0
+%E
+%T	TASKPRED
+%F	task_pred_id	task_id	pred_task_id	proj_id	pred_type	lag_hr_cnt
+%R	8000	6001	6000	9001	PR_FS	0
+%R	8001	6002	6000	9001	PR_SS	16
+%R	8002	6003	6001	9001	PR_FF	0
+%R	8003	6004	6002	9001	PR_SF	0
+%R	8004	6005	6003	9001	PR_FS	0
+%R	8005	6006	6004	9001	PR_FS	0
+%R	8006	6007	6006	9001	PR_FS	0
+%R	8007	6008	6007	9001	PR_FS	0
+%R	8008	6009	6008	9001	PR_FS	0
+%R	8009	6010	6000	9001	PR_FS	0
+%R	8010	6012	6000	9001	PR_FS	0
+%R	8011	6013	6000	9001	PR_FS	0
+%E

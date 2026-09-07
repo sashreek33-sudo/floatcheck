@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CPM Validation Harness</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /*
+    Standalone page - deliberately not sharing floatcheck.html's dark
+    drafting-sheet theme or leadtime.html's palette. This isn't a tool for
+    a planning engineer to read a schedule with; it's a diagnostic for
+    whoever's checking the CPM engine's own correctness. Plain, dense,
+    monospace-first, no icons/animation/marketing copy.
+  */
+  :root{
+    --bg:#0E0E0E; --panel:#161616; --panel2:#1D1D1D; --line:#333;
+    --text:#E8E8E4; --muted:#8A8A82; --muted2:#5C5C55;
+    --ok:#5FAE7A; --warn:#D6A23C; --crit:#D1544C; --accent:#5C9DD6;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);}
+  body{font-family:'IBM Plex Mono',monospace;font-size:12.5px;line-height:1.6;}
+  h1,h2,h3{font-family:'Barlow Condensed',sans-serif;font-weight:700;margin:0;}
+  a{color:var(--accent);}
+  code{font-family:inherit;}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:28px 24px 80px;}
+  header.top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
+  header.top a{color:var(--muted);text-decoration:none;font-size:11px;letter-spacing:0.08em;}
+  header.top a:hover{color:var(--text);}
+  h1{font-size:26px;letter-spacing:0.01em;color:var(--text);}
+  .sub{color:var(--muted);font-size:12px;margin:6px 0 24px;max-width:80ch;line-height:1.6;}
+
+  .dropzone{border:1px dashed #444;padding:22px 20px;text-align:center;cursor:pointer;background:var(--panel);margin-bottom:10px;}
+  .dropzone:hover{border-color:var(--accent);}
+  .dropzone.filled{border-style:solid;border-color:var(--ok);}
+  .dz-label{font-size:10px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;margin-bottom:6px;}
+  .dz-file{font-size:13px;}
+  input[type=file]{display:none;}
+  .actions{display:flex;gap:10px;align-items:center;margin:14px 0 6px;flex-wrap:wrap;}
+  button{font-family:inherit;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;border:1px solid #444;background:var(--panel2);color:var(--text);padding:9px 16px;cursor:pointer;}
+  button:hover:not(:disabled){border-color:var(--accent);color:var(--accent);}
+  button:disabled{opacity:0.35;cursor:not-allowed;}
+  .demo-link{background:none;border:none;color:var(--muted);text-decoration:underline;cursor:pointer;font-size:11px;font-family:inherit;padding:0;}
+  .demo-link:hover{color:var(--text);}
+  .synthetic-label{display:inline-block;font-size:10.5px;letter-spacing:0.08em;color:#16150F;background:var(--warn);padding:2px 8px;margin-left:8px;}
+
+  .stop-msg{border:1px solid var(--crit);background:rgba(209,84,76,0.08);color:var(--crit);padding:16px 18px;margin-top:20px;font-size:13px;line-height:1.6;}
+
+  section.block{margin-top:32px;}
+  .block-title{font-size:11px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;border-left:2px solid var(--accent);padding-left:8px;margin-bottom:12px;}
+
+  .kv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);}
+  .kv{background:var(--panel);padding:10px 14px;}
+  .kv-k{color:var(--muted);font-size:10.5px;letter-spacing:0.08em;text-transform:uppercase;}
+  .kv-v{color:var(--text);font-size:13px;margin-top:2px;}
+  .kv-v.absent{color:var(--muted2);font-style:italic;}
+
+  .note{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.6;max-width:90ch;}
+  .note strong{color:var(--text);}
+
+  table{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:4px;}
+  th{text-align:left;color:var(--muted);border-bottom:1px solid var(--line);padding:6px 8px;font-weight:500;font-size:10px;letter-spacing:0.06em;text-transform:uppercase;white-space:nowrap;}
+  td{padding:5px 8px;border-bottom:1px solid #262626;vertical-align:top;white-space:nowrap;}
+  tbody tr:hover td{background:var(--panel2);}
+  td.wrap-cell{white-space:normal;}
+  .num{text-align:right;font-variant-numeric:tabular-nums;}
+  .delta-0{color:var(--ok);}
+  .delta-1{color:var(--warn);}
+  .delta-big{color:var(--crit);}
+  .absent{color:var(--muted2);font-style:italic;}
+  .excluded-reason{color:var(--muted);}
+
+  .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;}
+  .summary-card{background:var(--panel);border:1px solid var(--line);padding:14px 16px;}
+  .summary-card h3{font-size:12px;letter-spacing:0.06em;color:var(--muted);text-transform:uppercase;margin-bottom:10px;font-family:'IBM Plex Mono',monospace;font-weight:600;}
+  .summary-row{display:flex;justify-content:space-between;font-size:12.5px;padding:3px 0;}
+  .summary-row .n{font-variant-numeric:tabular-nums;}
+
+  .scroll-x{overflow-x:auto;}
+  .caveat-box{border:1px solid #444;background:var(--panel);padding:14px 16px;font-size:12px;color:var(--muted);line-height:1.65;max-width:95ch;}
+  .caveat-box strong{color:var(--text);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <span>CPM VALIDATION HARNESS</span>
+    <a href="index.html">&larr; Planning Toolkit</a>
+  </header>
+  <h1>Engine vs. P6 stored results</h1>
+  <p class="sub">Diffs this engine's forward/backward pass against the P6-computed values already stored in the uploaded XER's own TASK table (P6's own early/late dates, total float, and longest-path flag) — not a second CPM implementation, a comparison against what P6 itself already calculated. Doesn't touch <code>floatcheck.html</code>, <code>leadtime.html</code>, or anything shared in <code>/lib</code>.</p>
+
+  <div class="dropzone" id="dz" onclick="document.getElementById('fileInput').click()">
+    <div class="dz-label">XER file</div>
+    <div class="dz-file" id="dzText">Click or drop a .xer file</div>
+    <input type="file" id="fileInput" accept=".xer">
+  </div>
+  <div class="actions">
+    <button class="demo-link" onclick="loadSynthetic()">Load synthetic verification file <span class="synthetic-label">SYNTHETIC</span></button>
+  </div>
+
+  <div id="output"></div>
+
+</div>
+
+<!-- Shared XER parsing / CPM / float logic - same /lib as floatcheck.html and
+     leadtime.html, unmodified. Anything this page needs that parseXER
+     doesn't already capture (SCHEDOPTIONS, and knowing whether a given
+     column exists in this file's own schema at all) is read locally below
+     via its own small raw-text scan - it does not modify or wrap the
+     shared parser. -->
+<script src="lib/xer-parser.js"></script>
+<script src="lib/float.js"></script>
+<script src="lib/cpm-engine.js"></script>
+<script>
+const { parseXER, runCPM, parseDate, workdaysBetween } = window.FloatCheckLib;
+
+// ---------- Local raw-table reader (this page only, /lib untouched) ----------
+// parseXER only retains the tables floatcheck.html/leadtime.html actually
+// use (PROJECT/PROJWBS/CALENDAR/TASK/TASKNOTE/TASKPRED) - SCHEDOPTIONS rows
+// are silently dropped by it. This does its own minimal %T/%F/%R/%E scan,
+// scoped to one named table, to get SCHEDOPTIONS plus the *schema* (which
+// columns exist at all, not just their per-row values) for TASK/PROJECT -
+// needed to report a field as genuinely absent rather than blank.
+function readRawTable(text, tableName){
+  const lines = text.split(/\r?\n/);
+  let inTable = false, headers = null;
+  // foundHeaders is captured once, the first (only) time this table's own
+  // %F line is seen, and never touched again - `headers` alone isn't safe
+  // to read after the loop ends, since it gets reassigned by every later
+  // table's own %F line as the scan continues past %E.
+  let foundHeaders = null, seenTable = false;
+  const rows = [];
+  for(const raw of lines){
+    if(!raw) continue;
+    if(raw.startsWith('%T')){ inTable = (raw.split('\t')[1] === tableName); headers = null; if(inTable) seenTable = true; continue; }
+    if(!inTable) continue;
+    if(raw.startsWith('%F')){ headers = raw.split('\t').slice(1); foundHeaders = headers; continue; }
+    if(raw.startsWith('%E')){ inTable = false; continue; }
+    if(raw.startsWith('%R') && headers){
+      const vals = raw.split('\t').slice(1);
+      const row = {};
+      headers.forEach((h,i)=> row[h] = vals[i] !== undefined ? vals[i] : '');
+      rows.push(row);
+    }
+  }
+  return { present: seenTable, headers: foundHeaders || [], rows };
+}
+
+function fmtDate(d){
+  if(!d) return '—';
+  return d.toLocaleDateString('en-AU', { day:'2-digit', month:'short', year:'numeric', timeZone:'UTC' });
+}
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function absentSpan(){ return '<span class="absent">absent</span>'; }
+function fieldPresentInSchema(headers, field){ return headers.indexOf(field) !== -1; }
+
+// ---------- Upload wiring ----------
+document.getElementById('fileInput').addEventListener('change', e => handleFile(e.target.files[0]));
+(() => {
+  const el = document.getElementById('dz');
+  el.addEventListener('dragover', e => { e.preventDefault(); el.style.borderColor = '#5C9DD6'; });
+  el.addEventListener('dragleave', () => el.style.borderColor = '');
+  el.addEventListener('drop', e => { e.preventDefault(); handleFile(e.dataTransfer.files[0]); });
+})();
+
+function handleFile(file){
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      run(reader.result, file.name, false);
+      document.getElementById('dzText').textContent = file.name;
+      document.getElementById('dz').classList.add('filled');
+    }catch(err){
+      document.getElementById('output').innerHTML = `<div class="stop-msg">Could not parse this file: ${esc(err.message)}</div>`;
+    }
+  };
+  reader.readAsText(file);
+}
+
+function loadSynthetic(){
+  fetch('synthetic-verification.xer')
+    .then(res => res.text())
+    .then(text => {
+      run(text, 'synthetic-verification.xer', true);
+      document.getElementById('dzText').textContent = 'synthetic-verification.xer';
+      document.getElementById('dz').classList.add('filled');
+    })
+    .catch(err => {
+      document.getElementById('output').innerHTML = `<div class="stop-msg">Could not load the synthetic file: ${esc(err.message)}</div>`;
+    });
+}
+
+// ---------- Main comparison ----------
+function run(text, fileName, isSynthetic){
+  const out = document.getElementById('output');
+  const data = parseXER(text);
+
+  const rawTask = readRawTable(text, 'TASK');
+  const rawProject = readRawTable(text, 'PROJECT');
+  const rawSchedOptions = readRawTable(text, 'SCHEDOPTIONS');
+
+  let html = '';
+
+  if(isSynthetic){
+    html += `<div class="stop-msg" style="border-color:#D6A23C;background:rgba(214,162,60,0.08);color:#D6A23C;">SYNTHETIC FILE — verifies harness plumbing only, not calculation correctness. Every "P6" value in this file was hand-written by offsetting this engine's own output by known amounts, not produced by a real P6 schedule run. Use it to confirm the harness reads the right fields and buckets deltas correctly — not to judge the engine's real-world accuracy.</div>`;
+  }
+
+  // ---- SCHEDOPTIONS (read first, per instruction) ----
+  const SCHED_FIELDS = ['sched_float_type','sched_use_project_end_date_for_float','sched_open_critical_flag','sched_retained_logic','sched_progress_override','sched_calendar_on_relationship_lag','sched_outer_depend_type'];
+  html += `<section class="block"><div class="block-title">Schedule Options (SCHEDOPTIONS)</div>`;
+  const schedRow = rawSchedOptions.present && rawSchedOptions.rows[0] ? rawSchedOptions.rows[0] : null;
+  if(!schedRow){
+    html += `<div class="stop-msg">float comparison unavailable — schedule options not present in file</div>`;
+  } else {
+    html += `<div class="kv-grid">` + SCHED_FIELDS.map(f => {
+      const present = fieldPresentInSchema(rawSchedOptions.headers, f);
+      const v = present ? (schedRow[f] || absentSpan()) : null;
+      return `<div class="kv"><div class="kv-k">${f}</div><div class="kv-v${present?'':' absent'}">${present ? esc(schedRow[f]||'') : 'absent'}</div></div>`;
+    }).join('') + `</div>`;
+  }
+  html += `</section>`;
+
+  // ---- Criticality rule (PROJECT.critical_path_type / critical_drtn_hr_cnt) ----
+  html += `<section class="block"><div class="block-title">Criticality Rule (PROJECT)</div>`;
+  const cpType = fieldPresentInSchema(rawProject.headers, 'critical_path_type') ? data.project.critical_path_type : null;
+  const cpDrtn = fieldPresentInSchema(rawProject.headers, 'critical_drtn_hr_cnt') ? data.project.critical_drtn_hr_cnt : null;
+  const dataDateField = fieldPresentInSchema(rawProject.headers, 'last_recalc_date') ? data.project.last_recalc_date : null;
+  html += `<div class="kv-grid">
+    <div class="kv"><div class="kv-k">critical_path_type</div><div class="kv-v${cpType?'':' absent'}">${cpType!=null ? esc(cpType) : 'absent'}</div></div>
+    <div class="kv"><div class="kv-k">critical_drtn_hr_cnt</div><div class="kv-v${cpDrtn?'':' absent'}">${cpDrtn!=null ? esc(cpDrtn)+' hr' : 'absent'}</div></div>
+    <div class="kv"><div class="kv-k">Data date (PROJECT.last_recalc_date)</div><div class="kv-v${dataDateField?'':' absent'}">${dataDateField!=null ? esc(dataDateField) : 'absent'}</div></div>
+  </div>`;
+  if(cpType === 'CT_TotFloat'){
+    html += `<p class="note">This file marks criticality by <strong>total float</strong>: an activity is critical if its total float is ≤ ${esc(cpDrtn||'0')} hours. That's the same rule this engine's own float output can be checked against directly.</p>`;
+  } else if(cpType === 'CT_DrivPath'){
+    html += `<p class="note">This file marks criticality by <strong>driving/longest path</strong> (the <code>driving_path_flag</code> column below, not a float threshold). This engine doesn't compute a driving-path flag today, only total float — so its float-based critical activities won't necessarily line up with this file's own critical marking, and that's not itself a bug.</p>`;
+  } else {
+    html += `<p class="note">critical_path_type not present in this file - cannot state which rule P6 used to mark criticality here.</p>`;
+  }
+  html += `</section>`;
+
+  // ---- Engine caveat (from /lib/cpm-engine.js investigation) ----
+  html += `<section class="block"><div class="caveat-box"><strong>How this engine actually schedules, for context on every diff below:</strong> the forward pass always starts from <code>PROJECT.plan_start_date</code> — never from the data date (<code>PROJECT.last_recalc_date</code>) — and never reads <code>act_start_date</code>/<code>act_end_date</code> at all. Duration uses <code>remain_drtn_hr_cnt</code> only for <code>TK_Active</code> activities (when present); everything else, including <code>TK_Complete</code>, uses <code>target_drtn_hr_cnt</code>. Float is compared in <strong>hours</strong> below; this engine only ever computes float in whole working days internally, so its hour figure is that day count × 8, not a native hour computation — labelled as such in the table. A large mismatch on a <code>TK_Active</code> activity is very often explained by this, not by a float-calculation defect.</div></section>`;
+
+  // ---- Build comparable task set ----
+  const cpm = runCPM(data.tasks, parseDate(data.project.plan_start_date));
+  const earlyStartPresent = fieldPresentInSchema(rawTask.headers, 'early_start_date');
+  const earlyEndPresent = fieldPresentInSchema(rawTask.headers, 'early_end_date');
+  const lateStartPresent = fieldPresentInSchema(rawTask.headers, 'late_start_date');
+  const lateEndPresent = fieldPresentInSchema(rawTask.headers, 'late_end_date');
+  const totalFloatPresent = fieldPresentInSchema(rawTask.headers, 'total_float_hr_cnt');
+  const drivingPresent = fieldPresentInSchema(rawTask.headers, 'driving_path_flag');
+  const cstrTypePresent = fieldPresentInSchema(rawTask.headers, 'cstr_type');
+  const cstrDatePresent = fieldPresentInSchema(rawTask.headers, 'cstr_date');
+  const clndrPresent = fieldPresentInSchema(rawTask.headers, 'clndr_id');
+  const taskTypePresent = fieldPresentInSchema(rawTask.headers, 'task_type');
+
+  // Hard stop: no stored dates anywhere in the file at all.
+  const anyStoredDates = data.tasks.some(t => (t.early_start_date && t.early_start_date.trim()) || (t.early_end_date && t.early_end_date.trim()));
+  if(!earlyStartPresent && !earlyEndPresent){
+    out.innerHTML = html + `<section class="block"><div class="stop-msg">This file's TASK table doesn't carry early_start_date or early_end_date at all — there's nothing stored to compare against. Stopping here.</div></section>`;
+    return;
+  }
+  if(!anyStoredDates){
+    out.innerHTML = html + `<section class="block"><div class="stop-msg">No activity in this file has a stored early start or early finish date — this schedule has apparently never been run through P6's scheduler. Stopping here; there's nothing to compare against.</div></section>`;
+    return;
+  }
+
+  const floatSectionAvailable = !!schedRow;
+
+  const compared = [];
+  const excluded = [];
+  data.tasks.forEach(t => {
+    let reason = null;
+    if(taskTypePresent && t.task_type === 'TT_LOE') reason = 'Level of Effort';
+    else if(taskTypePresent && t.task_type === 'TT_WBS') reason = 'WBS Summary';
+    else if(t.status_code === 'TK_Complete') reason = 'Completed activity';
+    else if(earlyStartPresent && earlyEndPresent && (!t.early_start_date || !t.early_start_date.trim() || !t.early_end_date || !t.early_end_date.trim())) reason = 'Missing dates in source';
+
+    if(reason){ excluded.push({ t, reason }); return; }
+    compared.push(t);
+  });
+
+  // ---- Per-activity diffs ----
+  const rows = compared.map(t => {
+    const engES = cpm.ES[t.task_code], engLF = cpm.LF[t.task_code], engTFdays = cpm.TF[t.task_code];
+    const p6ES = earlyStartPresent ? parseDate(t.early_start_date) : null;
+    const p6LF = lateEndPresent ? parseDate(t.late_end_date) : null;
+    const p6TFhr = totalFloatPresent && t.total_float_hr_cnt !== '' ? parseFloat(t.total_float_hr_cnt) : null;
+    const engTFhr = engTFdays != null ? engTFdays * 8 : null;
+
+    const esDeltaDays = (earlyStartPresent && p6ES && engES) ? workdaysBetween(engES, p6ES) : null;
+    const lfDeltaDays = (lateEndPresent && p6LF && engLF) ? workdaysBetween(engLF, p6LF) : null;
+    const tfDeltaHr = (floatSectionAvailable && p6TFhr != null && engTFhr != null) ? (p6TFhr - engTFhr) : null;
+
+    return { t, engES, engLF, engTFhr, p6ES, p6LF, p6TFhr, esDeltaDays, lfDeltaDays, tfDeltaHr };
+  });
+
+  // ---- Excluded summary ----
+  const exclusionCounts = {};
+  excluded.forEach(e => { exclusionCounts[e.reason] = (exclusionCounts[e.reason]||0) + 1; });
+
+  html += `<section class="block"><div class="block-title">Comparison scope</div>
+    <div class="summary-grid">
+      <div class="summary-card"><h3>Activities</h3>
+        <div class="summary-row"><span>Total in file</span><span class="n">${data.tasks.length}</span></div>
+        <div class="summary-row"><span>Compared</span><span class="n">${compared.length}</span></div>
+        <div class="summary-row"><span>Excluded</span><span class="n">${excluded.length}</span></div>
+      </div>
+      <div class="summary-card"><h3>Excluded, by reason</h3>
+        ${Object.keys(exclusionCounts).length ? Object.entries(exclusionCounts).map(([r,n]) => `<div class="summary-row"><span>${esc(r)}</span><span class="n">${n}</span></div>`).join('') : '<div class="summary-row"><span>None excluded</span><span class="n">—</span></div>'}
+      </div>
+    </div>
+  </section>`;
+
+  // ---- Bucket summaries ----
+  function bucketDateSummary(rows, key){
+    let exact=0, within1=0, over1=0, absentN=0;
+    rows.forEach(r => {
+      const d = r[key];
+      if(d === null){ absentN++; return; }
+      const a = Math.abs(d);
+      if(a===0) exact++; else if(a<=1) within1++; else over1++;
+    });
+    return {exact, within1, over1, absentN};
+  }
+  function bucketFloatSummary(rows){
+    let exact=0, within1=0, over1=0, absentN=0;
+    rows.forEach(r => {
+      if(r.tfDeltaHr === null){ absentN++; return; }
+      const a = Math.abs(r.tfDeltaHr);
+      if(a===0) exact++; else if(a<=8) within1++; else over1++;
+    });
+    return {exact, within1, over1, absentN};
+  }
+  const esSummary = bucketDateSummary(rows, 'esDeltaDays');
+  const lfSummary = bucketDateSummary(rows, 'lfDeltaDays');
+  const tfSummary = floatSectionAvailable ? bucketFloatSummary(rows) : null;
+
+  function summaryCard(title, s, unit){
+    return `<div class="summary-card"><h3>${esc(title)}</h3>
+      <div class="summary-row"><span>Exact match</span><span class="n">${s.exact}</span></div>
+      <div class="summary-row"><span>Within 1 working day${unit==='hr'?' (≤8hr)':''}</span><span class="n">${s.within1}</span></div>
+      <div class="summary-row"><span>Mismatch (&gt;1 working day)</span><span class="n">${s.over1}</span></div>
+      <div class="summary-row"><span>Field absent</span><span class="n">${s.absentN}</span></div>
+    </div>`;
+  }
+  html += `<section class="block"><div class="block-title">Summary</div><div class="summary-grid">
+    ${summaryCard('Early start', esSummary, 'day')}
+    ${summaryCard('Late finish', lfSummary, 'day')}
+    ${floatSectionAvailable ? summaryCard('Total float', tfSummary, 'hr') : '<div class="summary-card"><h3>Total float</h3><div class="summary-row"><span>float comparison unavailable — schedule options not present in file</span></div></div>'}
+  </div></section>`;
+
+  // ---- Per-activity table ----
+  function deltaClass(v, threshold){
+    if(v === null) return 'absent';
+    const a = Math.abs(v);
+    if(a===0) return 'delta-0';
+    if(a<=threshold) return 'delta-1';
+    return 'delta-big';
+  }
+  html += `<section class="block"><div class="block-title">Per-activity comparison (${rows.length} compared)</div><div class="scroll-x"><table><thead><tr>
+    <th>Activity</th><th>Type</th><th>P6 early start</th><th>Engine early start</th><th class="num">Δ (wd)</th>
+    <th>P6 late finish</th><th>Engine late finish</th><th class="num">Δ (wd)</th>
+    ${floatSectionAvailable ? '<th class="num">P6 float (hr)</th><th class="num">Engine float (hr)</th><th class="num">Δ (hr)</th>' : ''}
+  </tr></thead><tbody>`;
+  rows.forEach(r => {
+    html += `<tr>
+      <td>${esc(r.t.task_code)}</td>
+      <td>${esc(r.t.task_type||'—')}</td>
+      <td>${earlyStartPresent ? (r.p6ES?fmtDate(r.p6ES):'—') : absentSpan()}</td>
+      <td>${r.engES?fmtDate(r.engES):'—'}</td>
+      <td class="num ${deltaClass(r.esDeltaDays,1)}">${r.esDeltaDays===null?'—':(r.esDeltaDays>0?'+':'')+r.esDeltaDays}</td>
+      <td>${lateEndPresent ? (r.p6LF?fmtDate(r.p6LF):'—') : absentSpan()}</td>
+      <td>${r.engLF?fmtDate(r.engLF):'—'}</td>
+      <td class="num ${deltaClass(r.lfDeltaDays,1)}">${r.lfDeltaDays===null?'—':(r.lfDeltaDays>0?'+':'')+r.lfDeltaDays}</td>
+      ${floatSectionAvailable ? `
+      <td class="num">${totalFloatPresent ? (r.p6TFhr!=null?r.p6TFhr:'—') : absentSpan()}</td>
+      <td class="num">${r.engTFhr!=null?r.engTFhr:'—'}</td>
+      <td class="num ${deltaClass(r.tfDeltaHr,8)}">${r.tfDeltaHr===null?'—':(r.tfDeltaHr>0?'+':'')+r.tfDeltaHr}</td>` : ''}
+    </tr>`;
+  });
+  html += `</tbody></table></div></section>`;
+
+  // ---- Excluded activities table ----
+  if(excluded.length){
+    html += `<section class="block"><div class="block-title">Excluded from comparison (${excluded.length})</div><div class="scroll-x"><table><thead><tr><th>Activity</th><th>Type</th><th>Status</th><th>Reason</th></tr></thead><tbody>`;
+    excluded.forEach(e => {
+      html += `<tr><td>${esc(e.t.task_code)}</td><td>${esc(e.t.task_type||'—')}</td><td>${esc(e.t.status_code||'—')}</td><td class="excluded-reason">${esc(e.reason)}</td></tr>`;
+    });
+    html += `</tbody></table></div></section>`;
+  }
+
+  // ---- Worst 10 float mismatches ----
+  if(floatSectionAvailable){
+    const withFloatDelta = rows.filter(r => r.tfDeltaHr !== null);
+    const worst = withFloatDelta.slice().sort((a,b) => Math.abs(b.tfDeltaHr) - Math.abs(a.tfDeltaHr)).slice(0, 10);
+    html += `<section class="block"><div class="block-title">Ten worst float mismatches</div>`;
+    if(!worst.length){
+      html += `<p class="note">No comparable float deltas to rank.</p>`;
+    } else {
+      html += `<div class="scroll-x"><table><thead><tr>
+        <th>Activity</th><th class="num">Δ float (hr)</th><th>Calendar</th><th>P6 longest path</th><th>Constraint</th><th>Predecessor rel. types</th>
+      </tr></thead><tbody>`;
+      worst.forEach(r => {
+        const t = r.t;
+        const calName = clndrPresent ? (data.calendars[t.clndr_id] || `id ${t.clndr_id}`) : null;
+        const driving = drivingPresent ? (t.driving_path_flag || '—') : null;
+        let constraintText;
+        if(!cstrTypePresent){
+          constraintText = absentSpan();
+        } else if(!t.cstr_type){
+          constraintText = 'none';
+        } else if(t.cstr_type === 'CS_ALAP'){
+          constraintText = 'CS_ALAP (as late as possible — no date)';
+        } else {
+          const dateText = cstrDatePresent && t.cstr_date ? fmtDate(parseDate(t.cstr_date)) : 'no date';
+          constraintText = `${esc(t.cstr_type)} (${dateText})`;
+        }
+        const relTypes = (t.pred_edges||[]).map(e => e.pred_type).filter((v,i,a)=>a.indexOf(v)===i);
+        html += `<tr>
+          <td>${esc(t.task_code)}</td>
+          <td class="num ${deltaClass(r.tfDeltaHr,8)}">${(r.tfDeltaHr>0?'+':'')+r.tfDeltaHr}</td>
+          <td>${calName!=null?esc(calName):absentSpan()}</td>
+          <td>${driving!=null?esc(driving):absentSpan()}</td>
+          <td class="wrap-cell">${constraintText}</td>
+          <td>${relTypes.length?esc(relTypes.join(', ')):'—'}</td>
+        </tr>`;
+      });
+      html += `</tbody></table></div>`;
+    }
+    html += `</section>`;
+  }
+
+  out.innerHTML = html;
+}
+</script>
+</body>
+</html>
