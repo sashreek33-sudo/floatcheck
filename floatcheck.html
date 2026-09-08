@@ -1033,7 +1033,7 @@ function crashProject(tasks, projectStart, crashParams, targetRecoveryDays){
   // this pass doesn't implement - see README known limitations.
   const statusByCode = {}; tasks.forEach(t=> statusByCode[t.task_code] = t.status_code);
 
-  let cpm = runCPM(tasks, projectStart, durOverride);
+  let cpm = runCPM(tasks, projectStart, durOverride, currData.calendars);
   const originalFinish = cpm.projFinish;
   const log = [];
   let totalCost = 0, recovered = 0, guard = 0;
@@ -1049,7 +1049,9 @@ function crashProject(tasks, projectStart, crashParams, targetRecoveryDays){
     durOverride[pick] -= 1;
     crashedSoFar[pick] += 1;
     totalCost += crashParams[pick].costPerDay;
-    cpm = runCPM(tasks, projectStart, durOverride);
+    cpm = runCPM(tasks, projectStart, durOverride, currData.calendars);
+    // calendar-blind: compares project-level dates across files,
+    // no single activity calendar applies
     recovered = workdaysBetween(cpm.projFinish, originalFinish);
     log.push({ day: guard, activity: pick, costToday: crashParams[pick].costPerDay, cumulativeCost: totalCost, newFinish: cpm.projFinish, recoveredSoFar: recovered });
   }
@@ -1287,6 +1289,8 @@ function doRunAnalysis(){
 
   const prevFinish = prevData.tasks.reduce((m,t)=>{ const d=parseDate(t.early_end_date); return (!m||d>m)?d:m; }, null);
   const currFinish = currData.tasks.reduce((m,t)=>{ const d=parseDate(t.early_end_date); return (!m||d>m)?d:m; }, null);
+  // calendar-blind: compares project-level dates across files,
+  // no single activity calendar applies
   const netSlip = workdaysBetween(prevFinish, currFinish);
 
   const rows = [];
@@ -1295,6 +1299,8 @@ function doRunAnalysis(){
     const pt = prevMap[ct.task_code];
     if(!pt) return; // new scope, skip for this pass
     const pEnd = parseDate(pt.early_end_date), cEnd = parseDate(ct.early_end_date);
+    // calendar-blind: compares project-level dates across files,
+    // no single activity calendar applies
     const variance = workdaysBetween(pEnd, cEnd);
     const pFloat = Math.round((parseFloat(pt.total_float_hr_cnt)||0)/8);
     const cFloat = Math.round((parseFloat(ct.total_float_hr_cnt)||0)/8);
@@ -1521,8 +1527,10 @@ function renderTable(diff){
 // only ever called when baselineData is non-null (see renderHealthCheck).
 function computeCPLIBEI(baseline, curr, currCPM, dataDate){
   const baselineStart = parseDate(baseline.project.plan_start_date) || parseDate(baseline.header.date);
-  const baselineCPM = runCPM(baseline.tasks, baselineStart);
+  const baselineCPM = runCPM(baseline.tasks, baselineStart, undefined, baseline.calendars);
   const baselineDataDate = parseDate(baseline.header.date);
+  // calendar-blind: compares project-level dates across files,
+  // no single activity calendar applies
   const baselineCPL = (baselineDataDate && baselineCPM.projFinish) ? workdaysBetween(baselineDataDate, baselineCPM.projFinish) : 0;
 
   let currTF = null;
@@ -1550,7 +1558,7 @@ function computeCPLIBEI(baseline, curr, currCPM, dataDate){
 
 // ---------- DCMA 14-Point Schedule Health Check ----------
 function renderHealthCheck(){
-  const cpm = window._currentCPM || runCPM(currData.tasks, parseDate(currData.project.plan_start_date));
+  const cpm = window._currentCPM || runCPM(currData.tasks, parseDate(currData.project.plan_start_date), undefined, currData.calendars);
   const tasks = currData.tasks;
   const dataDate = parseDate(currData.header.date);
   const total = tasks.length;
@@ -1672,7 +1680,7 @@ function renderHealthCheck(){
 function computeLookaheadRows(weeks){
   const dataDate = parseDate(currData.header.date);
   const windowEnd = addWorkdays(dataDate, weeks*5); // approx calendar window via workdays
-  const cpm = window._currentCPM || runCPM(currData.tasks, parseDate(currData.project.plan_start_date));
+  const cpm = window._currentCPM || runCPM(currData.tasks, parseDate(currData.project.plan_start_date), undefined, currData.calendars);
 
   return currData.tasks.filter(t=>{
     const es = parseDate(t.early_start_date), ef = parseDate(t.early_end_date);
@@ -1885,6 +1893,8 @@ function computeTrendRows(){
     const addedMidSeries = firstIdx > 0;
     const droppedBeforeEnd = lastIdx < n-1;
     const floatChange = lastPt.tf - firstPt.tf;
+    // calendar-blind: compares project-level dates across files,
+    // no single activity calendar applies
     const finishDriftDays = workdaysBetween(firstPt.finish, lastPt.finish);
     rows.push({ ...entry, firstIdx, lastIdx, addedMidSeries, droppedBeforeEnd, floatChange, finishDriftDays, presentCount: presentIdx.length });
   });
@@ -1935,7 +1945,7 @@ function runTrendAnalysis(){
 // ---------- Critical Path Timeline (Gantt) ----------
 function renderTimeline(){
   const projectStart = parseDate(currData.project.plan_start_date);
-  const cpm = window._currentCPM || runCPM(currData.tasks, projectStart);
+  const cpm = window._currentCPM || runCPM(currData.tasks, projectStart, undefined, currData.calendars);
   const byCode = cpm.byCode;
   const rows = cpm.order.map(code=>({
     code, name: byCode[code].task_name, wbs: byCode[code].wbs_name,
@@ -1975,7 +1985,7 @@ function renderTimeline(){
 // ---------- Crashing Workbench ----------
 function populateCrashWorkbench(){
   const projectStart = parseDate(currData.project.plan_start_date);
-  const cpm = runCPM(currData.tasks, projectStart);
+  const cpm = runCPM(currData.tasks, projectStart, undefined, currData.calendars);
   window._currentCPM = cpm;
   window._projectStart = projectStart;
   const byCode = cpm.byCode;

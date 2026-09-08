@@ -264,7 +264,7 @@ function run(text, fileName, isSynthetic){
   html += `<section class="block"><div class="caveat-box"><strong>How this engine actually schedules, for context on every diff below:</strong> the forward pass always starts from <code>PROJECT.plan_start_date</code> — never from the data date (<code>PROJECT.last_recalc_date</code>) — and never reads <code>act_start_date</code>/<code>act_end_date</code> at all. Duration uses <code>remain_drtn_hr_cnt</code> only for <code>TK_Active</code> activities (when present); everything else, including <code>TK_Complete</code>, uses <code>target_drtn_hr_cnt</code>. Float is compared in <strong>hours</strong> below; this engine only ever computes float in whole working days internally, so its hour figure is that day count × 8, not a native hour computation — labelled as such in the table. A large mismatch on a <code>TK_Active</code> activity is very often explained by this, not by a float-calculation defect.</div></section>`;
 
   // ---- Build comparable task set ----
-  const cpm = runCPM(data.tasks, parseDate(data.project.plan_start_date));
+  const cpm = runCPM(data.tasks, parseDate(data.project.plan_start_date), undefined, data.calendars);
   const earlyStartPresent = fieldPresentInSchema(rawTask.headers, 'early_start_date');
   const earlyEndPresent = fieldPresentInSchema(rawTask.headers, 'early_end_date');
   const lateStartPresent = fieldPresentInSchema(rawTask.headers, 'late_start_date');
@@ -310,7 +310,11 @@ function run(text, fileName, isSynthetic){
     const p6TFhr = totalFloatPresent && t.total_float_hr_cnt !== '' ? parseFloat(t.total_float_hr_cnt) : null;
     const engTFhr = engTFdays != null ? engTFdays * 8 : null;
 
+    // calendar-blind: compares project-level dates across files,
+    // no single activity calendar applies
     const esDeltaDays = (earlyStartPresent && p6ES && engES) ? workdaysBetween(engES, p6ES) : null;
+    // calendar-blind: compares project-level dates across files,
+    // no single activity calendar applies
     const lfDeltaDays = (lateEndPresent && p6LF && engLF) ? workdaysBetween(engLF, p6LF) : null;
     const tfDeltaHr = (floatSectionAvailable && p6TFhr != null && engTFhr != null) ? (p6TFhr - engTFhr) : null;
 

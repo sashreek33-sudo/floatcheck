@@ -515,7 +515,7 @@ function runLeadTime(){
   document.getElementById('pageError').style.display = 'none';
   try{
     const projectStart = parseDate(programmeData.project.plan_start_date);
-    cpm = runCPM(programmeData.tasks, projectStart);
+    cpm = runCPM(programmeData.tasks, projectStart, undefined, programmeData.calendars);
   }catch(err){
     document.getElementById('results').style.display = 'none';
     const el = document.getElementById('pageError');
