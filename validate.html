@@ -114,6 +114,7 @@
      column exists in this file's own schema at all) is read locally below
      via its own small raw-text scan - it does not modify or wrap the
      shared parser. -->
+<script src="lib/clndr-data.js"></script>
 <script src="lib/xer-parser.js"></script>
 <script src="lib/float.js"></script>
 <script src="lib/cpm-engine.js"></script>
@@ -424,7 +425,7 @@ function run(text, fileName, isSynthetic){
       </tr></thead><tbody>`;
       worst.forEach(r => {
         const t = r.t;
-        const calName = clndrPresent ? (data.calendars[t.clndr_id] || `id ${t.clndr_id}`) : null;
+        const calName = clndrPresent ? (data.calendars[t.clndr_id]?.clndr_name || `id ${t.clndr_id}`) : null;
         const driving = drivingPresent ? (t.driving_path_flag || '—') : null;
         let constraintText;
         if(!cstrTypePresent){
