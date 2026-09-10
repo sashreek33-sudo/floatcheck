@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DCMA 14-Point Reference</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="lib/toolkit-ui.css">
+<style>
+  /* Same palette as floatcheck.html/leadtime.html (tokens copied verbatim,
+     not re-derived) so this reads as the same product, not a bolted-on
+     page. No JS anywhere in this file - pure HTML/CSS, static reference
+     content, nothing here is computed. */
+  :root{
+    --bg:#F3F1EC; --panel:#FBFAF6; --panel-raised:#EFECE4; --line:#DAD5C8;
+    --line-dashed:#A9A292;
+    --text:#16150F; --body:#3C382D; --muted:#8A8271; --muted2:#7C7565;
+    --crit:#A32A1C; --warn:#6B5200; --ok:#2F6236; --accent:#C9862E; --accent-hi:#B0741F; --accent-ink:#FFFDF8;
+    --crit-bg:#F4DED8; --warn-bg:#F1E7CB; --ok-bg:#E0EADC;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font-family:'IBM Plex Sans',sans-serif;-webkit-font-smoothing:antialiased;
+    line-height:1.55;
+  }
+  a{color:var(--accent);}
+  a:hover{color:var(--accent-hi);}
+  code{font-family:'IBM Plex Mono',monospace;font-size:0.92em;background:var(--panel-raised);padding:1px 5px;border-radius:2px;}
+
+  .wrap{max-width:900px;margin:0 auto;padding:0 20px 80px;}
+
+  .hero{padding:48px 0 8px;}
+  .hero h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:38px;line-height:1.08;margin:0 0 14px;letter-spacing:0.01em;}
+  .hero p{font-size:15px;color:var(--body);max-width:68ch;margin:0 0 6px;}
+  .hero .hero-sub{color:var(--muted);font-size:13px;font-family:'IBM Plex Mono',monospace;}
+
+  /* Legend - explains the assessability badges before the checks use them */
+  .legend{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;margin:26px 0 34px;padding:16px 18px;background:var(--panel);border:1px solid var(--line);border-radius:2px;}
+  .legend-item{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--body);}
+
+  .badge{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;padding:3px 9px;border-radius:2px;border:1px solid currentColor;white-space:nowrap;}
+  .badge.assessable{color:var(--ok);background:var(--ok-bg);border-color:var(--ok);}
+  .badge.baseline{color:var(--warn);background:var(--warn-bg);border-color:var(--warn);}
+  .badge.unavailable{color:var(--muted2);background:var(--panel-raised);border-color:var(--line);}
+
+  .toc{margin:0 0 40px;padding:18px 20px;background:var(--panel);border:1px solid var(--line);border-radius:2px;}
+  .toc-title{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
+  .toc ol{margin:0;padding-left:20px;columns:2;column-gap:28px;font-size:13px;}
+  .toc li{margin-bottom:7px;break-inside:avoid;}
+  .toc a{color:var(--text);text-decoration:none;}
+  .toc a:hover{color:var(--accent);text-decoration:underline;}
+  @media (max-width:600px){ .toc ol{columns:1;} }
+
+  .check{margin-bottom:22px;padding:24px 26px 26px;background:var(--panel);border:1px solid var(--line);border-radius:2px;scroll-margin-top:16px;}
+  .check-head{display:flex;align-items:baseline;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--line);}
+  .check-num{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:0.5px;}
+  .check-name{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;margin:2px 0 0;}
+  .check-headline{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;}
+
+  .check-grid{display:grid;grid-template-columns:150px 1fr;gap:4px 18px;font-size:13.5px;}
+  .check-grid dt{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.8px;text-transform:uppercase;color:var(--muted);padding-top:3px;}
+  .check-grid dd{margin:0 0 14px;color:var(--body);}
+  .check-grid dd:last-child{margin-bottom:0;}
+  @media (max-width:600px){
+    .check-grid{grid-template-columns:1fr;}
+    .check-grid dt{margin-top:10px;}
+  }
+
+  .example{margin-top:2px;padding:12px 14px;background:var(--crit-bg);border-left:3px solid var(--crit);border-radius:2px;font-size:13px;color:var(--body);}
+  .example strong{color:var(--crit);}
+
+  .toolkit-note{margin-top:2px;padding:12px 14px;background:var(--panel-raised);border-left:3px solid var(--accent);border-radius:2px;font-size:13px;color:var(--body);}
+
+  .closing{margin-top:44px;padding:26px 28px;background:var(--panel-raised);border:1px solid var(--line);border-radius:2px;}
+  .closing h2{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;margin:0 0 12px;}
+  .closing h3{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;margin:24px 0 8px;}
+  .closing p{font-size:13.5px;color:var(--body);margin:0 0 12px;}
+  .closing ul{font-size:13.5px;color:var(--body);margin:0 0 12px;padding-left:20px;}
+  .closing li{margin-bottom:5px;}
+
+  .site-footer p{font-size:12px;}
+</style>
+</head>
+<body>
+
+<nav class="toolkit-nav">
+  <div class="toolkit-nav-inner">
+    <a class="toolkit-nav-brand" href="index.html">Planning <span class="tnb-accent">Toolkit</span></a>
+    <div class="toolkit-nav-tools">
+      <a class="toolkit-nav-tool" href="floatcheck.html">FloatCheck</a>
+      <a class="toolkit-nav-tool" href="leadtime.html">LeadTime</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <div class="hero">
+    <h1>DCMA 14-Point Schedule Health Check</h1>
+    <p>A reference for the 14 checks FloatCheck runs against an uploaded P6 schedule &mdash; what each one measures, why it matters to a planner, the standard threshold, and what it actually takes to assess it. No upload here, no calculation &mdash; this page is static reference material, not a tool.</p>
+    <div class="hero-sub">STATIC REFERENCE &middot; NO ENGINE CALLS &middot; NO JAVASCRIPT</div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><span class="badge assessable">Assessable</span> FloatCheck computes this directly from your XER file.</div>
+    <div class="legend-item"><span class="badge baseline">Needs baseline</span> Only assessable once an optional baseline file is loaded.</div>
+    <div class="legend-item"><span class="badge unavailable">Not assessable</span> Needs data this app doesn't read today (resource loading, constraint types).</div>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Jump to a check</div>
+    <ol>
+      <li><a href="#check-1">Logic</a></li>
+      <li><a href="#check-2">Leads</a></li>
+      <li><a href="#check-3">Lags</a></li>
+      <li><a href="#check-4">Relationship types</a></li>
+      <li><a href="#check-5">Hard constraints</a></li>
+      <li><a href="#check-6">High float</a></li>
+      <li><a href="#check-7">Negative float</a></li>
+      <li><a href="#check-8">High duration</a></li>
+      <li><a href="#check-9">Invalid dates</a></li>
+      <li><a href="#check-10">Resources</a></li>
+      <li><a href="#check-11">Missed tasks</a></li>
+      <li><a href="#check-12">Critical path test</a></li>
+      <li><a href="#check-13">CPLI</a></li>
+      <li><a href="#check-14">BEI</a></li>
+    </ol>
+  </div>
+
+  <!-- ================= CHECK 1 ================= -->
+  <section class="check" id="check-1">
+    <div class="check-head">
+      <div class="check-headline">
+        <span class="check-num">01</span>
+        <h2 class="check-name">Logic</h2>
+      </div>
+      <span class="badge assessable">Assessable</span>
+    </div>
+    <dl class="check-grid">
+      <dt>Measures</dt>
+      <dd>The percentage of activities missing a predecessor, a successor, or both &mdash; "open ends" in the network, excluding the schedule's one true start and one true finish activity.</dd>
+      <dt>Why it matters</dt>
+      <dd>An activity with no predecessor can be dragged anywhere by whoever's updating the schedule, with no logical reason for its date &mdash; the CPM engine can't actually drive it. Every open end is a place where the schedule's dates stop being calculated and start being guessed.</dd>
+      <dt>Threshold</dt>
+      <dd>DCMA standard: &lt;5% of activities open-ended. FloatCheck uses the same &lt;5% pass / &lt;15% warning / else fail bands.</dd>
+      <dt>Planning Toolkit</dt>
+      <dd>Assessable directly &mdash; counts activities with zero entries in <code>TASKPRED</code> as either a predecessor or a successor, read straight from the uploaded file.</dd>
+      <dt>Example</dt>
+      <dd class="example"><strong>Fails when:</strong> 40 of 500 activities (8%) have no predecessor and aren't the project's start milestone &mdash; each one's date is only as good as whoever typed it in, not the network logic.</dd>
+    </dl>
+  </section>
+
+  <!-- ================= CHECK 2 ================= -->
+  <section class="check" id="check-2">
+    <div class="check-head">
+      <div class="check-headline">
+        <span class="check-num">02</span>
+        <h2 class="check-name">Leads</h2>
+      </div>
+      <span class="badge assessable">Assessable</span>
+    </div>
+    <dl class="check-grid">
+      <dt>Measures</dt>
+      <dd>Relationships carrying negative lag &mdash; a "lead," where a successor is allowed to start before its predecessor actually finishes.</dd>
+      <dt>Why it matters</dt>
+      <dd>A lead quietly overlaps two activities that the relationship type says shouldn't overlap. It's frequently used to force a date to "look right" rather than to represent genuine overlap in the real work, and it distorts float on both sides of the relationship.</dd>
+      <dt>Threshold</dt>
+      <dd>DCMA standard: 0 relationships with negative lag. Any lead is a fail.</dd>
+      <dt>Planning Toolkit</dt>
+      <dd>Assessable directly &mdash; every predecessor edge carries its own <code>lag_hr</code> from <code>TASKPRED</code>; any value below zero is counted.</dd>
+      <dt>Example</dt>
+      <dd class="example"><strong>Fails when:</strong> "Install formwork" is linked Finish-to-Start to "Pour concrete" with a &minus;3 day lag &mdash; concrete can start three days before formwork is actually finished, which the relationship type says is impossible.</dd>
+    </dl>
+  </section>
+
+  <!-- ================= CHECK 3 ================= -->
+  <section class="check" id="check-3">
+    <div class="check-head">
+      <div class="check-headline">
+        <span class="check-num">03</span>
+        <h2 class="check-name">Lags</h2>
+      </div>
+      <span class="badge assessable">Assessable</span>
+    </div>
+    <dl class="check-grid">
+      <dt>Measures</dt>
+      <dd>Relationships carrying positive lag &mdash; a mandatory waiting period inserted between a predecessor finishing and a successor starting.</dd>
+      <dt>Why it matters</dt>
+      <dd>A little lag is normal (concrete curing time is a textbook example). A schedule leaning on lag everywhere usually means real activities &mdash; the curing itself, a delivery wait &mdash; were never modelled as their own activities, so nobody can see or manage that time directly.</dd>
+      <dt>Threshold</dt>
+      <dd>DCMA standard: &lt;5% of relationships carrying positive lag.</dd>
+      <dt>Planning Toolkit</dt>
+      <dd>Assessable directly &mdash; same <code>lag_hr</code> field as the leads check, counting values above zero as a share of all relationships in the file.</dd>
+      <dt>Example</dt>
+      <dd class="example"><strong>Fails when:</strong> 60 of 800 relationships (7.5%) carry a lag &mdash; several weeks of curing, testing and delivery waits are hidden inside relationships instead of appearing as their own trackable activities.</dd>
+    </dl>
+  </section>
+
+  <!-- ================= CHECK 4 ================= -->
+  <section class="check" id="check-4">
+    <div class="check-head">
+      <div class="check-headline">
+        <span class="check-num">04</span>
+        <h2 class="check-name">Relationship types</h2>
+      </div>
+      <span class="badge assessable">Assessable</span>
+    </div>
+    <dl class="check-grid">
+      <dt>Measures</dt>
+      <dd>What share of the schedule's relationships are Finish-to-Start (FS) &mdash; "B can't start until A finishes" &mdash; versus Start-to-Start, Finish-to-Finish, or Start-to-Finish.</dd>
+      <dt>Why it matters</dt>
+      <dd>FS is the relationship type that maps cleanly onto how construction sequencing actually works and is the easiest to audit by eye. A schedule full of SS/FF relationships is much harder for a reviewer to sanity-check, and is where logic errors hide most easily.</dd>
+      <dt>Threshold</dt>
+      <dd>DCMA standard: &ge;90% of relationships should be Finish-to-Start.</dd>
+      <dt>Planning Toolkit</dt>
+      <dd>Assessable directly &mdash; every relationship's <code>pred_type</code> is read from <code>TASKPRED</code> and the FS share computed as a percentage of the total.</dd>
+      <dt>Example</dt>
+      <dd class="example"><strong>Fails when:</strong> only 78% of relationships are FS &mdash; the remaining 22% (SS/FF/SF mixed through the network) make the true driving sequence much harder for a reviewer to verify by inspection.</dd>
+    </dl>
+  </section>
+
+  <!-- ================= CHECK 5 ================= -->
+  <section class="check" id="check-5">
+    <div class="check-head">
+      <div class="check-headline">
+        <span class="check-num">05</span>
+        <h2 class="check-name">Hard constraints</h2>
+      </div>
+      <span class="badge unavailable">Not assessable</span>
+    </div>
+    <dl class="check-grid">
+      <dt>Measures</dt>
+      <dd>The share of activities carrying a "hard" date constraint &mdash; Mandatory Start, Mandatory Finish, Start On, Finish On &mdash; as opposed to a "soft" constraint like Start On or After, or no constraint at all.</dd>
+      <dt>Why it matters</dt>
+      <dd>A hard constraint pins an activity's date regardless of what its logic says. Every hard constraint is a place where the network stops driving the schedule and a fixed date takes over instead &mdash; float and the critical path both become unreliable around it.</dd>
+      <dt>Threshold</dt>
+      <dd>DCMA standard: &le;5% of activities carrying a hard constraint.</dd>
+      <dt>Planning Toolkit</dt>
+      <dd>Not assessable today. The XER's <code>cstr_type</code>/<code>cstr_date</code> fields aren't read by FloatCheck's parser at all &mdash; this isn't a partial estimate, it's genuinely not computed, and the health check says so rather than guessing.</dd>
+      <dt>Example</dt>
+      <dd class="example"><strong>Fails when:</strong> 12% of activities carry a Mandatory Start constraint left over from the original baseline &mdash; those dates no longer move no matter what happens upstream, silently breaking the logic chain around them.</dd>
+    </dl>
+  </section>
+
+  <!-- ================= CHECK 6 ================= -->
+  <section class="check" id="check-6">
+    <div class="check-head">
+      <div class="check-headline">
+        <span class="check-num">06</span>
+        <h2 class="check-name">High float</h2>
+      </div>
+      <span class="badge assessable">Assessable</span>
+    </div>
+    <dl class="check-grid">
+      <dt>Measures</dt>
+      <dd>The share of activities carrying total float above a threshold &mdash; standard 44 working days (roughly two months).</dd>
+      <dt>Why it matters</dt>
+      <dd>Float that high is rarely real slack in the work &mdash; it's usually a sign an activity is missing a successor it should logically have, so the backward pass never constrains it. High float hides risk rather than describing genuine flexibility.</dd>
+      <dt>Threshold</dt>
+      <dd>DCMA standard: &lt;5% of activities above 44 working days of total float.</dd>
+      <dt>Planning Toolkit</dt>
+      <dd>Assessable directly &mdash; total float comes straight from FloatCheck's own CPM engine (the same forward/backward pass LeadTime uses), not an estimate.</dd>
+      <dt>Example</dt>
+      <dd class="example"><strong>Fails when:</strong> 9% of activities carry more than 44 days of float &mdash; almost all of them turn out to be missing a successor link, not genuinely slack work.</dd>
+    </dl>
+  </section>
+
+  <!-- ================= CHECK 7 ================= -->
+  <section class="check" id="check-7">
+    <div class="check-head">
+      <div class="check-headline">
+        <span class="check-num">07</span>
+        <h2 class="check-name">Negative float</h2>
+      </div>
+      <span class="badge assessable">Assessable</span>
+    </div>
+    <dl class="check-grid">
+      <dt>Measures</dt>
+      <dd>Activities whose total float has gone below zero &mdash; the network can no longer meet whatever is anchoring the backward pass without a change.</dd>
+      <dt>Why it matters</dt>
+      <dd>This is the most direct, least ambiguous signal in the whole assessment: it's not "getting tight," the schedule's own logic says a date can no longer be met as things stand. It demands a real decision &mdash; recover time, replan, or accept and document the slip.</dd>
+      <dt>Threshold</dt>
+      <dd>DCMA standard: 0 activities with negative float.</dd>
+      <dt>Planning Toolkit</dt>
+      <dd>Assessable directly &mdash; total float per activity comes from FloatCheck's own CPM engine; any value below zero is flagged.</dd>
+      <dt>Example</dt>
+      <dd class="example"><strong>Fails when:</strong> 6 activities on the facade package show &minus;4 days of float &mdash; the current logic and durations can no longer deliver the date those activities are chained to, full stop.</dd>
+    </dl>
+  </section>
+
+  <!-- ================= CHECK 8 ================= -->
+  <section class="check" id="check-8">
+    <div class="check-head">
+      <div class="check-headline">
+        <span class="check-num">08</span>
+        <h2 class="check-name">High duration</h2>
+      </div>
+      <span class="badge assessable">Assessable</span>
+    </div>
+    <dl class="check-grid">
+      <dt>Measures</dt>
+      <dd>The share of activities with a planned duration above a threshold &mdash; standard 44 working days.</dd>
+      <dt>Why it matters</dt>
+      <dd>A very long single activity is hard to status honestly &mdash; "60% complete" on a four-month activity means very little &mdash; and hides whatever real internal milestones and risk actually live inside it. Breaking it into shorter activities makes it trackable and gives it real logic ties instead of one long block.</dd>
+      <dt>Threshold</dt>
+      <dd>DCMA standard: &lt;5% of activities above 44 working days duration.</dd>
+      <dt>Planning Toolkit</dt>
+      <dd>Assessable directly &mdash; duration comes from the file's own <code>target_drtn_hr_cnt</code> (or <code>remain_drtn_hr_cnt</code> for in-progress activities), converted to working days.</dd>
+      <dt>Example</dt>
+      <dd class="example"><strong>Fails when:</strong> "Structural steel erection" runs as one 90-day activity &mdash; there's no way to tell from the schedule alone whether it's tracking to plan or three weeks behind, because nothing inside it is broken out.</dd>
+    </dl>
+  </section>
+
+  <!-- ================= CHECK 9 ================= -->
+  <section class="check" id="check-9">
+    <div class="check-head">
+      <div class="check-headline">
+        <span class="check-num">09</span>
+        <h2 class="check-name">Invalid dates</h2>
+      </div>
+      <span class="badge assessable">Assessable</span>
+    </div>
+    <dl class="check-grid">
+      <dt>Measures</dt>
+      <dd>Activities whose actual or forecast dates fall outside a sane range relative to the project's data date &mdash; a forecast start in the past, or an actual finish in the future.</dd>
+      <dt>Why it matters</dt>
+      <dd>These are usually simple update mistakes &mdash; a status not applied, a date typed into the wrong field &mdash; but they poison every calculation downstream of them (float, the critical path, percent complete) until they're corrected.</dd>
+      <dt>Threshold</dt>
+      <dd>DCMA standard: 0 activities with invalid dates.</dd>
+      <dt>Planning Toolkit</dt>
+      <dd>Assessable directly, though narrower than the full DCMA definition today &mdash; FloatCheck currently checks for activities missing an early start or early finish date entirely, rather than the full past/future-relative-to-data-date comparison.</dd>
+      <dt>Example</dt>
+      <dd class="example"><strong>Fails when:</strong> an activity shows an actual finish date three weeks after the file's own data date &mdash; work that, per the file, hasn't happened yet is recorded as already complete.</dd>
+    </dl>
+  </section>
+
+  <!-- ================= CHECK 10 ================= -->
+  <section class="check" id="check-10">
+    <div class="check-head">
+      <div class="check-headline">
+        <span class="check-num">10</span>
+        <h2 class="check-name">Resources</h2>
+      </div>
+      <span class="badge unavailable">Not assessable</span>
+    </div>
+    <dl class="check-grid">
+      <dt>Measures</dt>
+      <dd>The share of activities with at least one resource (labour, equipment, material) assigned.</dd>
+      <dt>Why it matters</dt>
+      <dd>An unresourced schedule can show a beautiful critical path that's physically impossible &mdash; there's no way to know from dates and logic alone whether the crews, plant and materials needed actually exist in the quantities and timeframes the schedule assumes.</dd>
+      <dt>Threshold</dt>
+      <dd>DCMA standard: 100% of (non-summary, non-LOE) activities resource-loaded.</dd>
+      <dt>Planning Toolkit</dt>
+      <dd>Not assessable today. FloatCheck's parser doesn't read the XER's <code>TASKRSRC</code> table at all &mdash; resource loading is a real, separate parsing effort this app hasn't taken on, not an estimate standing in for one.</dd>
+      <dt>Example</dt>
+      <dd class="example"><strong>Fails when:</strong> the earthworks package has fully-logic-driven dates but zero equipment assigned to any activity in it &mdash; the schedule can't tell you whether the excavators it needs are even booked.</dd>
+    </dl>
+  </section>
+
+  <!-- ================= CHECK 11 ================= -->
+  <section class="check" id="check-11">
+    <div class="check-head">
+      <div class="check-headline">
+        <span class="check-num">11</span>
+        <h2 class="check-name">Missed tasks</h2>
+      </div>
+      <span class="badge assessable">Assessable</span>
+    </div>
+    <dl class="check-grid">
+      <dt>Measures</dt>
+      <dd>Activities whose forecast finish date has already passed the project's data date, but which aren't marked complete.</dd>
+      <dt>Why it matters</dt>
+      <dd>This is a direct, countable measure of schedule slippage that's already happened, as opposed to float (which is a measure of risk to dates that haven't happened yet). A high count here means the schedule isn't being kept current with real progress.</dd>
+      <dt>Threshold</dt>
+      <dd>DCMA standard: &le;5% of incomplete activities missed.</dd>
+      <dt>Planning Toolkit</dt>
+      <dd>Assessable directly &mdash; compares each activity's early finish date to the file's own data date, for every activity not marked <code>TK_Complete</code>.</dd>
+      <dt>Example</dt>
+      <dd class="example"><strong>Fails when:</strong> 14 activities show a forecast finish two to six weeks before the file's own data date, still marked in-progress &mdash; the schedule hasn't been updated to reflect what actually happened on site.</dd>
+    </dl>
+  </section>
+
+  <!-- ================= CHECK 12 ================= -->
+  <section class="check" id="check-12">
+    <div class="check-head">
+      <div class="check-headline">
+        <span class="check-num">12</span>
+        <h2 class="check-name">Critical path test</h2>
+      </div>
+      <span class="badge assessable">Assessable</span>
+    </div>
+    <dl class="check-grid">
+      <dt>Measures</dt>
+      <dd>Whether the schedule's critical path is genuinely continuous and logic-driven. The textbook DCMA method: add a large arbitrary duration (600 days is the commonly cited reference figure) to one critical activity's remaining duration and confirm the project finish date shifts by exactly that amount &mdash; if it doesn't, the "critical" path isn't actually driving completion somewhere.</dd>
+      <dt>Why it matters</dt>
+      <dd>A broken critical path is the single most damaging schedule defect there is &mdash; every crashing, recovery, or "what does this delay actually cost us" conversation is built on top of it being real.</dd>
+      <dt>Threshold</dt>
+      <dd>DCMA standard: the project finish date shifts by exactly the added duration, every time.</dd>
+      <dt>Planning Toolkit</dt>
+      <dd>Assessable, but via a different method than the textbook 600-day test &mdash; FloatCheck recomputes total float independently with its own CPM engine and compares it activity-by-activity to the float already stored in the file by P6, flagging any activity that differs by more than two working days. A large disagreement is the same underlying signal (the recorded critical path and the network's actual logic don't agree) reached a different way.</dd>
+      <dt>Example</dt>
+      <dd class="example"><strong>Fails when:</strong> 18 activities show a recomputed float more than two working days off from what the file itself reports &mdash; the schedule's own stored numbers and its own logic have quietly drifted apart.</dd>
+    </dl>
+  </section>
+
+  <!-- ================= CHECK 13 ================= -->
+  <section class="check" id="check-13">
+    <div class="check-head">
+      <div class="check-headline">
+        <span class="check-num">13</span>
+        <h2 class="check-name">CPLI</h2>
+      </div>
+      <span class="badge baseline">Needs baseline</span>
+    </div>
+    <dl class="check-grid">
+      <dt>Measures</dt>
+      <dd>Critical Path Length Index &mdash; <code>(Baseline Critical Path Length + Total Float) / Baseline Critical Path Length</code>. In plain terms: does the time actually left, plus the float you have, still add up to what the original baseline said the critical path would take?</dd>
+      <dt>Why it matters</dt>
+      <dd>It's a single number answering "is this project still fitting inside its original time budget," independent of whether the finish date itself has moved &mdash; two schedules with the same slipped date can have very different CPLIs depending on how much genuine capacity to recover is left.</dd>
+      <dt>Threshold</dt>
+      <dd>DCMA standard: &ge;0.95. A CPLI of 1.00 means the project still fits its baseline time budget exactly; below 1.00 signals a likely delay.</dd>
+      <dt>Planning Toolkit</dt>
+      <dd>Assessable only when a baseline file is loaded (FloatCheck's optional third upload, alongside the previous/current update pair). With no baseline, this reads "not assessable" rather than a guessed or defaulted value &mdash; there's no baseline critical path length to divide by.</dd>
+      <dt>Example</dt>
+      <dd class="example"><strong>Fails when:</strong> CPLI comes out at 0.82 &mdash; the current driving float plus what's left of the baseline critical path length no longer adds up to the original time budget; real recovery time has been consumed, not just moved around.</dd>
+    </dl>
+  </section>
+
+  <!-- ================= CHECK 14 ================= -->
+  <section class="check" id="check-14">
+    <div class="check-head">
+      <div class="check-headline">
+        <span class="check-num">14</span>
+        <h2 class="check-name">BEI</h2>
+      </div>
+      <span class="badge baseline">Needs baseline</span>
+    </div>
+    <dl class="check-grid">
+      <dt>Measures</dt>
+      <dd>Baseline Execution Index &mdash; <code>Activities Actually Complete / Activities the Baseline Planned to be Complete by Now</code>. A direct measure of execution pace against the original plan, not against the current (possibly already-revised) schedule.</dd>
+      <dt>Why it matters</dt>
+      <dd>A project can look fine against its own latest revised schedule while badly missing its original commitments &mdash; BEI is the number that keeps that honest, since it never moves the goalposts.</dd>
+      <dt>Threshold</dt>
+      <dd>DCMA standard: &ge;0.95. A BEI of 1.00 means on-pace execution against the baseline; below 1.00 means falling behind it.</dd>
+      <dt>Planning Toolkit</dt>
+      <dd>Assessable only when a baseline file is loaded, same as CPLI. With no baseline, or when no activities were baseline-due by the current data date, this reads "not assessable" &mdash; never a fabricated ratio.</dd>
+      <dt>Example</dt>
+      <dd class="example"><strong>Fails when:</strong> 340 of 400 baseline-due activities are actually complete &mdash; a BEI of 0.85, meaning execution is running meaningfully behind the pace the original baseline committed to, even if the current schedule's own dates still look achievable.</dd>
+    </dl>
+  </section>
+
+  <!-- ================= CLOSING ================= -->
+  <div class="closing">
+    <h2>What this is, and where it comes from</h2>
+    <p>The DCMA 14-Point Assessment was developed by the U.S. Defense Contract Management Agency to check the structural health of a project schedule before trusting the dates it produces. It doesn't ask "is the project late" &mdash; it asks whether the schedule's own logic, float, and relationships are sound enough for its dates to mean anything in the first place. It's become a de facto industry standard well beyond defense contracting, widely used across construction and infrastructure programme controls.</p>
+
+    <h3>What Planning Toolkit actually runs</h3>
+    <p>FloatCheck implements 10 of these 14 checks fully from a P6 XER file alone: logic, leads, lags, relationship types, high float, negative float, high duration, invalid dates, missed tasks, and the critical path test (via its own recomputed-float-vs-stored-float comparison, not the textbook 600-day method). Two more &mdash; CPLI and BEI &mdash; become assessable once you load an optional baseline file alongside your update. Two checks are honestly not assessable today:</p>
+    <ul>
+      <li><strong>Hard constraints (check 5)</strong> &mdash; the XER's constraint fields aren't read by the parser yet.</li>
+      <li><strong>Resources (check 10)</strong> &mdash; resource loading (the XER's <code>TASKRSRC</code> table) isn't parsed; this is a genuinely separate parsing effort FloatCheck hasn't taken on.</li>
+    </ul>
+    <p>FloatCheck's own health check tab states this the same way this page does &mdash; a check that can't be assessed reads "Not assessable," never a default, a zero standing in for missing data, or a guess.</p>
+  </div>
+
+  <footer class="site-footer">
+    <p>Part of the <a href="index.html">Planning Toolkit</a>. Run the live version of this check against your own file in <a href="floatcheck.html">FloatCheck</a>.</p>
+    <p><a href="https://github.com/sashreek33-sudo/floatcheck" target="_blank" rel="noopener">View source on GitHub</a> &middot; <a href="privacy.html">Privacy</a> &middot; <a href="mailto:Sashreek33@gmail.com">Email</a>.</p>
+  </footer>
+
+</div>
+
+</body>
+</html>

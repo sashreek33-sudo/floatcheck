@@ -105,6 +105,10 @@
 .home-signin{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.14em;color:#B8B3A6;cursor:default;}
 .home-signin:hover{color:#EDEAE2;}
 
+.home-header-left{display:flex;align-items:center;gap:22px;}
+.home-header-link{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.14em;color:#B8B3A6;text-decoration:none;}
+.home-header-link:hover{color:#EDEAE2;text-decoration:none;}
+
 .home-hero{padding:52px 32px 40px;}
 .home-hero h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:62px;line-height:0.94;letter-spacing:0.005em;margin:0 0 14px;}
 .home-hero p{font-size:14px;line-height:1.5;margin:0;max-width:640px;color:var(--home-body);}
