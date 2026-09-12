@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How to Read a P6 XER File &mdash; Planning Toolkit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/toolkit-ui.css">
+<style>
+  :root{
+    --bg:#0C0C0C; --panel:#141210; --panel-raised:#1B1815; --line:#262320;
+    --line-dashed:#3A3733;
+    --text:#F2EEE8; --body:#C9C3B9; --muted:#9A9287; --muted2:#6E6559;
+    --crit:#D9584C; --warn:#D6A23C; --ok:#6FA285; --accent:#C17F24; --accent-hi:#E0A050; --accent-ink:#12100C;
+    --crit-bg:rgba(217,88,76,0.15); --warn-bg:rgba(214,162,60,0.15); --ok-bg:rgba(111,162,133,0.15);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;-webkit-font-smoothing:antialiased;line-height:1.6;}
+  a{color:var(--accent);}
+  a:hover{color:var(--accent-hi);}
+  code{font-family:'IBM Plex Mono',monospace;font-size:0.92em;background:var(--panel-raised);padding:1px 5px;border-radius:2px;}
+
+  .wrap{max-width:820px;margin:0 auto;padding:0 20px 80px;}
+  .post-hero{padding:44px 0 8px;}
+  .post-cats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+  .post-cat{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);border:1px solid rgba(193,127,36,0.4);border-radius:3px;padding:4px 9px;}
+  .post-hero h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:32px;line-height:1.15;margin:0 0 14px;letter-spacing:0.005em;}
+  .post-meta{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--muted2);margin-bottom:8px;}
+  .back-link{font-size:13px;margin-bottom:22px;display:inline-block;}
+
+  .content p{font-size:15px;color:var(--body);margin:0 0 18px;}
+  .content h2{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:26px;margin:38px 0 14px;letter-spacing:0.005em;}
+  .content ul{font-size:14.5px;color:var(--body);margin:0 0 18px;padding-left:20px;}
+  .content li{margin-bottom:8px;}
+
+  .interactive-box{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:24px 20px 22px;margin:28px 0;}
+  .interactive-label{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.16em;text-transform:uppercase;color:var(--accent);margin-bottom:16px;}
+  .xer-code{background:#0A0908;border:1px solid var(--line);border-radius:4px;padding:16px 18px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;line-height:1.9;overflow-x:auto;white-space:pre;}
+  .xer-tok{cursor:pointer;border-radius:2px;padding:1px 2px;}
+  .xer-tok:hover{background:rgba(193,127,36,0.18);}
+  .xer-tok.active{background:rgba(193,127,36,0.32);color:#F2EEE8;}
+  .xer-panel{margin-top:14px;padding:14px 16px;background:var(--panel-raised);border-left:3px solid var(--accent);border-radius:2px;font-size:13.5px;color:var(--body);min-height:44px;}
+
+  .rel-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:20px 0 28px;}
+  .rel-card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:14px;text-align:center;}
+  .rel-card svg{width:100%;height:50px;}
+  .rel-card .rel-name{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--accent);margin-bottom:6px;}
+  .rel-card .rel-desc{font-size:11.5px;color:var(--muted);}
+  @media (max-width:600px){ .rel-grid{grid-template-columns:repeat(2,1fr);} }
+
+  .wtmp{margin-top:44px;padding:26px 28px;background:var(--panel-raised);border:1px solid var(--line);border-radius:2px;}
+  .wtmp p{font-size:13.5px;color:var(--body);margin:0 0 10px;}
+  .wtmp .cta{display:inline-block;margin-top:10px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:600;}
+
+  .site-footer p{font-size:12px;}
+</style>
+</head>
+<body>
+
+<nav class="toolkit-nav">
+  <div class="toolkit-nav-inner">
+    <a class="toolkit-nav-brand" href="../index.html">Planning <span class="tnb-accent">Toolkit</span></a>
+    <div class="toolkit-nav-tools">
+      <a class="toolkit-nav-tool" href="../floatcheck.html">FloatCheck</a>
+      <a class="toolkit-nav-tool" href="../leadtime.html">LeadTime</a>
+      <a class="toolkit-nav-tool" href="../percent-complete.html">% Complete</a>
+      <a class="toolkit-nav-tool" href="../dcma.html">DCMA 14-Point</a>
+      <a class="toolkit-nav-tool" href="../blog/index.html">Insights</a>
+      <a class="toolkit-nav-tool" href="index.html">Academy</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <div class="post-hero">
+    <a class="back-link" href="index.html">&larr; All academy guides</a>
+    <div class="post-cats"><span class="post-cat">Foundation</span></div>
+    <h1>How to Read a P6 XER File &mdash; It's Just Text</h1>
+    <div class="post-meta">~7 minute read &middot; interactive annotated XER explorer</div>
+  </div>
+
+  <div class="content">
+    <p>An XER file is P6's plain-text export format. Despite the intimidating structure, it's tab-delimited text you can open in Notepad &mdash; no special tools required. Click any line below to see what it means.</p>
+
+    <div class="interactive-box">
+      <div class="interactive-label">Click a line to explain it</div>
+      <div class="xer-code" id="xerCode">
+<span class="xer-tok" data-key="t-task">%T&#9;TASK</span>
+<span class="xer-tok" data-key="f-task">%F&#9;task_code&#9;task_name&#9;act_start_date&#9;act_end_date&#9;clndr_id&#9;total_float_hr_cnt</span>
+<span class="xer-tok" data-key="r-a100">%R&#9;<span class="xer-tok" data-key="r-a100-code">A100</span>&#9;Site Establishment&#9;<span class="xer-tok" data-key="date-a100">2026-01-05 08:00</span>&#9;2026-01-09 16:00&#9;<span class="xer-tok" data-key="clndr-a100">CAL01</span>&#9;0</span>
+<span class="xer-tok" data-key="r-a110">%R&#9;A110&#9;Excavation&#9;2026-01-12 08:00&#9;2026-01-20 16:00&#9;CAL01&#9;320</span>
+<span class="xer-tok" data-key="t-taskpred">%T&#9;TASKPRED</span>
+<span class="xer-tok" data-key="f-taskpred">%F&#9;task_pred_id&#9;pred_task_id&#9;task_id&#9;pred_type</span>
+<span class="xer-tok" data-key="r-pred">%R&#9;10001&#9;A100&#9;A110&#9;PR_FS</span></div>
+      <div class="xer-panel" id="xerPanel">Click any highlighted line above to see what it declares.</div>
+    </div>
+
+    <h2>The %T / %F / %R structure</h2>
+    <p>Every table in an XER follows the same three-line-type pattern: a <code>%T</code> line names the table, a <code>%F</code> line lists the field names for every row that follows, and each <code>%R</code> line is one record, with values in the same order as the <code>%F</code> line above it. Tab characters separate every field &mdash; not spaces, not commas.</p>
+
+    <h2>Windows-1252 encoding</h2>
+    <p>XER files are encoded in Windows-1252, not UTF-8. If an activity name or resource description contains an extended character (curly quotes, accented letters, the degree symbol), opening or parsing the file as UTF-8 will corrupt those characters. Any parser reading XER files needs to decode as Windows-1252 first.</p>
+
+    <h2>Key tables</h2>
+    <ul>
+      <li><strong>PROJECT</strong> &mdash; one row per project in the file, including the data date and scheduling settings like <code>critical_path_type</code>.</li>
+      <li><strong>TASK</strong> &mdash; one row per activity: code, name, dates, calendar assignment, float.</li>
+      <li><strong>TASKPRED</strong> &mdash; one row per logic link (relationship) between two activities.</li>
+      <li><strong>CALENDAR</strong> &mdash; one row per calendar, with the working/non-working day pattern packed into its own <code>clndr_data</code> field.</li>
+      <li><strong>TASKRSRC</strong> &mdash; one row per resource assignment to an activity (units, cost, rates).</li>
+    </ul>
+
+    <h2>How TASKPRED links activities</h2>
+    <p>Each TASKPRED row names a predecessor task, a successor task, and a relationship type. A CPM engine builds its entire network graph from these rows alone &mdash; without them, TASK rows are just an unordered list of activities with no logic between them.</p>
+
+    <div class="rel-grid">
+      <div class="rel-card">
+        <div class="rel-name">PR_FS</div>
+        <svg viewBox="0 0 100 50"><line x1="10" y1="15" x2="55" y2="15" stroke="#C17F24" stroke-width="4"></line><line x1="55" y1="35" x2="90" y2="35" stroke="#C17F24" stroke-width="4"></line><line x1="55" y1="15" x2="55" y2="35" stroke="#6E6559" stroke-width="1.5" stroke-dasharray="2 2"></line></svg>
+        <div class="rel-desc">Finish-to-Start: successor starts after predecessor finishes.</div>
+      </div>
+      <div class="rel-card">
+        <div class="rel-name">PR_SS</div>
+        <svg viewBox="0 0 100 50"><line x1="10" y1="15" x2="55" y2="15" stroke="#C17F24" stroke-width="4"></line><line x1="10" y1="35" x2="90" y2="35" stroke="#C17F24" stroke-width="4"></line><line x1="10" y1="15" x2="10" y2="35" stroke="#6E6559" stroke-width="1.5" stroke-dasharray="2 2"></line></svg>
+        <div class="rel-desc">Start-to-Start: successor starts once predecessor starts.</div>
+      </div>
+      <div class="rel-card">
+        <div class="rel-name">PR_FF</div>
+        <svg viewBox="0 0 100 50"><line x1="10" y1="15" x2="70" y2="15" stroke="#C17F24" stroke-width="4"></line><line x1="30" y1="35" x2="90" y2="35" stroke="#C17F24" stroke-width="4"></line><line x1="70" y1="15" x2="90" y2="35" stroke="#6E6559" stroke-width="1.5" stroke-dasharray="2 2"></line></svg>
+        <div class="rel-desc">Finish-to-Finish: successor finishes once predecessor finishes.</div>
+      </div>
+      <div class="rel-card">
+        <div class="rel-name">PR_SF</div>
+        <svg viewBox="0 0 100 50"><line x1="10" y1="15" x2="50" y2="15" stroke="#C17F24" stroke-width="4"></line><line x1="50" y1="35" x2="90" y2="35" stroke="#C17F24" stroke-width="4"></line><line x1="10" y1="15" x2="50" y2="35" stroke="#6E6559" stroke-width="1.5" stroke-dasharray="2 2"></line></svg>
+        <div class="rel-desc">Start-to-Finish: predecessor starts before successor can finish (rare).</div>
+      </div>
+    </div>
+
+    <h2>Why the file has no schedule results baked in</h2>
+    <p>A freshly exported XER carries the dates and float from whenever it was last scheduled inside P6 &mdash; but nothing forces those numbers to be current. If someone edited logic, durations or calendars after the last F9 (Schedule) run, the stored dates in TASK are stale until it's rescheduled. A tool reading the file directly can trust the stored dates only as much as it trusts that the file was scheduled immediately before export &mdash; which is exactly why an independent CPM recompute, run straight from TASK and TASKPRED, is worth having as a cross-check.</p>
+  </div>
+
+  <div class="wtmp">
+    <p>Reading the raw structure once makes every downstream tool &mdash; P6 itself, or an independent recompute &mdash; much easier to trust, because you can always go back to the source rows and see exactly what they say.</p>
+    <a class="cta" href="../floatcheck.html">Upload your XER &rarr; floatcheck.html</a>
+  </div>
+
+  <footer class="site-footer" style="margin-top:44px;">
+    <p>Part of the <a href="../index.html">Planning Toolkit</a> Academy.</p>
+    <p><a href="https://github.com/sashreek33-sudo/floatcheck" target="_blank" rel="noopener">View source on GitHub</a> &middot; <a href="../privacy.html">Privacy</a> &middot; <a href="mailto:Sashreek33@gmail.com">Email</a>.</p>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  var explain = {
+    't-task': '%T TASK — this line declares the start of the TASK table. Every %R row that follows, until the next %T line, is an activity record.',
+    'f-task': '%F task_code task_name act_start_date act_end_date clndr_id total_float_hr_cnt — these are the field names for every row in this table, in order. The values in each %R row below line up with these names position-for-position.',
+    'r-a100': '%R A100 Site Establishment ... — this is one activity row. A100 is the activity code (task_code), the first field.',
+    'r-a100-code': 'A100 is this row\'s task_code — the unique activity identifier used everywhere else in the file (including TASKPRED) to refer to this activity.',
+    'date-a100': 'Dates in XER are stored as YYYY-MM-DD HH:MM. P6 stores all dates referenced to UTC — always confirm the timezone assumption before comparing dates pulled from two different files.',
+    'clndr-a100': 'The calendar ID — links to the CALENDAR table to get this activity\'s working day pattern (which days count as working days, which are holidays or non-working).',
+    'r-a110': '%R A110 Excavation ... — another activity row, this one showing 320 hours (40 working days) of total float — the kind of number a DCMA high-float check would flag.',
+    't-taskpred': '%T TASKPRED — this line declares the start of the TASKPRED table, which stores the logic links (relationships) between activities.',
+    'f-taskpred': '%F task_pred_id pred_task_id task_id pred_type — field names for every relationship row: which activity drives which, and what type of link it is.',
+    'r-pred': '%R 10001 A100 A110 PR_FS — this row says activity A100 is a predecessor of A110, linked Finish-to-Start (A110 can\'t start until A100 finishes).'
+  };
+
+  document.querySelectorAll('.xer-tok').forEach(function(el){
+    el.addEventListener('click', function(e){
+      e.stopPropagation();
+      document.querySelectorAll('.xer-tok.active').forEach(function(a){ a.classList.remove('active'); });
+      el.classList.add('active');
+      var key = el.getAttribute('data-key');
+      document.getElementById('xerPanel').textContent = explain[key] || '';
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

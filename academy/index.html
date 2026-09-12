@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Academy &mdash; Planning Toolkit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/toolkit-ui.css">
+<style>
+  :root{
+    --bg:#0C0C0C; --panel:#141210; --panel-raised:#1B1815; --line:#262320;
+    --line-dashed:#3A3733;
+    --text:#F2EEE8; --body:#C9C3B9; --muted:#9A9287; --muted2:#6E6559;
+    --crit:#D9584C; --warn:#D6A23C; --ok:#6FA285; --accent:#C17F24; --accent-hi:#E0A050; --accent-ink:#12100C;
+    --crit-bg:rgba(217,88,76,0.15); --warn-bg:rgba(214,162,60,0.15); --ok-bg:rgba(111,162,133,0.15);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;-webkit-font-smoothing:antialiased;line-height:1.55;}
+  a{color:var(--accent);}
+  a:hover{color:var(--accent-hi);}
+
+  .wrap{max-width:1080px;margin:0 auto;padding:0 20px 80px;}
+  .hero{padding:48px 0 8px;}
+  .hero .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:var(--accent);margin-bottom:14px;}
+  .hero h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:44px;line-height:1.08;margin:0 0 12px;letter-spacing:0.01em;}
+  .hero p{font-size:15px;color:var(--body);max-width:64ch;margin:0;}
+
+  .academy-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;margin-top:36px;}
+  .academy-card{display:flex;flex-direction:column;justify-content:space-between;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:24px 24px 20px;min-height:220px;text-decoration:none;color:var(--text);transition:border-color .15s ease,background .15s ease;}
+  .academy-card:hover{border-color:var(--accent);background:#171512;color:var(--text);}
+  .academy-tier{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--accent);margin-bottom:16px;}
+  .academy-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:23px;line-height:1.15;text-transform:uppercase;margin-bottom:10px;}
+  .academy-desc{font-size:13.5px;line-height:1.55;color:var(--muted);margin-bottom:18px;}
+  .academy-meta{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:14px;border-top:1px solid var(--line);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted2);}
+  .academy-meta span.arrow{color:var(--accent);}
+
+  .site-footer p{font-size:12px;}
+</style>
+</head>
+<body>
+
+<nav class="toolkit-nav">
+  <div class="toolkit-nav-inner">
+    <a class="toolkit-nav-brand" href="../index.html">Planning <span class="tnb-accent">Toolkit</span></a>
+    <div class="toolkit-nav-tools">
+      <a class="toolkit-nav-tool" href="../floatcheck.html">FloatCheck</a>
+      <a class="toolkit-nav-tool" href="../leadtime.html">LeadTime</a>
+      <a class="toolkit-nav-tool" href="../percent-complete.html">% Complete</a>
+      <a class="toolkit-nav-tool" href="../dcma.html">DCMA 14-Point</a>
+      <a class="toolkit-nav-tool" href="../blog/index.html">Insights</a>
+      <span class="toolkit-nav-tool active">Academy</span>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <div class="hero">
+    <div class="eyebrow">Academy</div>
+    <h1>Learn the craft of project controls.</h1>
+    <p>Short, interactive guides on how P6 and CPM scheduling actually work &mdash; built to click through, not just read.</p>
+  </div>
+
+  <div class="academy-grid">
+
+    <a class="academy-card" href="what-is-cpm.html">
+      <div>
+        <div class="academy-tier">Foundation</div>
+        <div class="academy-title">What Is CPM and How Does P6 Calculate It?</div>
+        <div class="academy-desc">Step through a 4-activity network's forward and backward pass, one activity at a time.</div>
+      </div>
+      <div class="academy-meta"><span>~8 min &middot; Interactive</span><span class="arrow">&rarr;</span></div>
+    </a>
+
+    <a class="academy-card" href="total-float-explained.html">
+      <div>
+        <div class="academy-tier">Foundation</div>
+        <div class="academy-title">Total Float Explained &mdash; and Why Planners Argue About It</div>
+        <div class="academy-desc">Drag a slider and watch float collapse to zero, then negative. See how P6's float type setting changes the number.</div>
+      </div>
+      <div class="academy-meta"><span>~6 min &middot; Interactive</span><span class="arrow">&rarr;</span></div>
+    </a>
+
+    <a class="academy-card" href="critical-path-vs-longest-path.html">
+      <div>
+        <div class="academy-tier">Intermediate</div>
+        <div class="academy-title">Critical Path vs Longest Path</div>
+        <div class="academy-desc">Toggle between CT_TotFloat and CT_DrivPath on the same network and see exactly where they disagree.</div>
+      </div>
+      <div class="academy-meta"><span>~5 min &middot; Interactive</span><span class="arrow">&rarr;</span></div>
+    </a>
+
+    <a class="academy-card" href="what-is-data-date.html">
+      <div>
+        <div class="academy-tier">Foundation</div>
+        <div class="academy-title">The Data Date: The Most Important Field Most Planners Set Wrong</div>
+        <div class="academy-desc">Scrub a data date across a six-activity programme, and toggle retained logic vs progress override.</div>
+      </div>
+      <div class="academy-meta"><span>~5 min &middot; Interactive</span><span class="arrow">&rarr;</span></div>
+    </a>
+
+    <a class="academy-card" href="how-to-read-xer.html">
+      <div>
+        <div class="academy-tier">Foundation</div>
+        <div class="academy-title">How to Read a P6 XER File &mdash; It's Just Text</div>
+        <div class="academy-desc">Click through an annotated XER snippet, line by line, to see exactly what each part means.</div>
+      </div>
+      <div class="academy-meta"><span>~7 min &middot; Interactive</span><span class="arrow">&rarr;</span></div>
+    </a>
+
+  </div>
+
+  <footer class="site-footer" style="margin-top:48px;">
+    <p>Part of the <a href="../index.html">Planning Toolkit</a>. Short, practical guides written for working planners and project controls professionals.</p>
+    <p><a href="https://github.com/sashreek33-sudo/floatcheck" target="_blank" rel="noopener">View source on GitHub</a> &middot; <a href="../privacy.html">Privacy</a> &middot; <a href="mailto:Sashreek33@gmail.com">Email</a>.</p>
+  </footer>
+
+</div>
+</body>
+</html>

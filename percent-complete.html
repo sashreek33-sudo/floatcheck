@@ -8,20 +8,20 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="lib/toolkit-ui.css">
 <style>
-  /* Same palette/tokens as floatcheck.html, leadtime.html, dcma.html - copied
-     verbatim, not re-derived. Layout/component classes below are copy-pasted
-     from leadtime.html where this page's needs are identical (upload,
-     dropzone, kpis, table) and new only where the content genuinely differs
-     (gated sections, bucket bars, divergence table). */
+  /* Re-themed dark to match the current Planning Toolkit homepage
+     (index.html) - same literal hex values as floatcheck.html/leadtime.html's
+     own dark retheme, not independently invented. Layout/component classes
+     below are otherwise unchanged (upload, dropzone, kpis, table, gated
+     sections, bucket bars, divergence table). */
   :root{
-    --bg:#F3F1EC; --band:#E7E3D9; --panel:#FBFAF6; --inset:#EFECE4;
-    --text:#16150F; --body:#3C382D; --muted:#8A8271; --muted2:#7C7565;
-    --line:#DAD5C8; --line-band:#D3CEC1; --line-dashed:#A9A292;
-    --accent:#C9862E; --accent-hi:#B0741F; --accent-ink:#FFFDF8;
-    --crit:#A32A1C; --warn:#6B5200; --ok:#2F6236;
-    --crit-bg:#F4DED8; --warn-bg:#F1E7CB; --ok-bg:#E0EADC;
-    --table-zebra:#F7F5EF; --table-row-line:#E9E3D6; --table-hover:#F1EEE5;
-    --dropzone-hover-bg:#E9E4D6;
+    --bg:#0C0C0C; --band:#171512; --panel:#141210; --inset:#1B1815;
+    --text:#F2EEE8; --body:#C9C3B9; --muted:#9A9287; --muted2:#6E6559;
+    --line:#262320; --line-band:#3A3733; --line-dashed:#3A3733;
+    --accent:#C17F24; --accent-hi:#E0A050; --accent-ink:#12100C;
+    --crit:#D9584C; --warn:#D6A23C; --ok:#6FA285;
+    --crit-bg:rgba(217,88,76,0.15); --warn-bg:rgba(214,162,60,0.15); --ok-bg:rgba(111,162,133,0.15);
+    --table-zebra:rgba(255,255,255,0.02); --table-row-line:#262320; --table-hover:rgba(255,255,255,0.035);
+    --dropzone-hover-bg:#211D19;
   }
   *{box-sizing:border-box;}
   @media (prefers-reduced-motion: reduce){
@@ -30,19 +30,9 @@
   body{
     margin:0;background-color:var(--bg);color:var(--text);
     font-family:'IBM Plex Sans',sans-serif;-webkit-font-smoothing:antialiased;
-    background-image:
-      repeating-linear-gradient(0deg, rgba(147,137,122,0.05) 0 1px, transparent 1px 32px),
-      repeating-linear-gradient(90deg, rgba(147,137,122,0.05) 0 1px, transparent 1px 32px);
   }
   .wrap{max-width:1100px;margin:0 auto;padding:28px 20px 80px;}
   .mono{font-family:'IBM Plex Mono',monospace;font-size:12px;font-variant-numeric:tabular-nums;}
-
-  .hero{padding:0 0 34px;border-bottom:1px solid var(--line);margin-bottom:28px;}
-  .wordmark{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:52px;line-height:0.95;letter-spacing:0.5px;text-transform:uppercase;margin:0 0 14px;}
-  .wm-a{color:var(--text);}
-  .wm-b{color:var(--accent);}
-  .hero-pitch{font-family:'IBM Plex Sans',sans-serif;font-size:19px;font-weight:600;color:var(--text);margin:0 0 12px;line-height:1.4;max-width:680px;}
-  .hero-trust{max-width:640px;font-size:13px;line-height:1.65;color:var(--body);margin:0;}
 
   .section-title{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin:32px 0 12px;font-weight:600;padding-left:10px;border-left:2px solid var(--accent);}
   .section-title:first-of-type{margin-top:0;}
@@ -131,16 +121,12 @@
       <a class="toolkit-nav-tool" href="leadtime.html">LeadTime</a>
       <span class="toolkit-nav-tool active">% Complete</span>
       <a class="toolkit-nav-tool" href="dcma.html">DCMA 14-Point</a>
+      <a class="toolkit-nav-tool" href="blog/index.html">Insights</a>
+      <a class="toolkit-nav-tool" href="academy/index.html">Academy</a>
     </div>
   </div>
 </nav>
 <div class="wrap">
-
-  <div class="hero">
-    <h1 class="wordmark"><span class="wm-a">Percent</span> <span class="wm-b">Complete</span></h1>
-    <p class="hero-pitch">How complete is this programme actually &mdash; and does the reported progress agree with itself?</p>
-    <p class="hero-trust"><code>phys_complete_pct</code> is a number a planner typed into P6, not something any engine computed &mdash; this tool reads it, weights it, buckets it, and checks it against the file's own other fields for consistency. It never recalculates what "complete" should be.</p>
-  </div>
 
   <div class="section-title">Upload Programme</div>
   <div class="uploads">

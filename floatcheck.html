@@ -8,31 +8,25 @@
 <link rel="stylesheet" href="lib/toolkit-ui.css">
 <style>
   /*
-    Re-themed light per the approved component reference sheet - same
-    mapping already applied to leadtime.html, extended here to FloatCheck's
-    larger component set (title block, tabs, health check, crash workbench,
-    report panels, print). Token values are copied verbatim from that
-    sheet, not invented. Copper (--accent) is unchanged; everything else
-    moved from the old dark graphite palette to this light one.
+    Re-themed dark to match the current Planning Toolkit homepage
+    (index.html) - token values are the literal hex from that page's own
+    dark palette, not invented here. This replaces the light theme this
+    file carried previously (see git history for that version's own
+    reasoning - it no longer applies now that the whole toolkit is dark).
 
-    --panel-raised keeps its old name here (unlike leadtime.html's --inset)
-    but is repointed to the sheet's INSET value (#EFECE4) - FloatCheck has
-    far more rules referencing --panel-raised (crash inputs, select,
-    scenario cards, narrative boxes, WBS bands) than leadtime.html did, and
-    every one of those genuinely wants the INSET tone, so repointing the
-    existing token name was the lower-risk path per "change tokens first" -
-    only the two cases below that need a *different* tone (dropzone
-    default/hover, and the plain "secondary button" treatment) are handled
-    as their own rules, not via this token.
+    --panel-raised keeps its established name (used throughout for crash
+    inputs, select, scenario cards, narrative boxes, WBS bands) but now
+    points at a dark "raised" tone one step up from --panel, the same
+    relationship it had in the light theme, just inverted in value.
   */
   :root{
-    --bg:#F3F1EC; --band:#E7E3D9; --panel:#FBFAF6; --panel-raised:#EFECE4; --line:#DAD5C8;
-    --line-dashed:#A9A292;
-    --text:#16150F; --body:#3C382D; --muted:#8A8271; --muted2:#7C7565;
-    --crit:#A32A1C; --warn:#6B5200; --ok:#2F6236; --accent:#C9862E; --accent-hi:#B0741F; --accent-ink:#FFFDF8;
-    --crit-bg:#F4DED8; --warn-bg:#F1E7CB; --ok-bg:#E0EADC;
-    --table-zebra:#F7F5EF; --table-row-line:#E9E3D6; --table-hover:#F1EEE5;
-    --dropzone-bg:#EFECE4; --dropzone-hover-bg:#E9E4D6;
+    --bg:#0C0C0C; --band:#171512; --panel:#141210; --panel-raised:#1B1815; --line:#262320;
+    --line-dashed:#3A3733;
+    --text:#F2EEE8; --body:#C9C3B9; --muted:#9A9287; --muted2:#6E6559;
+    --crit:#D9584C; --warn:#D6A23C; --ok:#6FA285; --accent:#C17F24; --accent-hi:#E0A050; --accent-ink:#12100C;
+    --crit-bg:rgba(217,88,76,0.15); --warn-bg:rgba(214,162,60,0.15); --ok-bg:rgba(111,162,133,0.15);
+    --table-zebra:rgba(255,255,255,0.02); --table-row-line:#262320; --table-hover:rgba(255,255,255,0.035);
+    --dropzone-bg:#1B1815; --dropzone-hover-bg:#211D19;
   }
   *{box-sizing:border-box;}
 
@@ -54,9 +48,6 @@
   body{
     margin:0;background-color:var(--bg);color:var(--text);
     font-family:'IBM Plex Sans',sans-serif;-webkit-font-smoothing:antialiased;
-    background-image:
-      repeating-linear-gradient(0deg, rgba(147,137,122,0.05) 0 1px, transparent 1px 32px),
-      repeating-linear-gradient(90deg, rgba(147,137,122,0.05) 0 1px, transparent 1px 32px);
   }
   .wrap{max-width:1100px;margin:0 auto;padding:28px 20px 80px;}
   .mono{font-family:'IBM Plex Mono',monospace;font-size:12px;font-variant-numeric:tabular-nums;}
@@ -106,7 +97,7 @@
     color:var(--crit);background:var(--bg);
     border:2px solid var(--crit);padding:3px 10px;
     transform:rotate(-5deg);
-    box-shadow:inset 0 0 0 1px rgba(163,42,28,0.35); /* new --crit as rgb */
+    box-shadow:inset 0 0 0 1px rgba(217,88,76,0.35); /* --crit as rgb */
   }
 
   /* Draft watermark - fixed so it stays put while the page scrolls, sits behind
@@ -115,7 +106,7 @@
   .watermark{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;display:flex;align-items:center;justify-content:center;}
   .watermark-inner{
     width:170vw;transform:rotate(-30deg);text-align:center;
-    color:rgba(147,137,122,0.07);font-family:'IBM Plex Mono',monospace;font-weight:700;
+    color:rgba(154,146,135,0.08);font-family:'IBM Plex Mono',monospace;font-weight:700;
     font-size:22px;letter-spacing:3px;line-height:4.4;white-space:pre;
   }
   .wrap{position:relative;z-index:1;}
@@ -212,14 +203,9 @@
   .snapshot-value{color:var(--text);font-size:12.5px;}
   .snapshot-item.snapshot-warn .snapshot-value{color:var(--warn);max-width:420px;line-height:1.5;}
 
-  /* App shell - entered from the landing page, not just scrolled to */
-  #appShell{opacity:0;transform:translateY(10px);}
-  #appShell.shell-enter{animation:shellIn .32s ease forwards;}
-  @keyframes shellIn{to{opacity:1;transform:translateY(0);}}
-  #landing.shell-enter{animation:shellIn .32s ease forwards;}
-  .back-link{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);background:none;border:none;padding:0;margin-bottom:14px;cursor:pointer;text-decoration:underline;}
-  .back-link:hover{color:var(--accent);}
-  .app-shell-context{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:16px;}
+  /* App shell is the whole page now - no landing page to fade in from, so
+     no entrance animation/opacity gate here any more (that depended on JS
+     adding a "shell-enter" class on navigation, which no longer happens). */
 
   #results{display:none;}
 
@@ -308,7 +294,7 @@
   /* Reserved for genuine CRITICAL flags only (see .flag.crit above) - a slow,
      quiet glow, not a blink, so it reads as "pay attention here" rather than
      an alarm. NEAR-CRIT/STABLE never get this, preserving what the flag means. */
-  @keyframes critPulse{0%,100%{box-shadow:0 0 0 rgba(163,42,28,0);}50%{box-shadow:0 0 7px rgba(163,42,28,0.55);}}
+  @keyframes critPulse{0%,100%{box-shadow:0 0 0 rgba(217,88,76,0);}50%{box-shadow:0 0 7px rgba(217,88,76,0.55);}}
 
   /* Table rows stagger in on first render of a fresh result set - a quiet
      cascade rather than a static dump of a table. animation-delay is set
@@ -473,6 +459,8 @@
       <a class="toolkit-nav-tool" href="leadtime.html">LeadTime</a>
       <a class="toolkit-nav-tool" href="percent-complete.html">% Complete</a>
       <a class="toolkit-nav-tool" href="dcma.html">DCMA 14-Point</a>
+      <a class="toolkit-nav-tool" href="blog/index.html">Insights</a>
+      <a class="toolkit-nav-tool" href="academy/index.html">Academy</a>
     </div>
   </div>
 </nav>
@@ -507,54 +495,7 @@
     </div>
   </div>
 
-  <div id="landing">
-    <section class="hero">
-      <h2 class="wordmark"><span class="wm-a">Float</span><span class="wm-b">Check</span></h2>
-      <p class="hero-pitch">See what changed in your schedule &mdash; in seconds, not hours.</p>
-      <p class="hero-trust">Every number here is calculated by code, not guessed by AI &mdash; the maths is exact and repeatable. AI is only used to explain what the numbers mean, in plain English, grounded in your actual file.</p>
-      <button class="demo-link hero-demo-link" onclick="enterApp(null); loadDemo();">Load demo update pair &rarr;</button>
-    </section>
-
-    <section class="tool-menu">
-      <div class="tool-menu-eyebrow">Five tools, one file</div>
-      <div class="tool-grid">
-        <div class="tool-card" tabindex="0" role="button" onclick="enterApp('comparison')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();enterApp('comparison');}">
-          <svg class="tool-icon" viewBox="0 0 40 40" aria-hidden="true"><line x1="6" y1="20" x2="34" y2="20" stroke="currentColor" stroke-width="1.5"/><line x1="6" y1="13" x2="6" y2="27" stroke="currentColor" stroke-width="1.5"/><line x1="34" y1="13" x2="34" y2="27" stroke="currentColor" stroke-width="1.5"/><path d="M25 13 L34 20 L25 27" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
-          <div class="tool-card-label">Update Comparison</div>
-          <div class="tool-card-desc">Compare two schedule updates and see exactly what slipped, why, and what it means for your finish date.</div>
-        </div>
-        <div class="tool-card" tabindex="0" role="button" onclick="enterApp('health')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();enterApp('health');}">
-          <svg class="tool-icon" viewBox="0 0 40 40" aria-hidden="true"><line x1="16" y1="11" x2="34" y2="11" stroke="currentColor" stroke-width="1.5"/><line x1="16" y1="20" x2="34" y2="20" stroke="currentColor" stroke-width="1.5"/><line x1="16" y1="29" x2="34" y2="29" stroke="currentColor" stroke-width="1.5"/><path d="M5 20 L9 25 L15 14" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
-          <div class="tool-card-label">Schedule Health Check</div>
-          <div class="tool-card-desc">Run the industry-standard DCMA 14-point audit to catch structural problems before they cause real delays.</div>
-        </div>
-        <div class="tool-card" tabindex="0" role="button" onclick="enterApp('lookahead')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();enterApp('lookahead');}">
-          <svg class="tool-icon" viewBox="0 0 40 40" aria-hidden="true"><line x1="4" y1="20" x2="36" y2="20" stroke="currentColor" stroke-width="1.5"/><line x1="4" y1="15" x2="4" y2="25" stroke="currentColor" stroke-width="1.5"/><line x1="14" y1="15" x2="14" y2="25" stroke="currentColor" stroke-width="1.5"/><line x1="24" y1="15" x2="24" y2="25" stroke="currentColor" stroke-width="1.5"/><line x1="34" y1="15" x2="34" y2="25" stroke="currentColor" stroke-width="1.5"/></svg>
-          <div class="tool-card-label">3-Week Look-ahead</div>
-          <div class="tool-card-desc">Auto-generate the filtered activity list your next site meeting actually needs.</div>
-        </div>
-        <div class="tool-card" tabindex="0" role="button" onclick="enterApp('crash')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();enterApp('crash');}">
-          <svg class="tool-icon" viewBox="0 0 40 40" aria-hidden="true"><line x1="4" y1="20" x2="15" y2="20" stroke="currentColor" stroke-width="1.5"/><path d="M9 15 L4 20 L9 25" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="25" y1="20" x2="36" y2="20" stroke="currentColor" stroke-width="1.5"/><path d="M31 15 L36 20 L31 25" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
-          <div class="tool-card-label">Crashing Workbench</div>
-          <div class="tool-card-desc">Model what it would cost to recover lost time, with your own cost assumptions.</div>
-        </div>
-        <div class="tool-card" tabindex="0" role="button" onclick="enterApp('timeline')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();enterApp('timeline');}">
-          <svg class="tool-icon" viewBox="0 0 40 40" aria-hidden="true"><line x1="6" y1="12" x2="26" y2="12" stroke="currentColor" stroke-width="3"/><line x1="6" y1="20" x2="34" y2="20" stroke="currentColor" stroke-width="3"/><line x1="6" y1="28" x2="18" y2="28" stroke="currentColor" stroke-width="3"/></svg>
-          <div class="tool-card-label">Critical Path Timeline</div>
-          <div class="tool-card-desc">See your schedule's real critical path, freshly recalculated from your file.</div>
-        </div>
-      </div>
-    </section>
-
-    <footer class="site-footer">
-      <p>Part of the <a href="index.html">Planning Toolkit</a>. FloatCheck and LeadTime share the same CPM engine and the same demo project data.</p>
-      <p>Currently supports Primavera P6 (.xer) files only. <a href="https://github.com/sashreek33-sudo/floatcheck" target="_blank" rel="noopener">View source on GitHub</a> &middot; <a href="privacy.html">Privacy</a> &middot; <a href="mailto:Sashreek33@gmail.com">Email</a> &middot; <a href="https://www.linkedin.com/in/sashreek-vijayakumar-449529267" target="_blank" rel="noopener">LinkedIn</a>.</p>
-    </footer>
-  </div>
-
-  <div id="appShell" style="display:none;">
-    <button class="back-link" onclick="exitToLanding()">&larr; Back to overview</button>
-    <div id="appShellContext" class="app-shell-context"></div>
+  <div id="appShell">
 
   <div class="uploads">
     <div class="dropzone" id="dzPrev" onclick="document.getElementById('filePrev').click()">
@@ -858,6 +799,11 @@
   </div>
   </div><!-- /appShell -->
 
+  <footer class="site-footer">
+    <p>Part of the <a href="index.html">Planning Toolkit</a>. FloatCheck and LeadTime share the same CPM engine and the same demo project data.</p>
+    <p>Currently supports Primavera P6 (.xer) files only. <a href="https://github.com/sashreek33-sudo/floatcheck" target="_blank" rel="noopener">View source on GitHub</a> &middot; <a href="privacy.html">Privacy</a> &middot; <a href="mailto:Sashreek33@gmail.com">Email</a> &middot; <a href="https://www.linkedin.com/in/sashreek-vijayakumar-449529267" target="_blank" rel="noopener">LinkedIn</a>.</p>
+  </footer>
+
 </div>
 
 <!-- Shared XER parsing / CPM / float logic, extracted to /lib so a second
@@ -1156,32 +1102,6 @@ function getOutOfSequenceIssues(task, tasksByCode){
 }
 const TOOL_TAB_MAP = { comparison:'comparison', health:'health', lookahead:'lookahead', crash:'comparison', timeline:'timeline' };
 
-function enterApp(toolKey){
-  window._selectedTool = toolKey;
-  document.getElementById('landing').style.display = 'none';
-  // Title block and watermark both only belong once there's real project data
-  // (set in renderResults) - the upload screen itself is still just a form.
-  document.getElementById('titleblock').style.display = 'none';
-  document.getElementById('watermark').style.display = 'none';
-  const shell = document.getElementById('appShell');
-  shell.style.display = 'block';
-  shell.classList.remove('shell-enter'); void shell.offsetWidth; shell.classList.add('shell-enter');
-  document.getElementById('appShellContext').textContent = toolKey
-    ? ('Uploading for: ' + TOOL_LABELS[toolKey])
-    : 'Upload your two P6 updates to get started';
-  window.scrollTo(0,0);
-}
-
-function exitToLanding(){
-  document.getElementById('appShell').style.display = 'none';
-  document.getElementById('titleblock').style.display = 'none';
-  document.getElementById('watermark').style.display = 'none';
-  const landing = document.getElementById('landing');
-  landing.style.display = 'block';
-  landing.classList.remove('shell-enter'); void landing.offsetWidth; landing.classList.add('shell-enter');
-  window._selectedTool = null;
-  window.scrollTo(0,0);
-}
 
 document.getElementById('filePrev').addEventListener('change', e=> handleFile(e.target.files[0], 'prev'));
 document.getElementById('fileCurr').addEventListener('change', e=> handleFile(e.target.files[0], 'curr'));

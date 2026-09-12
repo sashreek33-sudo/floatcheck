@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Insights &mdash; Planning Toolkit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/toolkit-ui.css">
+<style>
+  :root{
+    --bg:#0C0C0C; --panel:#141210; --panel-raised:#1B1815; --line:#262320;
+    --line-dashed:#3A3733;
+    --text:#F2EEE8; --body:#C9C3B9; --muted:#9A9287; --muted2:#6E6559;
+    --crit:#D9584C; --warn:#D6A23C; --ok:#6FA285; --accent:#C17F24; --accent-hi:#E0A050; --accent-ink:#12100C;
+    --crit-bg:rgba(217,88,76,0.15); --warn-bg:rgba(214,162,60,0.15); --ok-bg:rgba(111,162,133,0.15);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;-webkit-font-smoothing:antialiased;line-height:1.55;}
+  a{color:var(--accent);}
+  a:hover{color:var(--accent-hi);}
+
+  .wrap{max-width:1080px;margin:0 auto;padding:0 20px 80px;}
+  .hero{padding:48px 0 8px;}
+  .hero .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:var(--accent);margin-bottom:14px;}
+  .hero h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:44px;line-height:1.08;margin:0 0 12px;letter-spacing:0.01em;}
+  .hero p{font-size:15px;color:var(--body);max-width:64ch;margin:0;}
+
+  .filter-tabs{display:flex;flex-wrap:wrap;gap:10px;margin:32px 0 36px;}
+  .filter-tab{font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:0.6px;text-transform:uppercase;color:var(--muted);background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:8px 16px;cursor:pointer;transition:color .15s ease,border-color .15s ease,background .15s ease;}
+  .filter-tab:hover{color:var(--text);border-color:var(--line-dashed);}
+  .filter-tab.active{color:var(--accent-ink);background:var(--accent);border-color:var(--accent);font-weight:600;}
+
+  .post-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;}
+  .post-card{display:flex;flex-direction:column;justify-content:space-between;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:24px 24px 20px;min-height:220px;text-decoration:none;color:var(--text);transition:border-color .15s ease,background .15s ease;}
+  .post-card:hover{border-color:var(--accent);background:#171512;color:var(--text);}
+  .post-cats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+  .post-cat{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line-dashed);border-radius:3px;padding:4px 8px;}
+  .post-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:23px;line-height:1.15;text-transform:uppercase;margin-bottom:10px;}
+  .post-desc{font-size:13.5px;line-height:1.55;color:var(--muted);margin-bottom:18px;}
+  .post-read{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:14px;border-top:1px solid var(--line);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted2);}
+  .post-read span.arrow{color:var(--accent);}
+
+  .site-footer p{font-size:12px;}
+</style>
+</head>
+<body>
+
+<nav class="toolkit-nav">
+  <div class="toolkit-nav-inner">
+    <a class="toolkit-nav-brand" href="../index.html">Planning <span class="tnb-accent">Toolkit</span></a>
+    <div class="toolkit-nav-tools">
+      <a class="toolkit-nav-tool" href="../floatcheck.html">FloatCheck</a>
+      <a class="toolkit-nav-tool" href="../leadtime.html">LeadTime</a>
+      <a class="toolkit-nav-tool" href="../percent-complete.html">% Complete</a>
+      <a class="toolkit-nav-tool" href="../dcma.html">DCMA 14-Point</a>
+      <span class="toolkit-nav-tool active">Insights</span>
+      <a class="toolkit-nav-tool" href="../academy/index.html">Academy</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <div class="hero">
+    <div class="eyebrow">Insights</div>
+    <h1>Melbourne construction, analysed.</h1>
+    <p>Project controls analysis for the Australian construction industry &mdash; real Melbourne projects, real schedule mechanics, no filler.</p>
+  </div>
+
+  <div class="filter-tabs" id="filterTabs">
+    <button class="filter-tab active" data-filter="all">All</button>
+    <button class="filter-tab" data-filter="melbourne">Melbourne Projects</button>
+    <button class="filter-tab" data-filter="delays">Delays &amp; Claims</button>
+    <button class="filter-tab" data-filter="controls">Project Controls</button>
+    <button class="filter-tab" data-filter="industry">Industry</button>
+  </div>
+
+  <div class="post-grid" id="postGrid">
+
+    <a class="post-card" href="west-gate-tunnel-delay.html" data-cats="melbourne delays">
+      <div>
+        <div class="post-cats"><span class="post-cat">Melbourne Projects</span><span class="post-cat">Delays &amp; Claims</span></div>
+        <div class="post-title">West Gate Tunnel: How a Contamination Issue Became a 3-Year Delay</div>
+        <div class="post-desc">Contract awarded December 2017, due September 2022, opened December 2025. A soil dispute stood down 600 workers &mdash; here's what it did to the programme.</div>
+      </div>
+      <div class="post-read">Read analysis <span class="arrow">&rarr;</span></div>
+    </a>
+
+    <a class="post-card" href="metro-tunnel-budget.html" data-cats="melbourne">
+      <div>
+        <div class="post-cats"><span class="post-cat">Melbourne Projects</span></div>
+        <div class="post-title">Melbourne Metro Tunnel: From $10.9b to $13.48b &mdash; What Actually Changed</div>
+        <div class="post-desc">A 23% cost increase, five new stations, and a Victorian Auditor-General finding on contingency. What planners should take from it.</div>
+      </div>
+      <div class="post-read">Read analysis <span class="arrow">&rarr;</span></div>
+    </a>
+
+    <a class="post-card" href="suburban-rail-loop-analysis.html" data-cats="melbourne">
+      <div>
+        <div class="post-cats"><span class="post-cat">Melbourne Projects</span></div>
+        <div class="post-title">Suburban Rail Loop: Is $36 Billion Even the Real Number?</div>
+        <div class="post-desc">The Auditor-General's own analysis says SRL East is likely to exceed $36b. What the estimate range actually tells you.</div>
+      </div>
+      <div class="post-read">Read analysis <span class="arrow">&rarr;</span></div>
+    </a>
+
+    <a class="post-card" href="victorian-public-holidays-p6.html" data-cats="controls">
+      <div>
+        <div class="post-cats"><span class="post-cat">Project Controls</span></div>
+        <div class="post-title">Victorian Public Holidays and Your P6 Schedule: What Most Planners Get Wrong</div>
+        <div class="post-desc">AFL Grand Final Friday moves every year. Melbourne Cup is metro-only. A working days calculator built into the post &mdash; try it live.</div>
+      </div>
+      <div class="post-read">Read analysis <span class="arrow">&rarr;</span></div>
+    </a>
+
+    <a class="post-card" href="who-builds-melbourne.html" data-cats="industry">
+      <div>
+        <div class="post-cats"><span class="post-cat">Industry</span></div>
+        <div class="post-title">Who Builds Melbourne: The Tier 1 Contractors and What They're Working On</div>
+        <div class="post-desc">John Holland, CPB, Lendlease, Multiplex and more &mdash; current publicly announced Melbourne projects, by contractor.</div>
+      </div>
+      <div class="post-read">Read analysis <span class="arrow">&rarr;</span></div>
+    </a>
+
+  </div>
+
+  <footer class="site-footer" style="margin-top:48px;">
+    <p>Part of the <a href="../index.html">Planning Toolkit</a>. Analysis of publicly reported Melbourne infrastructure projects, written for planners and project controls professionals.</p>
+    <p><a href="https://github.com/sashreek33-sudo/floatcheck" target="_blank" rel="noopener">View source on GitHub</a> &middot; <a href="../privacy.html">Privacy</a> &middot; <a href="mailto:Sashreek33@gmail.com">Email</a>.</p>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  var tabs = document.querySelectorAll('.filter-tab');
+  var cards = document.querySelectorAll('.post-card');
+  tabs.forEach(function(tab){
+    tab.addEventListener('click', function(){
+      tabs.forEach(function(t){ t.classList.remove('active'); });
+      tab.classList.add('active');
+      var f = tab.getAttribute('data-filter');
+      cards.forEach(function(card){
+        var cats = card.getAttribute('data-cats') || '';
+        card.style.display = (f === 'all' || cats.indexOf(f) !== -1) ? '' : 'none';
+      });
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

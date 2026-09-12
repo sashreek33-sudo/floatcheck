@@ -8,16 +8,17 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="lib/toolkit-ui.css">
 <style>
-  /* Same palette as floatcheck.html/leadtime.html (tokens copied verbatim,
-     not re-derived) so this reads as the same product, not a bolted-on
-     page. No JS anywhere in this file - pure HTML/CSS, static reference
-     content, nothing here is computed. */
+  /* Re-themed dark to match the current Planning Toolkit homepage
+     (index.html) - same literal hex values as floatcheck.html/leadtime.html/
+     percent-complete.html's own dark retheme, not independently invented.
+     No JS anywhere in this file - pure HTML/CSS, static reference content,
+     nothing here is computed. */
   :root{
-    --bg:#F3F1EC; --panel:#FBFAF6; --panel-raised:#EFECE4; --line:#DAD5C8;
-    --line-dashed:#A9A292;
-    --text:#16150F; --body:#3C382D; --muted:#8A8271; --muted2:#7C7565;
-    --crit:#A32A1C; --warn:#6B5200; --ok:#2F6236; --accent:#C9862E; --accent-hi:#B0741F; --accent-ink:#FFFDF8;
-    --crit-bg:#F4DED8; --warn-bg:#F1E7CB; --ok-bg:#E0EADC;
+    --bg:#0C0C0C; --panel:#141210; --panel-raised:#1B1815; --line:#262320;
+    --line-dashed:#3A3733;
+    --text:#F2EEE8; --body:#C9C3B9; --muted:#9A9287; --muted2:#6E6559;
+    --crit:#D9584C; --warn:#D6A23C; --ok:#6FA285; --accent:#C17F24; --accent-hi:#E0A050; --accent-ink:#12100C;
+    --crit-bg:rgba(217,88,76,0.15); --warn-bg:rgba(214,162,60,0.15); --ok-bg:rgba(111,162,133,0.15);
   }
   *{box-sizing:border-box;}
   body{
@@ -92,6 +93,8 @@
       <a class="toolkit-nav-tool" href="floatcheck.html">FloatCheck</a>
       <a class="toolkit-nav-tool" href="leadtime.html">LeadTime</a>
       <a class="toolkit-nav-tool" href="percent-complete.html">% Complete</a>
+      <a class="toolkit-nav-tool" href="blog/index.html">Insights</a>
+      <a class="toolkit-nav-tool" href="academy/index.html">Academy</a>
     </div>
   </div>
 </nav>

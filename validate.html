@@ -7,18 +7,23 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="lib/toolkit-ui.css">
 <style>
   /*
-    Standalone page - deliberately not sharing floatcheck.html's dark
-    drafting-sheet theme or leadtime.html's palette. This isn't a tool for
-    a planning engineer to read a schedule with; it's a diagnostic for
-    whoever's checking the CPM engine's own correctness. Plain, dense,
-    monospace-first, no icons/animation/marketing copy.
+    Re-themed dark to match the rest of Planning Toolkit (index.html's
+    palette) - previously this page deliberately used its own distinct
+    near-black diagnostic palette; that distinction no longer applies now
+    that the whole toolkit is dark, so this uses the same literal hex
+    values as floatcheck.html/leadtime.html/percent-complete.html/dcma.html
+    rather than keeping a second, slightly-different dark theme. Still
+    monospace-first, still no icons/animation/marketing copy - a diagnostic
+    page, not a planner-facing tool - but now sharing the shell (nav bar,
+    footer) every other page has, which it didn't before.
   */
   :root{
-    --bg:#0E0E0E; --panel:#161616; --panel2:#1D1D1D; --line:#333;
-    --text:#E8E8E4; --muted:#8A8A82; --muted2:#5C5C55;
-    --ok:#5FAE7A; --warn:#D6A23C; --crit:#D1544C; --accent:#5C9DD6;
+    --bg:#0C0C0C; --panel:#141210; --panel2:#1B1815; --line:#262320;
+    --text:#F2EEE8; --muted:#9A9287; --muted2:#6E6559;
+    --ok:#6FA285; --warn:#D6A23C; --crit:#D9584C; --accent:#C17F24;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;background:var(--bg);color:var(--text);}
@@ -28,10 +33,6 @@
   code{font-family:inherit;}
 
   .wrap{max-width:1180px;margin:0 auto;padding:28px 24px 80px;}
-  header.top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
-  header.top a{color:var(--muted);text-decoration:none;font-size:11px;letter-spacing:0.08em;}
-  header.top a:hover{color:var(--text);}
-  h1{font-size:26px;letter-spacing:0.01em;color:var(--text);}
   .sub{color:var(--muted);font-size:12px;margin:6px 0 24px;max-width:80ch;line-height:1.6;}
 
   .dropzone{border:1px dashed #444;padding:22px 20px;text-align:center;cursor:pointer;background:var(--panel);margin-bottom:10px;}
@@ -86,14 +87,20 @@
 </style>
 </head>
 <body>
+<nav class="toolkit-nav">
+  <div class="toolkit-nav-inner">
+    <a class="toolkit-nav-brand" href="index.html">Planning <span class="tnb-accent">Toolkit</span></a>
+    <div class="toolkit-nav-tools">
+      <a class="toolkit-nav-tool" href="floatcheck.html">FloatCheck</a>
+      <a class="toolkit-nav-tool" href="leadtime.html">LeadTime</a>
+      <a class="toolkit-nav-tool" href="percent-complete.html">% Complete</a>
+      <a class="toolkit-nav-tool" href="dcma.html">DCMA 14-Point</a>
+      <a class="toolkit-nav-tool" href="blog/index.html">Insights</a>
+      <a class="toolkit-nav-tool" href="academy/index.html">Academy</a>
+    </div>
+  </div>
+</nav>
 <div class="wrap">
-
-  <header class="top">
-    <span>CPM VALIDATION HARNESS</span>
-    <a href="index.html">&larr; Planning Toolkit</a>
-  </header>
-  <h1>Engine vs. P6 stored results</h1>
-  <p class="sub">Diffs this engine's forward/backward pass against the P6-computed values already stored in the uploaded XER's own TASK table (P6's own early/late dates, total float, and longest-path flag) — not a second CPM implementation, a comparison against what P6 itself already calculated. Doesn't touch <code>floatcheck.html</code>, <code>leadtime.html</code>, or anything shared in <code>/lib</code>.</p>
 
   <div class="dropzone" id="dz" onclick="document.getElementById('fileInput').click()">
     <div class="dz-label">XER file</div>
@@ -105,6 +112,11 @@
   </div>
 
   <div id="output"></div>
+
+  <footer class="site-footer" style="margin-top:32px;">
+    <p>Part of the <a href="index.html">Planning Toolkit</a>. Diffs this engine's forward/backward pass against the P6-computed values already stored in the uploaded XER's own TASK table &mdash; not a second CPM implementation, a comparison against what P6 itself already calculated.</p>
+    <p>Doesn't touch <code>floatcheck.html</code>, <code>leadtime.html</code>, or anything shared in <code>/lib</code>. <a href="https://github.com/sashreek33-sudo/floatcheck" target="_blank" rel="noopener">View source on GitHub</a> &middot; <a href="privacy.html">Privacy</a> &middot; <a href="mailto:Sashreek33@gmail.com">Email</a>.</p>
+  </footer>
 
 </div>
 
