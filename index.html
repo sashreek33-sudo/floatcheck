@@ -6,209 +6,378 @@
 <title>Planning Toolkit</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  /* Homepage-only base reset. Layout, palette and component styling live in
-     lib/toolkit-ui.css (the .home-* classes) so this file stays markup +
-     real content, not a second place styles get authored. */
-  html, body{margin:0;padding:0;background:var(--home-bg,#F3F1EC);}
+  /* New homepage per the approved Claude Design mockup (Planning Toolkit
+     Homepage.dc-4.html) - converted to a plain static page: the design's
+     own <x-dc>/<helmet>/support.js runtime scaffolding is gone (this isn't
+     rendered by that engine here), every sc-for/sc-if template loop is
+     replaced with real hardcoded HTML below, and every style-hover
+     attribute (meaningless outside that runtime) became one of the real
+     :hover classes here instead - same visual states, just real CSS. */
+  body{margin:0;background:#0C0C0C;}
   *{box-sizing:border-box;}
-  a{color:#16150F;text-decoration:none;}
-  a:hover{color:#16150F;text-decoration:underline;}
+  a{color:#C17F24;text-decoration:none;}
+  a:hover{color:#E0A04A;}
+  ::selection{background:#C17F24;color:#0C0C0C;}
+
+  .nav-link{color:#C9C3B9;}
+  .nav-link:hover{color:#F2EEE8;}
+  .btn-outline{color:#C9C3B9;border:1px solid #2E2E2E;}
+  .btn-outline:hover{color:#F2EEE8;border-color:#4A4A4A;}
+  .btn-primary{background:#C17F24;color:#12100C;}
+  .btn-primary:hover{background:#E0A04A;color:#12100C;}
+  .btn-secondary{border:1px solid #3A3A3A;color:#F2EEE8;}
+  .btn-secondary:hover{border-color:#C17F24;color:#F2EEE8;}
+  .tool-card, .course-card{background:#141210;border:1px solid #262320;color:#F2EEE8;}
+  .tool-card:hover, .course-card:hover{border-color:#C17F24;background:#171512;color:#F2EEE8;}
+  .footer-link{color:#9A9287;}
+  .footer-link:hover{color:#F2EEE8;}
 </style>
-<link rel="stylesheet" href="lib/toolkit-ui.css">
 </head>
 <body>
+<div style="background:#0C0C0C;color:#F2EEE8;font-family:Archivo,Helvetica,Arial,sans-serif;min-height:100vh">
 
-<div class="home">
-
-  <header class="home-header">
-    <div class="home-header-left">
-      <a class="home-header-brand" href="index.html">PLANNING TOOLKIT</a>
-      <a class="home-header-link" href="percent-complete.html">% COMPLETE</a>
-      <a class="home-header-link" href="dcma.html">DCMA 14-POINT REFERENCE</a>
+  <header style="display:flex;align-items:center;justify-content:space-between;gap:32px;padding:20px 48px;border-bottom:1px solid #1E1E1E;background:#0C0C0C;position:sticky;top:0;z-index:20">
+    <div style="display:flex;align-items:center;gap:12px">
+      <svg width="26" height="30" viewBox="0 0 26 30" fill="none" aria-hidden="true"><path d="M2 2 L2 28 L24 28" stroke="#C17F24" stroke-width="2.5"></path><path d="M2 2 L20 13 L2 20 Z" fill="#C17F24"></path></svg>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:19px;line-height:1.05;letter-spacing:0.16em;text-transform:uppercase">Planning<br>Toolkit</div>
     </div>
-    <span class="home-signin" title="Not built yet - visual only, no account exists">SIGN IN</span>
+    <nav style="display:flex;align-items:center;gap:34px;font-size:14px;font-weight:500;">
+      <a class="nav-link" href="#tools">Tools</a>
+      <a class="nav-link" href="#academy">Academy</a>
+      <a class="nav-link" href="#templates">Templates</a>
+      <a class="nav-link" href="#insights">Insights</a>
+      <a class="nav-link" href="#melbourne">Melbourne</a>
+    </nav>
+    <div style="display:flex;align-items:center;gap:16px">
+      <a class="btn-outline" href="#login" style="font-size:14px;font-weight:500;padding:9px 18px;border-radius:4px">Log in</a>
+      <a class="btn-primary" href="#start" style="font-size:14px;font-weight:600;padding:10px 20px;border-radius:4px">Get Started</a>
+    </div>
   </header>
 
-  <section class="home-hero">
-    <h1>Are you sure your project is on time?</h1>
-    <p>A programme says a date. This tells you whether to believe it.</p>
-    <div class="home-dropzone-actions">
-      <a class="home-btn home-btn-primary" href="#questions">Upload your programme</a>
-      <a class="home-btn home-btn-outline" href="floatcheck.html">Try the demo</a>
+  <section style="position:relative;display:grid;grid-template-columns:minmax(420px,46%) 1fr;align-items:stretch;background:#0C0C0C;border-bottom:1px solid #1E1E1E">
+    <div style="padding:76px 48px 56px;display:flex;flex-direction:column;justify-content:center;position:relative;z-index:2">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#C9C3B9;line-height:1.9;margin-bottom:28px">Project Controls<br>For a Real World.</div>
+      <h1 style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:92px;line-height:0.88;letter-spacing:-0.01em;margin:0 0 26px;text-transform:uppercase">
+        Plan<br>Control<br>Build<br><span style="color:#C17F24">Melbourne</span>
+      </h1>
+      <p style="font-size:16px;line-height:1.6;color:#C9C3B9;margin:0 0 34px;max-width:430px;">Tools, training and resources for planners, project controls professionals and the construction industry.</p>
+      <div style="display:flex;gap:16px;flex-wrap:wrap">
+        <a class="btn-primary" href="floatcheck.html" style="display:inline-flex;align-items:center;gap:12px;font-size:15px;font-weight:600;padding:15px 22px;border-radius:4px">Analyse Your Schedule <span>&rarr;</span></a>
+        <a class="btn-secondary" href="#tools" style="display:inline-flex;align-items:center;font-size:15px;font-weight:600;padding:15px 26px;border-radius:4px">Explore Tools</a>
+      </div>
+    </div>
+
+    <!-- Hero image: real photo (assets/hero-melbourne.jpg), object-fit:cover
+         filling the panel, with the original design's left-fading gradient
+         layered on top so it still reads into the text panel - same overlay
+         as the mockup, just now sitting over a real image instead of a
+         placeholder pattern. -->
+    <div style="position:relative;min-height:560px;border-left:1px solid #1E1E1E;overflow:hidden">
+      <img src="assets/hero-melbourne.jpg" alt="Melbourne skyline at night with construction cranes lit red and green" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
+      <div style="position:absolute;inset:0;background:linear-gradient(90deg,#0C0C0C 0%,rgba(12,12,12,0.55) 26%,rgba(12,12,12,0) 60%)"></div>
+      <div style="position:absolute;top:40px;right:48px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:#F2EEE8;line-height:2;text-shadow:0 1px 4px rgba(0,0,0,0.6)">Melbourne<br>Always<br>Under<br>Construction<div style="width:26px;height:2px;background:#C17F24;margin-left:auto;margin-top:12px"></div></div>
+      <div style="position:absolute;bottom:96px;right:48px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:#E5E1D8;line-height:2;text-shadow:0 1px 4px rgba(0,0,0,0.6)">People<br>Projects<br>Data<br>A Better Built<br>Melbourne</div>
+      <div style="position:absolute;bottom:32px;right:48px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.16em;color:#E5E1D8;text-shadow:0 1px 4px rgba(0,0,0,0.6)">37.8136&deg; S &nbsp; 144.9631&deg; E</div>
     </div>
   </section>
 
-  <!-- Questions replace the old STEP 01 (upload) / STEP 02 (pick a tool)
-       split - those were two separate structures a visitor had to connect
-       themselves. Each row here is a question a planner actually asks,
-       paired with the engine that answers it and a real link straight into
-       that engine's own page (where the actual upload happens - each tool
-       already has its own working dropzone, unchanged). -->
-  <section class="home-questions" id="questions">
-    <div class="home-eyebrow">WHAT DO YOU NEED TO KNOW</div>
-    <div class="home-questions-grid">
-
-      <div class="home-questions-row">
-        <span class="home-questions-text">What changed between two updates?</span>
-        <span class="home-questions-engine">FLOATCHECK ENGINE</span>
-        <a class="home-questions-link" href="floatcheck.html">Run it &rarr;</a>
-      </div>
-
-      <div class="home-questions-row">
-        <span class="home-questions-text">Is this schedule structurally sound? (DCMA 14)</span>
-        <span class="home-questions-engine">FLOATCHECK ENGINE</span>
-        <a class="home-questions-link" href="floatcheck.html">Run it &rarr;</a>
-      </div>
-
-      <div class="home-questions-row">
-        <span class="home-questions-text">What's happening in the next three weeks?</span>
-        <span class="home-questions-engine">FLOATCHECK ENGINE</span>
-        <a class="home-questions-link" href="floatcheck.html">Run it &rarr;</a>
-      </div>
-
-      <div class="home-questions-row">
-        <span class="home-questions-text">Where's the critical path, and what's near it?</span>
-        <span class="home-questions-engine">FLOATCHECK ENGINE</span>
-        <a class="home-questions-link" href="floatcheck.html">Run it &rarr;</a>
-      </div>
-
-      <div class="home-questions-row">
-        <span class="home-questions-text">What's the cheapest way to pull time back?</span>
-        <span class="home-questions-engine">FLOATCHECK ENGINE</span>
-        <a class="home-questions-link" href="floatcheck.html">Run it &rarr;</a>
-      </div>
-
-      <div class="home-questions-row">
-        <span class="home-questions-text">What has to be ordered this week?</span>
-        <span class="home-questions-engine">LEADTIME ENGINE</span>
-        <a class="home-questions-link" href="leadtime.html">Run it &rarr;</a>
-      </div>
-
+  <!-- Stats bar - illustrative figures from the design mockup, not derived
+       from any real data source this app has. Flagged to the user
+       separately; kept as-is here since fixing/removing them wasn't part
+       of this task's instructions. -->
+  <section style="display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid #1E1E1E;background:#0C0C0C">
+    <div style="padding:30px 48px;border-right:1px solid #1E1E1E">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:38px;line-height:1;letter-spacing:0.01em">4,832</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#8C857A;margin-top:8px">Melbourne Projects</div>
+    </div>
+    <div style="padding:30px 48px;border-right:1px solid #1E1E1E">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:38px;line-height:1;letter-spacing:0.01em">$96B</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#8C857A;margin-top:8px">Pipeline Value</div>
+    </div>
+    <div style="padding:30px 48px;border-right:1px solid #1E1E1E">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:38px;line-height:1;letter-spacing:0.01em">318</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#8C857A;margin-top:8px">Major Developments</div>
+    </div>
+    <div style="padding:30px 48px;border-right:1px solid #1E1E1E">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:38px;line-height:1;letter-spacing:0.01em">1,095</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#8C857A;margin-top:8px">Schedules Analysed</div>
     </div>
   </section>
 
-  <!-- Engines: what each one actually computes, not "click here to run it"
-       (that's the link column above) - and made explicit that both share
-       one CPM engine in /lib, so they never disagree with each other. -->
-  <section class="home-engines">
-    <div class="home-eyebrow">ENGINES</div>
-    <div class="home-tool-grid">
+  <section id="tools" style="padding:88px 48px 72px;background:#0F0E0D;border-bottom:1px solid #1E1E1E">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:32px;margin-bottom:40px">
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#C17F24;margin-bottom:14px">01 &mdash; Tools</div>
+        <h2 style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:52px;line-height:1;margin:0 0 12px;text-transform:uppercase">Practical tools for construction<br>and project controls</h2>
+        <p style="font-size:15px;color:#8C857A;margin:0">Built for the way schedules, claims and site works actually run.</p>
+      </div>
+      <a href="#tools" style="font-size:14px;font-weight:600;white-space:nowrap">Browse the full tool library &rarr;</a>
+    </div>
 
-      <article class="home-tool-card">
-        <div>
-          <div class="home-tool-card-head">
-            <span class="home-tool-card-id">E-01</span>
-            <span class="home-tool-card-name">FLOATCHECK</span>
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px">
+
+      <a class="tool-card" href="floatcheck.html" style="display:block;border-radius:6px;padding:26px 26px 22px;position:relative;min-height:196px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px">
+          <div style="width:34px;height:34px;border-radius:4px;background:rgba(193,127,36,0.14);display:flex;align-items:center;justify-content:center">
+            <div style="width:12px;height:12px;background:#C17F24;border-radius:2px"></div>
           </div>
-          <p class="home-tool-card-desc">Parses a P6 (.xer) export, runs a forward and backward pass to get total float for every activity, then layers the DCMA 14-point health check and a greedy least-cost crashing model on top.</p>
+          <div style="color:#8C857A;font-size:16px">&#8599;</div>
         </div>
-        <div class="home-tool-card-modules">
-          <div class="home-tool-card-modules-label">COMPUTES</div>
-          <ul>
-            <li>01&nbsp; XER parsing (activities, relationships, WBS, calendars)</li>
-            <li>02&nbsp; CPM forward &amp; backward pass, total float</li>
-            <li>03&nbsp; DCMA 14-point schedule health check</li>
-            <li>04&nbsp; greedy least-cost crashing</li>
-          </ul>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:25px;line-height:1.1;text-transform:uppercase;letter-spacing:0.01em;margin-bottom:8px">P6 Schedule Checker</div>
+        <div style="font-size:14px;line-height:1.55;color:#9A9287;margin-bottom:18px">Upload your XER file and run a full DCMA-14 schedule health check &mdash; FloatCheck.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">P6</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">DCMA</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Schedule</span>
         </div>
-        <a class="home-tool-card-run" href="floatcheck.html">OPEN FLOATCHECK &nbsp;&rarr;</a>
-      </article>
+      </a>
 
-      <article class="home-tool-card">
-        <div>
-          <div class="home-tool-card-head">
-            <span class="home-tool-card-id">E-02</span>
-            <span class="home-tool-card-name">LEADTIME</span>
+      <a class="tool-card" href="#tools" style="display:block;border-radius:6px;padding:26px 26px 22px;position:relative;min-height:196px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px">
+          <div style="width:34px;height:34px;border-radius:4px;background:rgba(193,127,36,0.14);display:flex;align-items:center;justify-content:center">
+            <div style="width:12px;height:12px;background:#C17F24;border-radius:2px"></div>
           </div>
-          <p class="home-tool-card-desc">Takes the same CPM output and works backward from each material's lead time to an order-by date, then ranks every match against how much float it actually has.</p>
+          <div style="color:#8C857A;font-size:16px">&#8599;</div>
         </div>
-        <div class="home-tool-card-modules">
-          <div class="home-tool-card-modules-label">COMPUTES</div>
-          <ul>
-            <li>01&nbsp; keyword match to a long-lead material library</li>
-            <li>02&nbsp; backward pass from lead time to order-by date</li>
-            <li>03&nbsp; ranking by days remaining, tied against total float</li>
-          </ul>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:25px;line-height:1.1;text-transform:uppercase;letter-spacing:0.01em;margin-bottom:8px">Working Days Calculator</div>
+        <div style="font-size:14px;line-height:1.55;color:#9A9287;margin-bottom:18px">Calculate working days with Victorian public holidays.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Calendar</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Victoria</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Dates</span>
         </div>
-        <a class="home-tool-card-run" href="leadtime.html">OPEN LEADTIME &nbsp;&rarr;</a>
-      </article>
+        <span style="position:absolute;top:26px;right:44px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:#C17F24;border:1px solid rgba(193,127,36,0.4);border-radius:3px;padding:3px 7px">Coming Soon</span>
+      </a>
+
+      <a class="tool-card" href="percent-complete.html" style="display:block;border-radius:6px;padding:26px 26px 22px;position:relative;min-height:196px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px">
+          <div style="width:34px;height:34px;border-radius:4px;background:rgba(193,127,36,0.14);display:flex;align-items:center;justify-content:center">
+            <div style="width:12px;height:12px;background:#C17F24;border-radius:2px"></div>
+          </div>
+          <div style="color:#8C857A;font-size:16px">&#8599;</div>
+        </div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:25px;line-height:1.1;text-transform:uppercase;letter-spacing:0.01em;margin-bottom:8px">% Complete</div>
+        <div style="font-size:14px;line-height:1.55;color:#9A9287;margin-bottom:18px">Physical, duration, units and cost percent-complete &mdash; weighted, bucketed, and checked for consistency.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Progress</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Quality</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">XER</span>
+        </div>
+      </a>
+
+      <a class="tool-card" href="leadtime.html" style="display:block;border-radius:6px;padding:26px 26px 22px;position:relative;min-height:196px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px">
+          <div style="width:34px;height:34px;border-radius:4px;background:rgba(193,127,36,0.14);display:flex;align-items:center;justify-content:center">
+            <div style="width:12px;height:12px;background:#C17F24;border-radius:2px"></div>
+          </div>
+          <div style="color:#8C857A;font-size:16px">&#8599;</div>
+        </div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:25px;line-height:1.1;text-transform:uppercase;letter-spacing:0.01em;margin-bottom:8px">Lead Time</div>
+        <div style="font-size:14px;line-height:1.55;color:#9A9287;margin-bottom:18px">Calculate order-by dates and procurement timelines from your schedule's own float.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Procurement</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Supply Chain</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Dates</span>
+        </div>
+      </a>
+
+      <a class="tool-card" href="dcma.html" style="display:block;border-radius:6px;padding:26px 26px 22px;position:relative;min-height:196px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px">
+          <div style="width:34px;height:34px;border-radius:4px;background:rgba(193,127,36,0.14);display:flex;align-items:center;justify-content:center">
+            <div style="width:12px;height:12px;background:#C17F24;border-radius:2px"></div>
+          </div>
+          <div style="color:#8C857A;font-size:16px">&#8599;</div>
+        </div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:25px;line-height:1.1;text-transform:uppercase;letter-spacing:0.01em;margin-bottom:8px">DCMA Reference</div>
+        <div style="font-size:14px;line-height:1.55;color:#9A9287;margin-bottom:18px">All 14 DCMA schedule health checks explained &mdash; what each measures, why it matters, the standard threshold.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">DCMA</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Reference</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Schedule Quality</span>
+        </div>
+      </a>
+
+      <a class="tool-card" href="#melbourne" style="display:block;border-radius:6px;padding:26px 26px 22px;position:relative;min-height:196px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px">
+          <div style="width:34px;height:34px;border-radius:4px;background:rgba(193,127,36,0.14);display:flex;align-items:center;justify-content:center">
+            <div style="width:12px;height:12px;background:#C17F24;border-radius:2px"></div>
+          </div>
+          <div style="color:#8C857A;font-size:16px">&#8599;</div>
+        </div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:25px;line-height:1.1;text-transform:uppercase;letter-spacing:0.01em;margin-bottom:8px">Melbourne Construction Map</div>
+        <div style="font-size:14px;line-height:1.55;color:#9A9287;margin-bottom:18px">Explore current and upcoming projects across Melbourne.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Melbourne</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Map</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Developments</span>
+        </div>
+        <span style="position:absolute;top:26px;right:44px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:#C17F24;border:1px solid rgba(193,127,36,0.4);border-radius:3px;padding:3px 7px">Coming Soon</span>
+      </a>
+
+      <a class="tool-card" href="validate.html" style="display:block;border-radius:6px;padding:26px 26px 22px;position:relative;min-height:196px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px">
+          <div style="width:34px;height:34px;border-radius:4px;background:rgba(193,127,36,0.14);display:flex;align-items:center;justify-content:center">
+            <div style="width:12px;height:12px;background:#C17F24;border-radius:2px"></div>
+          </div>
+          <div style="color:#8C857A;font-size:16px">&#8599;</div>
+        </div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:25px;line-height:1.1;text-transform:uppercase;letter-spacing:0.01em;margin-bottom:8px">Validation Harness</div>
+        <div style="font-size:14px;line-height:1.55;color:#9A9287;margin-bottom:18px">Diffs the CPM engine against P6's own stored dates and float &mdash; a diagnostic, not a planner-facing tool.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Engine</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Diagnostic</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">CPM</span>
+        </div>
+      </a>
 
     </div>
-    <p class="home-engines-note">Both engines share one CPM implementation (<code>/lib/xer-parser.js</code>, <code>/lib/cpm-engine.js</code>, <code>/lib/float.js</code>) &mdash; the same forward/backward pass and the same float, not two separate calculations that could quietly disagree.</p>
   </section>
 
-  <!-- The block below is a real preview: every figure in it comes from
-       actually running FloatCheck's and LeadTime's own logic (the same
-       lib/xer-parser.js, lib/cpm-engine.js and lib/float.js this page loads
-       below) against the bundled demo file. It is NOT a live, generated
-       report - there's no single "one-click assessment" feature that
-       produces a combined document like this yet, so the numbers are
-       computed once and written in here rather than regenerated on load. -->
-  <section class="home-output">
-    <div class="home-eyebrow">SAMPLE OUTPUT &mdash; FROM THE BUNDLED DEMO FILE, NOT LIVE-GENERATED</div>
-    <h2>What both tools actually find on one demo programme.</h2>
-    <p class="home-output-note">Compiled by hand from a real run of both tools against the demo file below - not a feature either tool has today. Every number is real output, not invented for this page.</p>
-
-    <div class="home-output-card">
-      <div class="home-output-head">
-        <span>DEMO FILE</span>
-        <span>UPDATE_2026-06-15_CURRENT.XER (EXTENDED) &middot; SRL-STNBOX &middot; 29 ACTIVITIES</span>
+  <section id="melbourne" style="padding:88px 48px;background:#0C0C0C;border-bottom:1px solid #1E1E1E">
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);gap:48px;align-items:center">
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#C17F24;margin-bottom:14px">02 &mdash; Melbourne</div>
+        <h2 style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:52px;line-height:1;margin:0 0 18px;text-transform:uppercase">Every project<br>on one map</h2>
+        <p style="font-size:16px;line-height:1.6;color:#9A9287;margin:0 0 26px;max-width:420px;">Current and upcoming major projects, commercial, residential and infrastructure developments across Melbourne &mdash; mapped, filterable and kept current.</p>
+        <div style="display:flex;flex-direction:column;gap:10px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#8C857A">
+          <div style="display:flex;align-items:center;gap:10px"><span style="width:8px;height:8px;border-radius:50%;background:#C17F24"></span>Major Project</div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="width:8px;height:8px;border-radius:50%;background:#7E6A4A"></span>Commercial</div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="width:8px;height:8px;border-radius:50%;background:#4E4A44"></span>Residential</div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="width:8px;height:8px;border-radius:50%;background:#3A3733"></span>Infrastructure</div>
+        </div>
       </div>
-      <div class="home-output-body">
-        <div class="home-output-title">PROGRAMME SUMMARY &mdash; SRL-STNBOX</div>
-        <div class="home-output-sub">Data date 15 Jun 2026 &middot; 29 activities, 31 relationships</div>
 
-        <div class="home-output-rule"></div>
-
-        <div class="home-output-rows">
-          <div class="home-output-row"><span class="home-output-tag na">CLAIMED</span><span>Completion date <strong>03 Mar 2027</strong>, per the file's own forward pass.</span></div>
-          <div class="home-output-row"><span class="home-output-tag ok">OK</span><span>21% complete by activity count, 22% duration-weighted &mdash; the two measures agree closely.</span></div>
-          <div class="home-output-row"><span class="home-output-tag warn">WARN</span><span>1 of 14 DCMA checks fails outright (critical-path/float consistency); 2 sit in the warning band (open-ended logic, high-float share).</span></div>
-          <div class="home-output-row"><span class="home-output-tag na">NOT ASSESSABLE</span><span>4 of 14 DCMA checks need data this file doesn't carry (hard constraints, resources, baseline CPLI/BEI).</span></div>
-          <div class="home-output-row"><span class="home-output-tag crit">CRITICAL</span><span>Passenger lift installation is 53 days past its order-by date. 3 other long-lead items are still within lead time.</span></div>
-          <div class="home-output-row"><span class="home-output-tag warn">FLAG</span><span>18 of 29 activities carry 5 days total float or less &mdash; 62% of the programme, a genuinely tight schedule.</span></div>
+      <div style="position:relative;border:1px solid #262320;border-radius:6px;background:#111111;min-height:440px;overflow:hidden">
+        <div style="position:absolute;inset:0;background-image:linear-gradient(#191919 1px,transparent 1px),linear-gradient(90deg,#191919 1px,transparent 1px);background-size:56px 56px"></div>
+        <div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(193,127,36,0.07),transparent 62%)"></div>
+        <div style="position:absolute;top:22px;left:22px;display:flex;align-items:center;gap:10px;background:#C17F24;color:#12100C;border-radius:4px;padding:8px 12px">
+          <svg width="14" height="16" viewBox="0 0 26 30" fill="none" aria-hidden="true"><path d="M2 2 L2 28 L24 28" stroke="#12100C" stroke-width="3"></path><path d="M2 2 L20 13 L2 20 Z" fill="#12100C"></path></svg>
+          <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;letter-spacing:0.16em;text-transform:uppercase">Planning Toolkit</span>
         </div>
-
-        <div class="home-output-row" style="margin-top:18px;padding-top:16px;border-top:1px solid var(--home-border);">
-          <span class="home-output-tag na">NO DATA</span><span>Not cost-loaded &mdash; earned value analysis unavailable.</span>
+        <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:30px;letter-spacing:0.04em;text-transform:uppercase;color:#F2EEE8">Coming Soon</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:30px;letter-spacing:0.04em;text-transform:uppercase;color:#C17F24;margin-bottom:14px">Melbourne Construction Map</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#6E6559">Interactive map area &mdash; reserved</div>
         </div>
-
-        <div class="home-output-summary">This demo project's completion measures agree with each other and its logic mostly holds. The one real flag is a lift package already 53 days late to order, sitting inside a schedule where most activities have five days of float or less to absorb any further slip.</div>
+        <div style="position:absolute;bottom:22px;right:22px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.16em;color:#6E6559">37.8136&deg; S &nbsp; 144.9631&deg; E</div>
       </div>
     </div>
   </section>
 
-  <section class="home-note">
-    <div class="home-note-grid">
-      <div class="home-note-label">DETERMINISTIC</div>
-      <p>Every number is calculated by code from the uploaded file. The same file produces the same result every time.</p>
-      <div class="home-note-label">IN-BROWSER</div>
-      <p>Nothing is uploaded to a server. The file is parsed and analysed in the browser tab.</p>
-      <div class="home-note-label">AI SCOPE</div>
-      <p>AI writes only the plain-English summary over numbers already computed. It never produces the numbers themselves.</p>
+  <!-- Academy - aspirational content from the design mockup, same category
+       as the Templates/Insights/Melbourne nav anchors: no course pages
+       exist yet, kept as illustrative per the mockup, not claiming to be
+       real/available today. -->
+  <section id="academy" style="padding:88px 48px;background:#0F0E0D;border-bottom:1px solid #1E1E1E">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:32px;margin-bottom:40px">
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#C17F24;margin-bottom:14px">03 &mdash; Academy</div>
+        <h2 style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:52px;line-height:1;margin:0 0 12px;text-transform:uppercase">Learn the craft<br>of project controls</h2>
+        <p style="font-size:15px;color:#8C857A;margin:0">Short, practical courses written by working planners.</p>
+      </div>
+      <a href="#academy" style="display:inline-flex;align-items:center;gap:12px;background:#C17F24;color:#12100C;font-size:15px;font-weight:600;padding:15px 22px;border-radius:4px;white-space:nowrap">Start Learning <span>&rarr;</span></a>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px">
+
+      <a class="course-card" href="#academy" style="display:flex;flex-direction:column;justify-content:space-between;border-radius:6px;padding:26px;min-height:210px">
+        <div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#C17F24;margin-bottom:18px">Foundation</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:27px;line-height:1.08;text-transform:uppercase;margin-bottom:10px">Primavera P6 Essentials</div>
+          <div style="font-size:14px;line-height:1.55;color:#9A9287">Build, logic-link and baseline a schedule that survives review.</div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:24px;padding-top:16px;border-top:1px solid #262320;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#8C857A">
+          <span>8 lessons &middot; 3.5 hrs</span><span style="color:#C17F24">&rarr;</span>
+        </div>
+      </a>
+
+      <a class="course-card" href="#academy" style="display:flex;flex-direction:column;justify-content:space-between;border-radius:6px;padding:26px;min-height:210px">
+        <div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#C17F24;margin-bottom:18px">Intermediate</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:27px;line-height:1.08;text-transform:uppercase;margin-bottom:10px">Schedule Quality &amp; DCMA 14</div>
+          <div style="font-size:14px;line-height:1.55;color:#9A9287">Run the checks clients run, and fix what they find.</div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:24px;padding-top:16px;border-top:1px solid #262320;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#8C857A">
+          <span>6 lessons &middot; 2 hrs</span><span style="color:#C17F24">&rarr;</span>
+        </div>
+      </a>
+
+      <a class="course-card" href="#academy" style="display:flex;flex-direction:column;justify-content:space-between;border-radius:6px;padding:26px;min-height:210px">
+        <div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#C17F24;margin-bottom:18px">Advanced</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:27px;line-height:1.08;text-transform:uppercase;margin-bottom:10px">Delay Analysis &amp; EOT Claims</div>
+          <div style="font-size:14px;line-height:1.55;color:#9A9287">Methods, evidence and narrative for Australian contracts.</div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:24px;padding-top:16px;border-top:1px solid #262320;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#8C857A">
+          <span>10 lessons &middot; 4.5 hrs</span><span style="color:#C17F24">&rarr;</span>
+        </div>
+      </a>
+
     </div>
   </section>
 
-  <footer class="home-footer">
-    <span id="homeFooterFile">NO FILE LOADED</span>
-    <span class="home-footer-right"><span>OFFLINE-CAPABLE</span><span>SIGNED OUT</span></span>
+  <section style="padding:0 48px;background:#0C0C0C">
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:stretch;border:1px solid #262320;border-radius:6px;overflow:hidden;margin:64px 0">
+      <div style="padding:44px 40px;background:#141210">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:34px;line-height:1.05;text-transform:uppercase;margin-bottom:10px">Not sure which tool to use?</div>
+        <p style="font-size:15px;color:#9A9287;margin:0 0 20px;max-width:380px">Find the right tool for your project with our guide.</p>
+        <a href="#tools" style="font-size:14px;font-weight:600">Browse the full tool library &rarr;</a>
+      </div>
+      <div style="position:relative;min-height:210px;background:repeating-linear-gradient(135deg,#1A1613 0 14px,#141210 14px 28px);display:flex;align-items:center;justify-content:flex-end;padding:40px">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:40px;line-height:0.92;text-transform:uppercase;text-align:right">Built<br>for a more<br>productive<br><span style="color:#C17F24">Melbourne</span></div>
+      </div>
+    </div>
+  </section>
+
+  <footer style="border-top:1px solid #1E1E1E;background:#0A0A0A;padding:56px 48px 36px">
+    <div style="display:grid;grid-template-columns:minmax(0,1.4fr) repeat(3,minmax(0,1fr));gap:40px;padding-bottom:40px;border-bottom:1px solid #1A1A1A">
+      <div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px">
+          <svg width="24" height="28" viewBox="0 0 26 30" fill="none" aria-hidden="true"><path d="M2 2 L2 28 L24 28" stroke="#C17F24" stroke-width="2.5"></path><path d="M2 2 L20 13 L2 20 Z" fill="#C17F24"></path></svg>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:17px;line-height:1.05;letter-spacing:0.16em;text-transform:uppercase">Planning<br>Toolkit</div>
+        </div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;line-height:1.15;text-transform:uppercase;color:#F2EEE8">Plan Better.<br><span style="color:#C17F24">Build Melbourne.</span></div>
+      </div>
+
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:#6E6559;margin-bottom:16px">Product</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <a class="footer-link" href="#tools" style="font-size:14px;">Tools</a>
+          <a class="footer-link" href="#academy" style="font-size:14px;">Academy</a>
+          <a class="footer-link" href="#templates" style="font-size:14px;">Templates</a>
+          <a class="footer-link" href="#insights" style="font-size:14px;">Insights</a>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:#6E6559;margin-bottom:16px">Melbourne</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <a class="footer-link" href="#melbourne" style="font-size:14px;">Construction Map</a>
+          <a class="footer-link" href="#melbourne" style="font-size:14px;">Major Projects</a>
+          <a class="footer-link" href="#melbourne" style="font-size:14px;">Public Holidays</a>
+          <a class="footer-link" href="#melbourne" style="font-size:14px;">Pipeline Data</a>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:#6E6559;margin-bottom:16px">Company</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <a class="footer-link" href="#" style="font-size:14px;">About</a>
+          <a class="footer-link" href="mailto:Sashreek33@gmail.com" style="font-size:14px;">Contact</a>
+          <a class="footer-link" href="#" style="font-size:14px;">Careers</a>
+          <a class="footer-link" href="#" style="font-size:14px;">Support</a>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:24px;padding-top:24px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#6E6559;flex-wrap:wrap;">
+      <span>&copy; 2026 Planning Toolkit &mdash; Melbourne, Australia</span>
+      <span>Privacy &nbsp;&middot;&nbsp; Terms</span>
+    </div>
+    <div style="padding-top:14px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.08em;color:#4A4640;">
+      Built by Sashreek Vijayakumar &mdash; RMIT Civil Engineering
+    </div>
   </footer>
-
 </div>
-
-<!-- Session store only (read-only here) - reflects a file already loaded via
-     floatcheck.html or leadtime.html in the status bar above. This page has
-     no upload control of its own any more (each tool's own dropzone is the
-     real upload path), so nothing here ever writes to the session. -->
-<script src="lib/session.js"></script>
-<script>
-(() => {
-  const cur = window.FloatCheckLib.session.load('current');
-  if(cur) document.getElementById('homeFooterFile').textContent = `${cur.fileName} LOADED`;
-})();
-</script>
-
 </body>
 </html>

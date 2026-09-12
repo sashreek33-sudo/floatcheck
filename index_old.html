@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Planning Toolkit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* Homepage-only base reset. Layout, palette and component styling live in
+     lib/toolkit-ui.css (the .home-* classes) so this file stays markup +
+     real content, not a second place styles get authored. */
+  html, body{margin:0;padding:0;background:var(--home-bg,#F3F1EC);}
+  *{box-sizing:border-box;}
+  a{color:#16150F;text-decoration:none;}
+  a:hover{color:#16150F;text-decoration:underline;}
+</style>
+<link rel="stylesheet" href="lib/toolkit-ui.css">
+</head>
+<body>
+
+<div class="home">
+
+  <header class="home-header">
+    <div class="home-header-left">
+      <a class="home-header-brand" href="index.html">PLANNING TOOLKIT</a>
+      <a class="home-header-link" href="percent-complete.html">% COMPLETE</a>
+      <a class="home-header-link" href="dcma.html">DCMA 14-POINT REFERENCE</a>
+    </div>
+    <span class="home-signin" title="Not built yet - visual only, no account exists">SIGN IN</span>
+  </header>
+
+  <section class="home-hero">
+    <h1>Are you sure your project is on time?</h1>
+    <p>A programme says a date. This tells you whether to believe it.</p>
+    <div class="home-dropzone-actions">
+      <a class="home-btn home-btn-primary" href="#questions">Upload your programme</a>
+      <a class="home-btn home-btn-outline" href="floatcheck.html">Try the demo</a>
+    </div>
+  </section>
+
+  <!-- Questions replace the old STEP 01 (upload) / STEP 02 (pick a tool)
+       split - those were two separate structures a visitor had to connect
+       themselves. Each row here is a question a planner actually asks,
+       paired with the engine that answers it and a real link straight into
+       that engine's own page (where the actual upload happens - each tool
+       already has its own working dropzone, unchanged). -->
+  <section class="home-questions" id="questions">
+    <div class="home-eyebrow">WHAT DO YOU NEED TO KNOW</div>
+    <div class="home-questions-grid">
+
+      <div class="home-questions-row">
+        <span class="home-questions-text">What changed between two updates?</span>
+        <span class="home-questions-engine">FLOATCHECK ENGINE</span>
+        <a class="home-questions-link" href="floatcheck.html">Run it &rarr;</a>
+      </div>
+
+      <div class="home-questions-row">
+        <span class="home-questions-text">Is this schedule structurally sound? (DCMA 14)</span>
+        <span class="home-questions-engine">FLOATCHECK ENGINE</span>
+        <a class="home-questions-link" href="floatcheck.html">Run it &rarr;</a>
+      </div>
+
+      <div class="home-questions-row">
+        <span class="home-questions-text">What's happening in the next three weeks?</span>
+        <span class="home-questions-engine">FLOATCHECK ENGINE</span>
+        <a class="home-questions-link" href="floatcheck.html">Run it &rarr;</a>
+      </div>
+
+      <div class="home-questions-row">
+        <span class="home-questions-text">Where's the critical path, and what's near it?</span>
+        <span class="home-questions-engine">FLOATCHECK ENGINE</span>
+        <a class="home-questions-link" href="floatcheck.html">Run it &rarr;</a>
+      </div>
+
+      <div class="home-questions-row">
+        <span class="home-questions-text">What's the cheapest way to pull time back?</span>
+        <span class="home-questions-engine">FLOATCHECK ENGINE</span>
+        <a class="home-questions-link" href="floatcheck.html">Run it &rarr;</a>
+      </div>
+
+      <div class="home-questions-row">
+        <span class="home-questions-text">What has to be ordered this week?</span>
+        <span class="home-questions-engine">LEADTIME ENGINE</span>
+        <a class="home-questions-link" href="leadtime.html">Run it &rarr;</a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Engines: what each one actually computes, not "click here to run it"
+       (that's the link column above) - and made explicit that both share
+       one CPM engine in /lib, so they never disagree with each other. -->
+  <section class="home-engines">
+    <div class="home-eyebrow">ENGINES</div>
+    <div class="home-tool-grid">
+
+      <article class="home-tool-card">
+        <div>
+          <div class="home-tool-card-head">
+            <span class="home-tool-card-id">E-01</span>
+            <span class="home-tool-card-name">FLOATCHECK</span>
+          </div>
+          <p class="home-tool-card-desc">Parses a P6 (.xer) export, runs a forward and backward pass to get total float for every activity, then layers the DCMA 14-point health check and a greedy least-cost crashing model on top.</p>
+        </div>
+        <div class="home-tool-card-modules">
+          <div class="home-tool-card-modules-label">COMPUTES</div>
+          <ul>
+            <li>01&nbsp; XER parsing (activities, relationships, WBS, calendars)</li>
+            <li>02&nbsp; CPM forward &amp; backward pass, total float</li>
+            <li>03&nbsp; DCMA 14-point schedule health check</li>
+            <li>04&nbsp; greedy least-cost crashing</li>
+          </ul>
+        </div>
+        <a class="home-tool-card-run" href="floatcheck.html">OPEN FLOATCHECK &nbsp;&rarr;</a>
+      </article>
+
+      <article class="home-tool-card">
+        <div>
+          <div class="home-tool-card-head">
+            <span class="home-tool-card-id">E-02</span>
+            <span class="home-tool-card-name">LEADTIME</span>
+          </div>
+          <p class="home-tool-card-desc">Takes the same CPM output and works backward from each material's lead time to an order-by date, then ranks every match against how much float it actually has.</p>
+        </div>
+        <div class="home-tool-card-modules">
+          <div class="home-tool-card-modules-label">COMPUTES</div>
+          <ul>
+            <li>01&nbsp; keyword match to a long-lead material library</li>
+            <li>02&nbsp; backward pass from lead time to order-by date</li>
+            <li>03&nbsp; ranking by days remaining, tied against total float</li>
+          </ul>
+        </div>
+        <a class="home-tool-card-run" href="leadtime.html">OPEN LEADTIME &nbsp;&rarr;</a>
+      </article>
+
+    </div>
+    <p class="home-engines-note">Both engines share one CPM implementation (<code>/lib/xer-parser.js</code>, <code>/lib/cpm-engine.js</code>, <code>/lib/float.js</code>) &mdash; the same forward/backward pass and the same float, not two separate calculations that could quietly disagree.</p>
+  </section>
+
+  <!-- The block below is a real preview: every figure in it comes from
+       actually running FloatCheck's and LeadTime's own logic (the same
+       lib/xer-parser.js, lib/cpm-engine.js and lib/float.js this page loads
+       below) against the bundled demo file. It is NOT a live, generated
+       report - there's no single "one-click assessment" feature that
+       produces a combined document like this yet, so the numbers are
+       computed once and written in here rather than regenerated on load. -->
+  <section class="home-output">
+    <div class="home-eyebrow">SAMPLE OUTPUT &mdash; FROM THE BUNDLED DEMO FILE, NOT LIVE-GENERATED</div>
+    <h2>What both tools actually find on one demo programme.</h2>
+    <p class="home-output-note">Compiled by hand from a real run of both tools against the demo file below - not a feature either tool has today. Every number is real output, not invented for this page.</p>
+
+    <div class="home-output-card">
+      <div class="home-output-head">
+        <span>DEMO FILE</span>
+        <span>UPDATE_2026-06-15_CURRENT.XER (EXTENDED) &middot; SRL-STNBOX &middot; 29 ACTIVITIES</span>
+      </div>
+      <div class="home-output-body">
+        <div class="home-output-title">PROGRAMME SUMMARY &mdash; SRL-STNBOX</div>
+        <div class="home-output-sub">Data date 15 Jun 2026 &middot; 29 activities, 31 relationships</div>
+
+        <div class="home-output-rule"></div>
+
+        <div class="home-output-rows">
+          <div class="home-output-row"><span class="home-output-tag na">CLAIMED</span><span>Completion date <strong>03 Mar 2027</strong>, per the file's own forward pass.</span></div>
+          <div class="home-output-row"><span class="home-output-tag ok">OK</span><span>21% complete by activity count, 22% duration-weighted &mdash; the two measures agree closely.</span></div>
+          <div class="home-output-row"><span class="home-output-tag warn">WARN</span><span>1 of 14 DCMA checks fails outright (critical-path/float consistency); 2 sit in the warning band (open-ended logic, high-float share).</span></div>
+          <div class="home-output-row"><span class="home-output-tag na">NOT ASSESSABLE</span><span>4 of 14 DCMA checks need data this file doesn't carry (hard constraints, resources, baseline CPLI/BEI).</span></div>
+          <div class="home-output-row"><span class="home-output-tag crit">CRITICAL</span><span>Passenger lift installation is 53 days past its order-by date. 3 other long-lead items are still within lead time.</span></div>
+          <div class="home-output-row"><span class="home-output-tag warn">FLAG</span><span>18 of 29 activities carry 5 days total float or less &mdash; 62% of the programme, a genuinely tight schedule.</span></div>
+        </div>
+
+        <div class="home-output-row" style="margin-top:18px;padding-top:16px;border-top:1px solid var(--home-border);">
+          <span class="home-output-tag na">NO DATA</span><span>Not cost-loaded &mdash; earned value analysis unavailable.</span>
+        </div>
+
+        <div class="home-output-summary">This demo project's completion measures agree with each other and its logic mostly holds. The one real flag is a lift package already 53 days late to order, sitting inside a schedule where most activities have five days of float or less to absorb any further slip.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="home-note">
+    <div class="home-note-grid">
+      <div class="home-note-label">DETERMINISTIC</div>
+      <p>Every number is calculated by code from the uploaded file. The same file produces the same result every time.</p>
+      <div class="home-note-label">IN-BROWSER</div>
+      <p>Nothing is uploaded to a server. The file is parsed and analysed in the browser tab.</p>
+      <div class="home-note-label">AI SCOPE</div>
+      <p>AI writes only the plain-English summary over numbers already computed. It never produces the numbers themselves.</p>
+    </div>
+  </section>
+
+  <footer class="home-footer">
+    <span id="homeFooterFile">NO FILE LOADED</span>
+    <span class="home-footer-right"><span>OFFLINE-CAPABLE</span><span>SIGNED OUT</span></span>
+  </footer>
+
+</div>
+
+<!-- Session store only (read-only here) - reflects a file already loaded via
+     floatcheck.html or leadtime.html in the status bar above. This page has
+     no upload control of its own any more (each tool's own dropzone is the
+     real upload path), so nothing here ever writes to the session. -->
+<script src="lib/session.js"></script>
+<script>
+(() => {
+  const cur = window.FloatCheckLib.session.load('current');
+  if(cur) document.getElementById('homeFooterFile').textContent = `${cur.fileName} LOADED`;
+})();
+</script>
+
+</body>
+</html>
