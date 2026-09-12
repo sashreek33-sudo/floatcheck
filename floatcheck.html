@@ -223,6 +223,23 @@
 
   #results{display:none;}
 
+  /* Project Summary Card + Critical Path Gantt - a deliberate dark
+     "instrument panel" contrast against the rest of this now-light page,
+     using the new Planning Toolkit homepage's own dark palette/hex values
+     literally (index.html), not this file's own light --accent token. Not
+     added to :root since nothing else on this page should pick these up. */
+  .summary-card-dark{background:#141210;border:1px solid #262320;border-top:3px solid #C17F24;color:#F2EEE8;padding:22px 26px;margin-bottom:24px;font-family:'IBM Plex Sans',sans-serif;}
+  .summary-card-dark .sc-title{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#9A9287;margin-bottom:18px;}
+  .sc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:20px;}
+  .sc-stat-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#8C857A;margin-bottom:6px;}
+  .sc-stat-value{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:700;color:#F2EEE8;font-variant-numeric:tabular-nums;}
+  .sc-stat-value.sc-gold{color:#C17F24;}
+  .sc-stat-sub{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#8C857A;margin-top:4px;}
+  .sc-flags-row{display:flex;gap:22px;margin-top:20px;padding-top:16px;border-top:1px solid #262320;flex-wrap:wrap;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#9A9287;}
+  .sc-flags-row b{font-weight:700;}
+
+  .gantt-wrap-dark{background:#141210;border:1px solid #262320;padding:16px 4px;margin-bottom:24px;overflow-x:auto;}
+
   /* KPI strip - instrument readout, not a card grid */
   .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);overflow:hidden;margin-bottom:24px;}
   .kpi{background:var(--panel);padding:16px 18px;border-top:2px solid var(--line);}
@@ -569,6 +586,26 @@
 
   <div id="results">
     <div id="dataSnapshot" class="data-snapshot"></div>
+
+    <!-- Project Summary Card + Critical Path Gantt - shown once per analysis,
+         above the tabs (not inside any one tab), so it's visible regardless
+         of which tab a user lands on. Every figure comes straight from the
+         CPM run (window._currentCPM) and the DCMA health check results
+         (window._lastHealthChecks) that already run in renderResults() -
+         nothing here is a new calculation. Deliberately styled as a dark
+         "instrument panel" (matching the new Planning Toolkit homepage's own
+         dark palette, index.html) rather than FloatCheck's own light
+         --accent - a real, explicit brand choice for this component, not an
+         accident: it uses that palette's literal gold (#C17F24), not this
+         page's own --accent (#C9862E). -->
+    <div id="projectSummary" class="summary-card-dark" style="display:none;"></div>
+
+    <div id="criticalGanttSection" style="display:none;">
+      <div class="section-title">Critical Path Gantt</div>
+      <p class="crash-intro">Critical (total float &le; 0) and near-critical (&le; 10 working days) activities, sorted by early start - from the same CPM run as the rest of this page, not a separate calculation.</p>
+      <div id="criticalGanttWrap" class="gantt-wrap-dark"></div>
+    </div>
+
     <div class="tabbar" id="tabbar">
       <button class="tab-btn active" data-tab="comparison" onclick="switchTab('comparison')">Update Comparison</button>
       <button class="tab-btn" data-tab="health" onclick="switchTab('health')">Schedule Health Check</button>
@@ -1376,6 +1413,8 @@ function renderResults(diff){
   window._lastCrashResult = null;
 
   renderHealthCheck();
+  renderProjectSummaryCard();
+  renderCriticalGantt();
   renderLookahead();
   renderTimeline();
   renderSiteBrief();
@@ -1674,6 +1713,188 @@ function renderHealthCheck(){
     tr.innerHTML = `<td class="mono">${c.n}</td><td>${c.name}</td><td class="mono">${c.value}</td><td class="mono" style="color:var(--muted);">${c.threshold}</td><td><span class="status-pill ${c.status}">${label}</span></td>`;
     tbody.appendChild(tr);
   });
+}
+
+function escHtml(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ---------- Project Summary Card ----------
+// Every figure here is read straight from window._currentCPM (set by
+// populateCrashWorkbench(), which runs earlier in renderResults()) and
+// window._lastHealthChecks (set by renderHealthCheck() just above, in the
+// same renderResults() sequence) - no new calculation, just surfacing what
+// the engine and the health check already produced.
+function renderProjectSummaryCard(){
+  const cpm = window._currentCPM;
+  const el = document.getElementById('projectSummary');
+  if(!cpm){ el.style.display='none'; return; }
+
+  // LOE / WBS-summary activities excluded from the counts below, same rule
+  // as the DCMA checks' own "total" denominator - task_type isn't in every
+  // XER export (neither demo file here carries it), in which case nothing
+  // is excluded (every task_type comparison below is simply false), not
+  // guessed at.
+  const inScope = currData.tasks.filter(t=> t.task_type!=='TT_LOE' && t.task_type!=='TT_WBS');
+  const inScopeCodes = new Set(inScope.map(t=>t.task_code));
+  const totalCount = inScope.length;
+
+  let criticalCount=0, nearCriticalCount=0, minES=null;
+  cpm.order.forEach(code=>{
+    if(!inScopeCodes.has(code)) return;
+    const tf = cpm.TF[code];
+    if(tf<=0) criticalCount++;
+    else if(tf<=10) nearCriticalCount++;
+    const es = cpm.ES[code];
+    if(es && (!minES || es<minES)) minES = es;
+  });
+  const critPct = totalCount ? Math.round(100*criticalCount/totalCount) : 0;
+  const nearPct = totalCount ? Math.round(100*nearCriticalCount/totalCount) : 0;
+
+  const projFinish = cpm.projFinish;
+  // calendar-blind: spans the whole project (potentially many activities'
+  // calendars), not one activity's own - same convention already used for
+  // netSlip and other project-level date comparisons in this file.
+  const durationWd = (minES && projFinish) ? workdaysBetween(minES, projFinish) : null;
+
+  const dataDateStr = (currData.header && currData.header.date) ? currData.header.date : 'Not in file';
+
+  const healthChecks = window._lastHealthChecks || [];
+  const passCount = healthChecks.filter(c=>c.status==='pass').length;
+  const warnCount = healthChecks.filter(c=>c.status==='warn').length;
+  const failCount = healthChecks.filter(c=>c.status==='fail').length;
+
+  el.innerHTML = `
+    <div class="sc-title">Project Summary &mdash; from the CPM run &amp; DCMA Health Check above</div>
+    <div class="sc-grid">
+      <div class="sc-stat">
+        <div class="sc-stat-label">Total Activities</div>
+        <div class="sc-stat-value">${totalCount}</div>
+        <div class="sc-stat-sub">excl. LOE / WBS summary</div>
+      </div>
+      <div class="sc-stat">
+        <div class="sc-stat-label">Critical Activities</div>
+        <div class="sc-stat-value sc-gold">${criticalCount}</div>
+        <div class="sc-stat-sub">${critPct}% of total</div>
+      </div>
+      <div class="sc-stat">
+        <div class="sc-stat-label">Near-Critical</div>
+        <div class="sc-stat-value">${nearCriticalCount}</div>
+        <div class="sc-stat-sub">${nearPct}% of total &middot; TF &le; 10wd</div>
+      </div>
+      <div class="sc-stat">
+        <div class="sc-stat-label">Project Duration</div>
+        <div class="sc-stat-value">${durationWd!==null ? durationWd+' wd' : '&mdash;'}</div>
+        <div class="sc-stat-sub">ES (first activity) &rarr; EF (last)</div>
+      </div>
+      <div class="sc-stat">
+        <div class="sc-stat-label">Planned Completion</div>
+        <div class="sc-stat-value" style="font-size:20px;">${fmtDate(projFinish)}</div>
+        <div class="sc-stat-sub">latest EF, this CPM run</div>
+      </div>
+      <div class="sc-stat">
+        <div class="sc-stat-label">Data Date</div>
+        <div class="sc-stat-value" style="font-size:20px;">${escHtml(dataDateStr)}</div>
+        <div class="sc-stat-sub">from file header</div>
+      </div>
+    </div>
+    <div class="sc-flags-row">
+      <span>Schedule Health: <b style="color:#7FAE8C;">${passCount} passed</b></span>
+      <span><b style="color:#D9A441;">${warnCount} warnings</b></span>
+      <span><b style="color:#C17F24;">${failCount} failed</b></span>
+    </div>
+  `;
+  el.style.display = 'block';
+}
+
+// ---------- Critical Path Gantt ----------
+// Pure SVG, built directly from window._currentCPM's own ES/EF/TF - no
+// charting library, no canvas, and no logic beyond filtering/sorting/
+// scaling what the CPM run already computed.
+function renderCriticalGantt(){
+  const cpm = window._currentCPM;
+  const section = document.getElementById('criticalGanttSection');
+  const wrap = document.getElementById('criticalGanttWrap');
+  if(!cpm){ section.style.display='none'; return; }
+
+  const inScope = currData.tasks.filter(t=> t.task_type!=='TT_LOE' && t.task_type!=='TT_WBS');
+  const inScopeCodes = new Set(inScope.map(t=>t.task_code));
+
+  let rows = cpm.order
+    .filter(code=> inScopeCodes.has(code) && cpm.TF[code]<=10)
+    .map(code=>{
+      const t = cpm.byCode[code];
+      return { code, name:t.task_name, es:cpm.ES[code], ef:cpm.EF[code], tf:cpm.TF[code], durDays:t.dur_days };
+    })
+    .filter(r=> r.es && r.ef);
+  rows.sort((a,b)=> a.es - b.es);
+
+  section.style.display = 'block';
+
+  if(rows.length === 0){
+    wrap.innerHTML = '<p class="crash-intro" style="color:#9A9287;padding:16px 20px;margin:0;">No critical activities identified &mdash; check schedule logic.</p>';
+    return;
+  }
+
+  let note = '';
+  const totalFound = rows.length;
+  if(totalFound > 40){
+    // Longest-duration 40 first (per spec), then put back into ES order for display.
+    rows = rows.slice().sort((a,b)=> b.durDays - a.durDays).slice(0,40);
+    rows.sort((a,b)=> a.es - b.es);
+    note = `<p class="crash-intro" style="color:#9A9287;padding:0 20px 10px;margin:0;">Showing 40 of ${totalFound} critical/near-critical activities, longest by duration.</p>`;
+  }
+
+  const rowH = 22, padTop = 34, padLeft = 260, padRight = 30, chartW = 640;
+  const minDate = rows.reduce((m,r)=> !m||r.es<m?r.es:m, null);
+  const maxDate = rows.reduce((m,r)=> !m||r.ef>m?r.ef:m, null);
+  const spanMs = Math.max(maxDate - minDate, 86400000);
+  const spanDays = spanMs/86400000;
+  const h = padTop + rows.length*rowH + 24;
+  const w = padLeft + chartW + padRight;
+  const xScale = d => padLeft + ((d-minDate)/spanMs)*chartW;
+
+  // Auto-scale: quarterly gridlines once the plotted span passes ~18 months,
+  // monthly otherwise - "auto-scale to fit" per spec, not a fixed choice.
+  const useQuarterly = spanDays > 545;
+
+  let svg = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" style="font-family:'IBM Plex Mono',monospace;display:block;">`;
+  svg += `<rect x="0" y="0" width="${w}" height="${h}" fill="#141210"/>`;
+
+  const gridDate = new Date(minDate);
+  gridDate.setUTCDate(1);
+  while(gridDate <= maxDate){
+    const x = xScale(gridDate);
+    if(x >= padLeft - 1){
+      svg += `<line x1="${x}" y1="${padTop-14}" x2="${x}" y2="${h-8}" stroke="#262320" stroke-width="1"/>`;
+      const label = useQuarterly
+        ? 'Q'+(Math.floor(gridDate.getUTCMonth()/3)+1)+' '+String(gridDate.getUTCFullYear()).slice(2)
+        : gridDate.toLocaleDateString('en-AU',{month:'short',year:'2-digit',timeZone:'UTC'});
+      svg += `<text x="${x}" y="${padTop-20}" fill="#8C857A" font-size="9" text-anchor="middle">${label}</text>`;
+    }
+    gridDate.setUTCMonth(gridDate.getUTCMonth() + (useQuarterly?3:1));
+  }
+
+  rows.forEach((r,i)=>{
+    const y = padTop + i*rowH;
+    const nameLabel = r.name.length>28 ? r.name.slice(0,27)+'…' : r.name;
+    svg += `<text x="4" y="${y+13}" fill="#8C857A" font-size="10">${escHtml(r.code)}</text>`;
+    svg += `<text x="60" y="${y+13}" fill="#D6D1C7" font-size="10">${escHtml(nameLabel)}</text>`;
+    const x1 = xScale(r.es), x2 = xScale(r.ef);
+    // Gold for critical (TF<=0), dark grey for near-critical (0<TF<=10) -
+    // literal hex from the new homepage's own dark palette, not this file's
+    // own --accent token (see the CSS comment on .summary-card-dark above).
+    const color = r.tf<=0 ? '#C17F24' : '#5A5650';
+    const tooltip = `${escHtml(r.code)} — ${fmtDate(r.es)} to ${fmtDate(r.ef)}`;
+    if(r.durDays<=0 || (x2-x1)<2){
+      // Milestone: zero (or effectively zero) duration - shown as a diamond
+      // centred on its date rather than an invisible sliver of a bar.
+      const cx=(x1+x2)/2, cy=y+rowH/2-4;
+      svg += `<polygon points="${cx},${cy-6} ${cx+6},${cy} ${cx},${cy+6} ${cx-6},${cy}" fill="${color}"><title>${tooltip}</title></polygon>`;
+    } else {
+      svg += `<rect x="${x1}" y="${y+3}" width="${Math.max(x2-x1,2)}" height="${rowH-8}" fill="${color}" rx="1.5"><title>${tooltip}</title></rect>`;
+    }
+  });
+  svg += `</svg>`;
+  wrap.innerHTML = note + svg;
 }
 
 // ---------- 3-Week Look-ahead Generator ----------
