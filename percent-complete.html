@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Percent Complete</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="lib/toolkit-ui.css">
+<style>
+  /* Same palette/tokens as floatcheck.html, leadtime.html, dcma.html - copied
+     verbatim, not re-derived. Layout/component classes below are copy-pasted
+     from leadtime.html where this page's needs are identical (upload,
+     dropzone, kpis, table) and new only where the content genuinely differs
+     (gated sections, bucket bars, divergence table). */
+  :root{
+    --bg:#F3F1EC; --band:#E7E3D9; --panel:#FBFAF6; --inset:#EFECE4;
+    --text:#16150F; --body:#3C382D; --muted:#8A8271; --muted2:#7C7565;
+    --line:#DAD5C8; --line-band:#D3CEC1; --line-dashed:#A9A292;
+    --accent:#C9862E; --accent-hi:#B0741F; --accent-ink:#FFFDF8;
+    --crit:#A32A1C; --warn:#6B5200; --ok:#2F6236;
+    --crit-bg:#F4DED8; --warn-bg:#F1E7CB; --ok-bg:#E0EADC;
+    --table-zebra:#F7F5EF; --table-row-line:#E9E3D6; --table-hover:#F1EEE5;
+    --dropzone-hover-bg:#E9E4D6;
+  }
+  *{box-sizing:border-box;}
+  @media (prefers-reduced-motion: reduce){
+    *, *::before, *::after{ animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important; }
+  }
+  body{
+    margin:0;background-color:var(--bg);color:var(--text);
+    font-family:'IBM Plex Sans',sans-serif;-webkit-font-smoothing:antialiased;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(147,137,122,0.05) 0 1px, transparent 1px 32px),
+      repeating-linear-gradient(90deg, rgba(147,137,122,0.05) 0 1px, transparent 1px 32px);
+  }
+  .wrap{max-width:1100px;margin:0 auto;padding:28px 20px 80px;}
+  .mono{font-family:'IBM Plex Mono',monospace;font-size:12px;font-variant-numeric:tabular-nums;}
+
+  .hero{padding:0 0 34px;border-bottom:1px solid var(--line);margin-bottom:28px;}
+  .wordmark{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:52px;line-height:0.95;letter-spacing:0.5px;text-transform:uppercase;margin:0 0 14px;}
+  .wm-a{color:var(--text);}
+  .wm-b{color:var(--accent);}
+  .hero-pitch{font-family:'IBM Plex Sans',sans-serif;font-size:19px;font-weight:600;color:var(--text);margin:0 0 12px;line-height:1.4;max-width:680px;}
+  .hero-trust{max-width:640px;font-size:13px;line-height:1.65;color:var(--body);margin:0;}
+
+  .section-title{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin:32px 0 12px;font-weight:600;padding-left:10px;border-left:2px solid var(--accent);}
+  .section-title:first-of-type{margin-top:0;}
+  .section-note{font-size:12px;color:var(--muted2);margin:-6px 0 16px;max-width:80ch;line-height:1.55;}
+  .section-note strong{color:var(--muted);}
+
+  .uploads{display:grid;grid-template-columns:1fr;gap:14px;margin-bottom:16px;max-width:420px;}
+  .dropzone{border:1px dashed var(--line-dashed);padding:22px 16px;text-align:center;cursor:pointer;transition:border-color .15s, background .15s, transform .15s ease;position:relative;background:var(--inset);}
+  .dropzone:hover{border-color:var(--text);background:var(--dropzone-hover-bg);transform:translateY(-2px);}
+  .dropzone.filled{border-style:solid;border-color:var(--ok);background:var(--ok-bg);}
+  .dz-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:8px;}
+  .dz-file{font-size:13px;color:var(--text);word-break:break-all;}
+  .dz-hint{font-size:12px;color:var(--body);margin-top:4px;}
+  input[type=file]{display:none;}
+
+  .parse-warning{border:1px solid var(--warn);background:var(--warn-bg);color:var(--warn);padding:10px 14px;font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1.6;margin-bottom:16px;}
+  .page-error{border:1px solid var(--crit);background:var(--crit-bg);color:var(--crit);padding:10px 14px;font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1.6;margin-bottom:16px;}
+
+  .actions{display:flex;gap:10px;align-items:center;margin-bottom:26px;flex-wrap:wrap;}
+  button{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:12px;letter-spacing:0.5px;text-transform:uppercase;border-radius:0;border:1px solid var(--line-dashed);background:transparent;color:var(--text);padding:10px 18px;cursor:pointer;transition:border-color .15s, background .15s, color .15s, transform .15s ease;}
+  button:hover:not(:disabled){border-color:var(--text);transform:translateY(-1px);}
+  button:active:not(:disabled){transform:translateY(0);}
+  button.primary{background:var(--accent);border-color:var(--accent-hi);color:var(--accent-ink);}
+  button.primary:hover:not(:disabled){background:var(--accent-hi);border-color:var(--accent-hi);color:var(--accent-ink);}
+  button:disabled{opacity:0.4;cursor:not-allowed;}
+  .demo-link{font-size:12px;color:var(--muted);text-decoration:underline;cursor:pointer;background:none;border:none;padding:0;font-weight:400;font-family:'IBM Plex Sans',sans-serif;}
+  .demo-link:hover{color:var(--accent);}
+
+  .disclaimer{font-size:11.5px;color:var(--muted2);margin:0 0 20px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:10px 0;line-height:1.6;}
+
+  /* Primary measure - deliberately the largest, plainest number on the page */
+  .primary-box{background:var(--panel);border:1px solid var(--line);border-top:3px solid var(--accent);padding:26px 28px;margin-bottom:8px;}
+  .primary-label{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+  .primary-value{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:64px;line-height:1;color:var(--text);}
+  .primary-value .unit{font-size:28px;color:var(--muted);margin-left:6px;}
+  .primary-formula{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--muted2);margin-top:10px;}
+
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);overflow:hidden;margin-bottom:8px;}
+  @media (max-width:700px){ .kpis{grid-template-columns:repeat(2,1fr);} }
+  .kpi{background:var(--panel);padding:16px 18px;border-top:2px solid var(--line);}
+  .kpi .k-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;}
+  .kpi .k-val{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;}
+  .kpi .k-val.crit{color:var(--crit);}
+  .kpi .k-val.warn{color:var(--warn);}
+
+  /* Bucket "chart" - plain CSS bars, no charting library. Each row is a real
+     div whose width is the actual percentage, not a canvas/SVG plot. */
+  .bucket-chart{background:var(--panel);border:1px solid var(--line);padding:18px 20px;margin-bottom:8px;}
+  .bucket-row{display:grid;grid-template-columns:90px 1fr 130px;gap:14px;align-items:center;padding:7px 0;}
+  .bucket-row + .bucket-row{border-top:1px solid var(--table-row-line);}
+  .bucket-label{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);}
+  .bucket-track{background:var(--inset);height:18px;position:relative;border:1px solid var(--line);}
+  .bucket-fill{background:var(--accent);height:100%;transition:width .3s ease;}
+  .bucket-count{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text);text-align:right;white-space:nowrap;}
+
+  .gated-box{background:var(--inset);border:1px dashed var(--line-dashed);padding:16px 18px;color:var(--muted2);font-size:13px;line-height:1.6;margin-bottom:8px;}
+  .gated-box strong{color:var(--text);}
+
+  table{width:100%;border-collapse:collapse;font-size:12.5px;margin-bottom:20px;}
+  th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.8px;text-transform:uppercase;color:var(--muted);background:var(--inset);border-bottom:1px solid var(--line);padding:6px 10px;font-weight:500;}
+  td{padding:6px 10px;border-bottom:1px solid var(--table-row-line);vertical-align:top;}
+  tbody tr:nth-child(odd) td{background:var(--panel);}
+  tbody tr:nth-child(even) td{background:var(--table-zebra);}
+  tbody tr:hover td{background:var(--table-hover);transition:background .12s ease;}
+  tr.crit-row td{background:var(--crit-bg);}
+  tr.warn-row td{background:var(--warn-bg);}
+  td.act-cell{padding-left:14px;border-left:2px solid var(--line);}
+  .act-code{font-family:'IBM Plex Mono',monospace;color:var(--muted);font-size:11px;}
+  .act-name{font-weight:500;}
+  .flag{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;padding:2px 7px;letter-spacing:0.5px;border:1px solid currentColor;background:transparent;}
+  .flag.warn{color:var(--warn);}
+  .flag.crit{color:var(--crit);}
+  .empty-note{color:var(--muted);text-align:center;padding:16px;font-size:12.5px;}
+
+  .engine-tag{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.6px;color:var(--muted2);border:1px solid var(--line);padding:2px 8px;margin-left:10px;vertical-align:middle;text-transform:none;}
+
+  #results{display:none;}
+</style>
+</head>
+<body>
+<nav class="toolkit-nav">
+  <div class="toolkit-nav-inner">
+    <a class="toolkit-nav-brand" href="index.html">Planning <span class="tnb-accent">Toolkit</span></a>
+    <div class="toolkit-nav-tools">
+      <a class="toolkit-nav-tool" href="floatcheck.html">FloatCheck</a>
+      <a class="toolkit-nav-tool" href="leadtime.html">LeadTime</a>
+      <span class="toolkit-nav-tool active">% Complete</span>
+      <a class="toolkit-nav-tool" href="dcma.html">DCMA 14-Point</a>
+    </div>
+  </div>
+</nav>
+<div class="wrap">
+
+  <div class="hero">
+    <h1 class="wordmark"><span class="wm-a">Percent</span> <span class="wm-b">Complete</span></h1>
+    <p class="hero-pitch">How complete is this programme actually &mdash; and does the reported progress agree with itself?</p>
+    <p class="hero-trust"><code>phys_complete_pct</code> is a number a planner typed into P6, not something any engine computed &mdash; this tool reads it, weights it, buckets it, and checks it against the file's own other fields for consistency. It never recalculates what "complete" should be.</p>
+  </div>
+
+  <div class="section-title">Upload Programme</div>
+  <div class="uploads">
+    <div class="dropzone" id="dzFile" onclick="document.getElementById('fileInput').click()">
+      <div class="dz-label">Programme (.xer)</div>
+      <div class="dz-file" id="dzFileText">Click or drop file</div>
+      <div class="dz-hint">A single P6 export &mdash; not a before/after pair</div>
+      <input type="file" id="fileInput" accept=".xer">
+    </div>
+  </div>
+
+  <div id="parseWarnings" class="parse-warning" style="display:none;"></div>
+  <div id="pageError" class="page-error" style="display:none;"></div>
+
+  <div class="actions">
+    <button class="primary" id="runBtn" disabled onclick="runAnalysis()">Analyse Progress</button>
+    <button class="demo-link" onclick="loadDemo()">Load demo programme &rarr;</button>
+  </div>
+
+  <div id="results">
+
+    <div id="exclusionNote" class="disclaimer"></div>
+
+    <!-- ================= PRIMARY MEASURE ================= -->
+    <div class="section-title">Physical % Complete <span class="engine-tag">FROM phys_complete_pct, PLANNER-ENTERED</span></div>
+    <div class="primary-box">
+      <div class="primary-label">Overall Physical % Complete (duration-weighted)</div>
+      <div class="primary-value" id="primaryPct">&mdash;<span class="unit">%</span></div>
+      <div class="primary-formula" id="primaryFormula"></div>
+    </div>
+
+    <div class="section-title">Distribution</div>
+    <div class="bucket-chart" id="bucketChart"></div>
+
+    <div class="section-title">Schedule Quality Flags <span class="engine-tag">FROM THE FILE'S OWN FIELDS, NOT COMPUTED</span></div>
+    <p class="section-note">Each flag below compares <code>phys_complete_pct</code> against another field the file already carries. None of these are calculated &mdash; they're straight consistency checks on data already in the XER.</p>
+
+    <div class="kpis" style="margin-bottom:20px;">
+      <div class="kpi"><div class="k-label">Started, 0% Reported</div><div class="k-val warn" id="kpiZeroActive">&mdash;</div></div>
+      <div class="kpi"><div class="k-label">100%, Not Closed</div><div class="k-val warn" id="kpiHundredOpen">&mdash;</div></div>
+      <div class="kpi"><div class="k-label">Progress, No Actual Start</div><div class="k-val crit" id="kpiNoStart">&mdash;</div></div>
+      <div class="kpi"><div class="k-label">Activities In Scope</div><div class="k-val" id="kpiInScope">&mdash;</div></div>
+    </div>
+
+    <div class="section-title" style="margin-top:12px;">Started but 0% reported (<span id="countZeroActive">0</span>)</div>
+    <table><thead><tr><th>Activity</th><th>Status</th><th>Actual Start</th></tr></thead><tbody id="tblZeroActive"></tbody></table>
+
+    <div class="section-title">100% reported but not marked complete (<span id="countHundredOpen">0</span>)</div>
+    <table><thead><tr><th>Activity</th><th>Status</th><th>Actual Finish</th></tr></thead><tbody id="tblHundredOpen"></tbody></table>
+
+    <div class="section-title">Progress reported with no actual start date (<span id="countNoStart">0</span>)</div>
+    <table><thead><tr><th>Activity</th><th>Status</th><th>Phys % Complete</th></tr></thead><tbody id="tblNoStart"></tbody></table>
+
+    <!-- ================= SECONDARY MEASURES ================= -->
+    <div class="section-title">Duration % Complete <span class="engine-tag">FROM target_drtn_hr_cnt / remain_drtn_hr_cnt</span></div>
+    <p class="section-note">Formula: <code>(target_drtn_hr_cnt &minus; remain_drtn_hr_cnt) / target_drtn_hr_cnt</code>. Always computable when the file carries <code>remain_drtn_hr_cnt</code> &mdash; not every export does.</p>
+    <div id="durationGate"></div>
+    <div id="durationBox" style="display:none;">
+      <div class="primary-box" style="padding:18px 20px;">
+        <div class="primary-label">Overall Duration % Complete (duration-weighted)</div>
+        <div class="primary-value" id="durationPct" style="font-size:40px;">&mdash;<span class="unit" style="font-size:20px;">%</span></div>
+      </div>
+    </div>
+
+    <div class="section-title">Units % Complete <span class="engine-tag">FROM TASKRSRC act_reg_qty / target_qty</span></div>
+    <p class="section-note">Requires resource loading &mdash; the XER's <code>TASKRSRC</code> table with quantity fields populated. Read locally by this page; <code>lib/xer-parser.js</code> doesn't parse <code>TASKRSRC</code> at all today.</p>
+    <div id="unitsGate" class="gated-box"></div>
+    <div id="unitsBox" style="display:none;">
+      <div class="primary-box" style="padding:18px 20px;">
+        <div class="primary-label">Overall Units % Complete</div>
+        <div class="primary-value" id="unitsPct" style="font-size:40px;">&mdash;<span class="unit" style="font-size:20px;">%</span></div>
+      </div>
+    </div>
+
+    <div class="section-title">Cost % Complete <span class="engine-tag">FROM TASKRSRC act_reg_cost / target_cost</span></div>
+    <p class="section-note">Requires cost loading &mdash; the XER's <code>TASKRSRC</code> table with cost fields populated (this page does not read the separate <code>PROJCOST</code> summary table). Read locally, same as units.</p>
+    <div id="costGate" class="gated-box"></div>
+    <div id="costBox" style="display:none;">
+      <div class="primary-box" style="padding:18px 20px;">
+        <div class="primary-label">Overall Cost % Complete</div>
+        <div class="primary-value" id="costPct" style="font-size:40px;">&mdash;<span class="unit" style="font-size:20px;">%</span></div>
+      </div>
+    </div>
+
+    <!-- ================= DIVERGENCE ================= -->
+    <div class="section-title">Divergence: Duration % vs Physical %</div>
+    <p class="section-note">Delta = duration % &minus; physical %. <strong>Positive</strong>: duration is burning down faster than reported progress (often the activity is being extended). <strong>Negative</strong>: reported progress is ahead of duration consumption (less common, worth a look). No score or grade &mdash; just the numbers, ranked by how far apart they are.</p>
+    <div id="divergenceGate" class="gated-box"></div>
+    <div id="divergenceBox" style="display:none;">
+      <table><thead><tr><th>Activity</th><th>Status</th><th>Physical %</th><th>Duration %</th><th>Delta</th></tr></thead><tbody id="tblDivergence"></tbody></table>
+    </div>
+
+  </div>
+
+  <footer class="site-footer">
+    <p>Part of the <a href="index.html">Planning Toolkit</a>. Reads the same XER, alongside FloatCheck and LeadTime.</p>
+    <p>All maths on this page is deterministic code, not AI &mdash; a missing field is reported as absent, never defaulted or guessed. <a href="https://github.com/sashreek33-sudo/floatcheck" target="_blank" rel="noopener">View source on GitHub</a> &middot; <a href="privacy.html">Privacy</a> &middot; <a href="mailto:Sashreek33@gmail.com">Email</a>.</p>
+  </footer>
+</div>
+
+<!-- Shared XER parsing - same /lib as FloatCheck/LeadTime, unmodified. This
+     page's own resource-table (TASKRSRC) read is local, below - the same
+     pattern validate.html already uses for SCHEDOPTIONS, not a /lib change. -->
+<script src="lib/clndr-data.js"></script>
+<script src="lib/xer-parser.js"></script>
+<script src="lib/float.js"></script>
+<script src="lib/cpm-engine.js"></script>
+<script src="lib/session.js"></script>
+
+<script>
+const { parseXER, session } = window.FloatCheckLib;
+
+// ---------- Local raw-table reader (this page only, /lib untouched) ----------
+// Same pattern as validate.html's own reader: parseXER only keeps the tables
+// the other tools actually use, so TASKRSRC (units/cost) is read here
+// directly, scoped to this page, rather than growing the shared parser for
+// a table nothing else needs yet.
+function readRawTable(text, tableName){
+  const lines = text.split(/\r?\n/);
+  let inTable = false, headers = null, foundHeaders = null, seenTable = false;
+  const rows = [];
+  for(const raw of lines){
+    if(!raw) continue;
+    if(raw.startsWith('%T')){ inTable = (raw.split('\t')[1] === tableName); headers = null; if(inTable) seenTable = true; continue; }
+    if(!inTable) continue;
+    if(raw.startsWith('%F')){ headers = raw.split('\t').slice(1); foundHeaders = headers; continue; }
+    if(raw.startsWith('%E')){ inTable = false; continue; }
+    if(raw.startsWith('%R') && headers){
+      const vals = raw.split('\t').slice(1);
+      const row = {};
+      headers.forEach((h,i)=> row[h] = vals[i] !== undefined ? vals[i] : '');
+      rows.push(row);
+    }
+  }
+  return { present: seenTable, headers: foundHeaders || [], rows };
+}
+function fieldPresent(headers, field){ return headers.indexOf(field) !== -1; }
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ---------- Demo data ----------
+// The real bundled demo file (update_2026-06-15_current.xer), embedded
+// verbatim - byte-identical to the file on disk, not leadtime.html's
+// extended 29-activity variant (that file adds long-lead activities this
+// file doesn't need). No task_type, no remain_drtn_hr_cnt, no TASKRSRC in
+// this file - so on load, Duration/Units/Cost % and the divergence table
+// will correctly show as not-computable rather than silently working
+// around it.
+const DEMO_XER = `
+ERMHDR	18.8	2026-06-15	Project	Update 15-Jun-2026 (Current)	sashreek720@gmail.com	RMIT Portfolio	Project Management	GMT
+%T	PROJECT
+%F	proj_id	proj_short_name	plan_start_date	plan_end_date	last_recalc_date
+%R	1001	SRL-STNBOX	2026-03-02 08:00	2027-03-03 08:00	2026-06-15 08:00
+%E
+%T	PROJWBS
+%F	wbs_id	proj_id	wbs_short_name	wbs_name
+%R	9000	1001	FINISH	FINISH works
+%R	9001	1001	MEP	MEP works
+%R	9002	1001	PREP	PREP works
+%R	9003	1001	SHAFT	SHAFT works
+%R	9004	1001	STRUCT	STRUCT works
+%R	9005	1001	TBM	TBM works
+%E
+%T	CALENDAR
+%F	clndr_id	clndr_name	day_hr_cnt
+%R	1	Standard 5 Day Week	8
+%E
+%T	TASK
+%F	task_id	proj_id	wbs_id	task_code	task_name	status_code	target_drtn_hr_cnt	early_start_date	early_end_date	act_start_date	act_end_date	total_float_hr_cnt	phys_complete_pct
+%R	5000	1001	9002	A1000	Site establishment & enabling works	TK_Complete	80	2026-03-02 08:00	2026-03-16 08:00	2026-03-02 08:00	2026-03-16 08:00	2016	100
+%R	5001	1001	9002	A1010	Utility diversions	TK_Complete	120	2026-03-16 08:00	2026-04-06 08:00	2026-03-16 08:00	2026-04-06 08:00	1896	100
+%R	5002	1001	9002	A1020	Piling mat construction	TK_Complete	64	2026-04-06 08:00	2026-04-16 08:00	2026-04-06 08:00	2026-04-16 08:00	1832	100
+%R	5003	1001	9003	A2000	Secant pile wall - North	TK_Complete	160	2026-04-16 08:00	2026-05-14 08:00	2026-04-16 08:00	2026-05-14 08:00	1672	100
+%R	5004	1001	9003	A2010	Secant pile wall - South	TK_Complete	208	2026-04-16 08:00	2026-05-22 08:00	2026-04-16 08:00	2026-05-22 08:00	1624	100
+%R	5005	1001	9003	A2020	Capping beam installation	TK_Complete	80	2026-05-22 08:00	2026-06-05 08:00	2026-05-22 08:00	2026-06-05 08:00	1544	100
+%R	5006	1001	9003	A2030	Bulk excavation - Stage 1 (to L1 prop)	TK_Active	96	2026-06-05 08:00	2026-06-23 08:00	2026-06-05 08:00		1448	56
+%R	5007	1001	9003	A2040	Prop installation - Level 1	TK_NotStart	48	2026-06-23 08:00	2026-07-01 08:00			1400	0
+%R	5008	1001	9003	A2050	Bulk excavation - Stage 2 (to L2 prop)	TK_NotStart	144	2026-07-01 08:00	2026-07-27 08:00			1256	0
+%R	5009	1001	9003	A2060	Prop installation - Level 2	TK_NotStart	48	2026-07-27 08:00	2026-08-04 08:00			1208	0
+%R	5010	1001	9003	A2070	Bulk excavation - Stage 3 (formation level)	TK_NotStart	128	2026-08-04 08:00	2026-08-26 08:00			1080	0
+%R	5011	1001	9004	A3000	Base slab reinforcement & pour	TK_NotStart	96	2026-08-26 08:00	2026-09-11 08:00			984	0
+%R	5012	1001	9005	A3010	TBM launch chamber fit-out	TK_NotStart	120	2026-09-11 08:00	2026-10-02 08:00			864	0
+%R	5013	1001	9005	A3020	TBM delivery & assembly	TK_NotStart	208	2026-10-02 08:00	2026-11-09 08:00			656	0
+%R	5014	1001	9005	A3030	TBM launch & initial drive	TK_NotStart	80	2026-11-09 08:00	2026-11-23 08:00			576	0
+%R	5015	1001	9005	A3040	TBM drive - Section 1	TK_NotStart	200	2026-11-23 08:00	2026-12-28 08:00			376	0
+%R	5016	1001	9005	A3050	TBM drive - Section 2	TK_NotStart	200	2026-12-28 08:00	2027-02-01 08:00			176	0
+%R	5017	1001	9004	A4000	Station box walls - concourse level	TK_NotStart	160	2026-09-11 08:00	2026-10-09 08:00			824	0
+%R	5018	1001	9004	A4010	Station box slab - concourse level	TK_NotStart	112	2026-10-09 08:00	2026-10-29 08:00			712	0
+%R	5019	1001	9004	A4020	Station box walls - platform level	TK_NotStart	160	2026-10-29 08:00	2026-11-26 08:00			552	0
+%R	5020	1001	9004	A4030	Waterproofing - platform level	TK_NotStart	64	2026-11-26 08:00	2026-12-08 08:00			488	0
+%R	5021	1001	9001	A5000	MEP first fix - concourse	TK_NotStart	120	2026-10-29 08:00	2026-11-19 08:00			592	0
+%R	5022	1001	9001	A5010	MEP first fix - platform	TK_NotStart	120	2026-12-08 08:00	2026-12-29 08:00			368	0
+%R	5023	1001	9000	A5020	Backfill & reinstatement	TK_NotStart	80	2027-02-01 08:00	2027-02-15 08:00			96	0
+%R	5024	1001	9000	A5030	Final finishes & handover prep	TK_NotStart	96	2027-02-15 08:00	2027-03-03 08:00			0	0
+%E
+%T	TASKPRED
+%F	task_pred_id	task_id	pred_task_id	proj_id	pred_type	lag_hr_cnt
+%R	8000	5001	5000	1001	PR_FS	0
+%R	8001	5002	5001	1001	PR_FS	0
+%R	8002	5003	5002	1001	PR_FS	0
+%R	8003	5004	5002	1001	PR_FS	0
+%R	8004	5005	5003	1001	PR_FS	0
+%R	8005	5005	5004	1001	PR_FS	0
+%R	8006	5006	5005	1001	PR_FS	0
+%R	8007	5007	5006	1001	PR_FS	0
+%R	8008	5008	5007	1001	PR_FS	0
+%R	8009	5009	5008	1001	PR_FS	0
+%R	8010	5010	5009	1001	PR_FS	0
+%R	8011	5011	5010	1001	PR_FS	0
+%R	8012	5012	5011	1001	PR_FS	0
+%R	8013	5013	5012	1001	PR_FS	0
+%R	8014	5014	5013	1001	PR_FS	0
+%R	8015	5015	5014	1001	PR_FS	0
+%R	8016	5016	5015	1001	PR_FS	0
+%R	8017	5017	5011	1001	PR_FS	0
+%R	8018	5018	5017	1001	PR_FS	0
+%R	8019	5019	5018	1001	PR_FS	0
+%R	8020	5020	5019	1001	PR_FS	0
+%R	8021	5021	5018	1001	PR_FS	0
+%R	8022	5022	5020	1001	PR_FS	0
+%R	8023	5023	5020	1001	PR_FS	0
+%R	8024	5023	5016	1001	PR_FS	0
+%R	8025	5024	5022	1001	PR_FS	0
+%R	8026	5024	5023	1001	PR_FS	0
+%E
+`;
+
+// ---------- State ----------
+let programmeData = null;
+let rawTaskSchema = null; // { present, headers, rows } for TASK, from readRawTable - schema presence only
+let rawTaskRsrcSchema = null;
+
+document.getElementById('fileInput').addEventListener('change', e => handleFile(e.target.files[0]));
+(() => {
+  const el = document.getElementById('dzFile');
+  el.addEventListener('dragover', e => { e.preventDefault(); el.style.borderColor = 'var(--accent)'; });
+  el.addEventListener('dragleave', () => el.style.borderColor = '');
+  el.addEventListener('drop', e => { e.preventDefault(); handleFile(e.dataTransfer.files[0]); });
+})();
+
+function handleFile(file){
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const text = reader.result;
+      const parsed = parseXER(text);
+      session.save('current', parsed, file.name);
+      loadProgramme(parsed, text, file.name);
+    }catch(err){
+      alert('Could not parse this XER file: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+function loadDemo(){
+  const parsed = parseXER(DEMO_XER);
+  loadProgramme(parsed, DEMO_XER, 'update_2026-06-15_current.xer (demo)');
+}
+
+function hydrateFromSession(){
+  const cur = session.load('current');
+  // Session only stores the parsed structure (parseXER output), not the raw
+  // text - so on session hydration, the local TASKRSRC/schema read below
+  // isn't available (no raw text to scan). Units/Cost % will correctly show
+  // "not present" in that path even on a file that does carry TASKRSRC,
+  // until the user re-uploads directly on this page - stated in the gate
+  // message itself rather than silently guessed at.
+  if(cur) loadProgramme(cur.data, null, cur.fileName + ' (from session)');
+}
+hydrateFromSession();
+
+function loadProgramme(parsed, rawText, label){
+  programmeData = parsed;
+  rawTaskSchema = rawText ? readRawTable(rawText, 'TASK') : null;
+  rawTaskRsrcSchema = rawText ? readRawTable(rawText, 'TASKRSRC') : { present:false, headers:[], rows:[] };
+
+  document.getElementById('dzFileText').textContent = label;
+  document.getElementById('dzFile').classList.add('filled');
+
+  const el = document.getElementById('parseWarnings');
+  if(parsed.duplicateCodes && parsed.duplicateCodes.length){
+    el.innerHTML = `&#9888; This file has duplicate activity codes (the later row silently overrides the earlier one in every calculation): ${parsed.duplicateCodes.join(', ')}`;
+    el.style.display = 'block';
+  } else {
+    el.style.display = 'none';
+  }
+
+  document.getElementById('runBtn').disabled = false;
+  document.getElementById('pageError').style.display = 'none';
+  document.getElementById('results').style.display = 'none';
+}
+
+function runAnalysis(){
+  if(!programmeData) return;
+  const allTasks = programmeData.tasks;
+
+  // Exclusion: TT_LOE / TT_WBS, only possible if task_type is present in
+  // this file's own TASK schema at all - if it's absent, every activity
+  // stays in scope and the page says so rather than silently including
+  // (or silently guessing at excluding) anything.
+  const taskTypeKnown = rawTaskSchema ? fieldPresent(rawTaskSchema.headers, 'task_type')
+    : allTasks.some(t => t.task_type !== undefined); // session-hydrated path: infer from parsed data itself
+  const excluded = taskTypeKnown ? allTasks.filter(t => t.task_type==='TT_LOE' || t.task_type==='TT_WBS') : [];
+  const tasks = taskTypeKnown ? allTasks.filter(t => t.task_type!=='TT_LOE' && t.task_type!=='TT_WBS') : allTasks;
+
+  const exclNote = document.getElementById('exclusionNote');
+  if(taskTypeKnown){
+    exclNote.innerHTML = `<strong>${excluded.length} Level-of-Effort / WBS-summary activities excluded</strong> from every calculation below, out of ${allTasks.length} total. ${tasks.length} activities remain in scope.`;
+  } else {
+    exclNote.innerHTML = `<strong>task_type is not present in this file</strong> &mdash; Level-of-Effort and WBS-summary activities could not be identified or excluded. All ${allTasks.length} activities are included below.`;
+  }
+  document.getElementById('kpiInScope').textContent = tasks.length;
+
+  // ---- Primary: physical % complete, weighted by target_drtn_hr_cnt ----
+  const physPresent = tasks.some(t => t.phys_complete_pct !== undefined && t.phys_complete_pct !== '');
+  let sumWeighted = 0, sumDur = 0;
+  tasks.forEach(t => {
+    const pct = parseFloat(t.phys_complete_pct);
+    const dur = parseFloat(t.target_drtn_hr_cnt);
+    if(!isNaN(pct) && !isNaN(dur)){ sumWeighted += pct*dur; sumDur += dur; }
+  });
+  const weightedPhys = sumDur > 0 ? (sumWeighted/sumDur) : null;
+  document.getElementById('primaryPct').innerHTML = weightedPhys!==null ? weightedPhys.toFixed(1)+'<span class="unit">%</span>' : '<span style="font-size:22px;color:var(--muted2);">phys_complete_pct not present in this file</span>';
+  document.getElementById('primaryFormula').textContent = weightedPhys!==null
+    ? `= Σ(phys_complete_pct × target_drtn_hr_cnt) / Σ(target_drtn_hr_cnt), across ${tasks.length} in-scope activities`
+    : '';
+
+  // ---- Distribution buckets ----
+  const buckets = [
+    { label:'0%', test:p=>p===0 },
+    { label:'1–25%', test:p=>p>0 && p<=25 },
+    { label:'26–50%', test:p=>p>25 && p<=50 },
+    { label:'51–75%', test:p=>p>50 && p<=75 },
+    { label:'76–99%', test:p=>p>75 && p<100 },
+    { label:'100%', test:p=>p>=100 },
+  ];
+  const withPhys = tasks.filter(t => t.phys_complete_pct !== undefined && t.phys_complete_pct !== '' && !isNaN(parseFloat(t.phys_complete_pct)));
+  const bucketEl = document.getElementById('bucketChart');
+  if(!withPhys.length){
+    bucketEl.innerHTML = '<div class="empty-note">phys_complete_pct not present in this file - no distribution to show.</div>';
+  } else {
+    bucketEl.innerHTML = buckets.map(b => {
+      const count = withPhys.filter(t => b.test(parseFloat(t.phys_complete_pct))).length;
+      const pct = withPhys.length ? (100*count/withPhys.length) : 0;
+      return `<div class="bucket-row">
+        <div class="bucket-label">${b.label}</div>
+        <div class="bucket-track"><div class="bucket-fill" style="width:${pct}%;"></div></div>
+        <div class="bucket-count">${count} (${pct.toFixed(1)}%)</div>
+      </div>`;
+    }).join('');
+  }
+
+  // ---- Quality flags ----
+  const zeroActive = tasks.filter(t => (parseFloat(t.phys_complete_pct)||0)===0 && t.status_code==='TK_Active');
+  const hundredOpen = tasks.filter(t => (parseFloat(t.phys_complete_pct)||0)>=100 && t.status_code!=='TK_Complete');
+  const noStart = tasks.filter(t => (parseFloat(t.phys_complete_pct)||0)>0 && (!t.act_start_date || !t.act_start_date.trim()));
+
+  document.getElementById('kpiZeroActive').textContent = zeroActive.length;
+  document.getElementById('kpiHundredOpen').textContent = hundredOpen.length;
+  document.getElementById('kpiNoStart').textContent = noStart.length;
+  document.getElementById('countZeroActive').textContent = zeroActive.length;
+  document.getElementById('countHundredOpen').textContent = hundredOpen.length;
+  document.getElementById('countNoStart').textContent = noStart.length;
+
+  fillTable('tblZeroActive', zeroActive, t => `<tr><td class="act-cell"><span class="act-code">${esc(t.task_code)}</span><br><span class="act-name">${esc(t.task_name)}</span></td><td>${esc(t.status_code)}</td><td>${t.act_start_date ? esc(t.act_start_date) : '—'}</td></tr>`, 3, 'None found.');
+  fillTable('tblHundredOpen', hundredOpen, t => `<tr><td class="act-cell"><span class="act-code">${esc(t.task_code)}</span><br><span class="act-name">${esc(t.task_name)}</span></td><td>${esc(t.status_code)}</td><td>${t.act_end_date ? esc(t.act_end_date) : '—'}</td></tr>`, 3, 'None found.');
+  fillTable('tblNoStart', noStart, t => `<tr><td class="act-cell"><span class="act-code">${esc(t.task_code)}</span><br><span class="act-name">${esc(t.task_name)}</span></td><td>${esc(t.status_code)}</td><td>${esc(t.phys_complete_pct)}%</td></tr>`, 3, 'None found.');
+
+  // ---- Secondary: duration % complete ----
+  const remainPresent = tasks.some(t => t.remain_drtn_hr_cnt !== undefined && t.remain_drtn_hr_cnt !== '');
+  const durationGate = document.getElementById('durationGate');
+  const durationBox = document.getElementById('durationBox');
+  let tasksWithDuration = [];
+  if(!remainPresent){
+    durationGate.innerHTML = `<div class="gated-box">remain_drtn_hr_cnt is not present in this file &mdash; duration % complete is unavailable. Not estimated, not defaulted.</div>`;
+    durationBox.style.display = 'none';
+  } else {
+    tasksWithDuration = tasks.filter(t => {
+      const target = parseFloat(t.target_drtn_hr_cnt), remain = parseFloat(t.remain_drtn_hr_cnt);
+      return !isNaN(target) && target>0 && !isNaN(remain);
+    }).map(t => {
+      const target = parseFloat(t.target_drtn_hr_cnt), remain = parseFloat(t.remain_drtn_hr_cnt);
+      return { t, durPct: 100*(target-remain)/target };
+    });
+    let sw=0, sd=0;
+    tasksWithDuration.forEach(({t,durPct}) => { const target=parseFloat(t.target_drtn_hr_cnt); sw+=durPct*target; sd+=target; });
+    const overallDurPct = sd>0 ? sw/sd : null;
+    durationGate.innerHTML = '';
+    durationBox.style.display = 'block';
+    document.getElementById('durationPct').innerHTML = overallDurPct!==null ? overallDurPct.toFixed(1)+'<span class="unit" style="font-size:20px;">%</span>' : '—';
+  }
+
+  // ---- Secondary: units % complete (TASKRSRC) ----
+  renderResourceGatedMeasure('units', 'act_reg_qty', 'target_qty', tasks);
+  // ---- Secondary: cost % complete (TASKRSRC) ----
+  renderResourceGatedMeasure('cost', 'act_reg_cost', 'target_cost', tasks);
+
+  // ---- Divergence: duration % vs physical %, only when both exist per activity ----
+  const divergenceGate = document.getElementById('divergenceGate');
+  const divergenceBox = document.getElementById('divergenceBox');
+  if(!remainPresent){
+    divergenceGate.innerHTML = `<div>Requires duration % complete, which requires remain_drtn_hr_cnt - not present in this file, so no divergence can be computed.</div>`;
+    divergenceBox.style.display = 'none';
+  } else {
+    const both = tasksWithDuration
+      .map(({t,durPct}) => ({ t, durPct, physPct: parseFloat(t.phys_complete_pct) }))
+      .filter(r => !isNaN(r.physPct));
+    if(!both.length){
+      divergenceGate.innerHTML = `<div>No activities have both a computable duration % and a phys_complete_pct value.</div>`;
+      divergenceBox.style.display = 'none';
+    } else {
+      divergenceGate.innerHTML = '';
+      divergenceBox.style.display = 'block';
+      const ranked = both.map(r => ({ ...r, delta: r.durPct - r.physPct })).sort((a,b) => Math.abs(b.delta)-Math.abs(a.delta)).slice(0,10);
+      document.getElementById('tblDivergence').innerHTML = ranked.map(r => {
+        const rowClass = Math.abs(r.delta) > 25 ? 'crit-row' : (Math.abs(r.delta) > 10 ? 'warn-row' : '');
+        return `<tr class="${rowClass}">
+          <td class="act-cell"><span class="act-code">${esc(r.t.task_code)}</span><br><span class="act-name">${esc(r.t.task_name)}</span></td>
+          <td>${esc(r.t.status_code)}</td>
+          <td>${r.physPct.toFixed(0)}%</td>
+          <td>${r.durPct.toFixed(0)}%</td>
+          <td>${r.delta>0?'+':''}${r.delta.toFixed(0)} pts</td>
+        </tr>`;
+      }).join('');
+    }
+  }
+
+  document.getElementById('results').style.display = 'block';
+}
+
+function renderResourceGatedMeasure(kind, actField, targetField, tasks){
+  const gateEl = document.getElementById(kind+'Gate');
+  const boxEl = document.getElementById(kind+'Box');
+  const valEl = document.getElementById(kind+'Pct');
+
+  if(!rawTaskRsrcSchema || !rawTaskRsrcSchema.present){
+    gateEl.innerHTML = rawTaskRsrcSchema===null
+      ? `File is not resource-loaded &mdash; ${kind==='units'?'units':'cost'} % complete unavailable. (This file was loaded from session, which doesn't retain raw XER text for the local TASKRSRC read - re-upload directly on this page to check.)`
+      : `File is not resource-loaded &mdash; ${kind==='units'?'units':'cost'} % complete unavailable.`;
+    boxEl.style.display = 'none';
+    return;
+  }
+  if(!fieldPresent(rawTaskRsrcSchema.headers, actField) || !fieldPresent(rawTaskRsrcSchema.headers, targetField)){
+    gateEl.innerHTML = `TASKRSRC is present but doesn't carry ${actField}/${targetField} &mdash; ${kind==='units'?'units':'cost'} % complete unavailable.`;
+    boxEl.style.display = 'none';
+    return;
+  }
+  const inScopeIds = new Set(tasks.map(t=>t.task_id));
+  let sumAct=0, sumTarget=0;
+  rawTaskRsrcSchema.rows.forEach(r => {
+    if(!inScopeIds.has(r.task_id)) return;
+    const act = parseFloat(r[actField]), target = parseFloat(r[targetField]);
+    if(!isNaN(act) && !isNaN(target)){ sumAct+=act; sumTarget+=target; }
+  });
+  if(sumTarget<=0){
+    gateEl.innerHTML = `TASKRSRC is present but has no usable ${targetField} values for in-scope activities &mdash; ${kind==='units'?'units':'cost'} % complete unavailable.`;
+    boxEl.style.display = 'none';
+    return;
+  }
+  gateEl.innerHTML = '';
+  boxEl.style.display = 'block';
+  valEl.innerHTML = (100*sumAct/sumTarget).toFixed(1)+'<span class="unit" style="font-size:20px;">%</span>';
+}
+
+function fillTable(id, rows, renderRow, colspan, emptyText){
+  const tbody = document.getElementById(id);
+  if(!rows.length){
+    tbody.innerHTML = `<tr><td colspan="${colspan}" class="empty-note">${emptyText}</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rows.map(renderRow).join('');
+}
+</script>
+</body>
+</html>
