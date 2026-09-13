@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Planning Toolkit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="lib/toolkit-ui.css">
+<style>
+  :root{
+    --bg:#0C0C0C; --panel:#141210; --panel-raised:#1B1815; --line:#262320;
+    --line-dashed:#3A3733;
+    --text:#F2EEE8; --body:#C9C3B9; --muted:#9A9287; --muted2:#6E6559;
+    --crit:#D9584C; --warn:#D6A23C; --ok:#6FA285; --accent:#C17F24; --accent-hi:#E0A050; --accent-ink:#12100C;
+    --crit-bg:rgba(217,88,76,0.15); --warn-bg:rgba(214,162,60,0.15); --ok-bg:rgba(111,162,133,0.15);
+  }
+  .toolkit-nav-cta{
+    font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;
+    background:var(--accent);color:var(--accent-ink);padding:9px 16px;border-radius:4px;text-decoration:none;white-space:nowrap;
+  }
+  .toolkit-nav-cta:hover{background:var(--accent-hi);color:var(--accent-ink);}
+  /* New homepage per the approved Claude Design mockup (Planning Toolkit
+     Homepage.dc-4.html) - converted to a plain static page: the design's
+     own <x-dc>/<helmet>/support.js runtime scaffolding is gone (this isn't
+     rendered by that engine here), every sc-for/sc-if template loop is
+     replaced with real hardcoded HTML below, and every style-hover
+     attribute (meaningless outside that runtime) became one of the real
+     :hover classes here instead - same visual states, just real CSS. */
+  body{margin:0;background:#0C0C0C;}
+  *{box-sizing:border-box;}
+  a{color:#C17F24;text-decoration:none;}
+  a:hover{color:#E0A04A;}
+  ::selection{background:#C17F24;color:#0C0C0C;}
+
+  .btn-primary{background:#C17F24;color:#12100C;}
+  .btn-primary:hover{background:#E0A04A;color:#12100C;}
+  .btn-secondary{border:1px solid #3A3A3A;color:#F2EEE8;}
+  .btn-secondary:hover{border-color:#C17F24;color:#F2EEE8;}
+  .tool-card, .course-card{background:#141210;border:1px solid #262320;color:#F2EEE8;}
+  .tool-card:hover, .course-card:hover{border-color:#C17F24;background:#171512;color:#F2EEE8;}
+  .footer-link{color:#9A9287;}
+  .footer-link:hover{color:#F2EEE8;}
+</style>
+</head>
+<body>
+<div style="background:#0C0C0C;color:#F2EEE8;font-family:Archivo,Helvetica,Arial,sans-serif;min-height:100vh">
+
+  <nav class="toolkit-nav">
+    <div class="toolkit-nav-inner">
+      <a class="toolkit-nav-brand" href="index.html">Planning <span class="tnb-accent">Toolkit</span></a>
+      <div class="toolkit-nav-tools">
+        <a class="toolkit-nav-tool" href="floatcheck.html">Analyse</a>
+        <a class="toolkit-nav-tool" href="academy/index.html">Academy</a>
+        <a class="toolkit-nav-tool" href="blog/index.html">Insights</a>
+        <a class="toolkit-nav-tool" href="tools.html">Tools</a>
+        <a class="toolkit-nav-tool" href="melbourne.html">Melbourne</a>
+      </div>
+      <a class="toolkit-nav-cta" href="floatcheck.html">Get Started</a>
+    </div>
+  </nav>
+
+  <section style="position:relative;display:grid;grid-template-columns:minmax(420px,46%) 1fr;align-items:stretch;background:#0C0C0C;border-bottom:1px solid #1E1E1E">
+    <div style="padding:76px 48px 56px;display:flex;flex-direction:column;justify-content:center;position:relative;z-index:2">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#C9C3B9;line-height:1.9;margin-bottom:28px">Project Controls<br>For a Real World.</div>
+      <h1 style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:92px;line-height:0.88;letter-spacing:-0.01em;margin:0 0 26px;text-transform:uppercase">
+        Plan<br>Control<br>Build<br><span style="color:#C17F24">Melbourne</span>
+      </h1>
+      <p style="font-size:16px;line-height:1.6;color:#C9C3B9;margin:0 0 34px;max-width:430px;">Tools, training and resources for planners, project controls professionals and the construction industry.</p>
+      <div style="display:flex;gap:16px;flex-wrap:wrap">
+        <a class="btn-primary" href="floatcheck.html" style="display:inline-flex;align-items:center;gap:12px;font-size:15px;font-weight:600;padding:15px 22px;border-radius:4px">Analyse Your Schedule <span>&rarr;</span></a>
+        <a class="btn-secondary" href="tools.html" style="display:inline-flex;align-items:center;font-size:15px;font-weight:600;padding:15px 26px;border-radius:4px">Explore Tools</a>
+      </div>
+    </div>
+
+    <!-- Hero image: real photo (assets/hero-melbourne.jpg), object-fit:cover
+         filling the panel, with the original design's left-fading gradient
+         layered on top so it still reads into the text panel - same overlay
+         as the mockup, just now sitting over a real image instead of a
+         placeholder pattern. -->
+    <div style="position:relative;min-height:560px;border-left:1px solid #1E1E1E;overflow:hidden">
+      <img src="assets/hero-melbourne.jpg" alt="Melbourne skyline at night with construction cranes lit red and green" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
+      <div style="position:absolute;inset:0;background:linear-gradient(90deg,#0C0C0C 0%,rgba(12,12,12,0.55) 26%,rgba(12,12,12,0) 60%)"></div>
+      <div style="position:absolute;top:40px;right:48px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:#F2EEE8;line-height:2;text-shadow:0 1px 4px rgba(0,0,0,0.6)">Melbourne<br>Always<br>Under<br>Construction<div style="width:26px;height:2px;background:#C17F24;margin-left:auto;margin-top:12px"></div></div>
+      <div style="position:absolute;bottom:96px;right:48px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:#E5E1D8;line-height:2;text-shadow:0 1px 4px rgba(0,0,0,0.6)">People<br>Projects<br>Data<br>A Better Built<br>Melbourne</div>
+      <div style="position:absolute;bottom:32px;right:48px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.16em;color:#E5E1D8;text-shadow:0 1px 4px rgba(0,0,0,0.6)">37.8136&deg; S &nbsp; 144.9631&deg; E</div>
+    </div>
+  </section>
+
+  <!-- Stats bar - illustrative figures from the design mockup, not derived
+       from any real data source this app has. Flagged to the user
+       separately; kept as-is here since fixing/removing them wasn't part
+       of this task's instructions. -->
+  <section style="display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid #1E1E1E;background:#0C0C0C">
+    <div style="padding:30px 48px;border-right:1px solid #1E1E1E">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:38px;line-height:1;letter-spacing:0.01em">4,832</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#8C857A;margin-top:8px">Melbourne Projects</div>
+    </div>
+    <div style="padding:30px 48px;border-right:1px solid #1E1E1E">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:38px;line-height:1;letter-spacing:0.01em">$96B</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#8C857A;margin-top:8px">Pipeline Value</div>
+    </div>
+    <div style="padding:30px 48px;border-right:1px solid #1E1E1E">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:38px;line-height:1;letter-spacing:0.01em">318</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#8C857A;margin-top:8px">Major Developments</div>
+    </div>
+    <div style="padding:30px 48px;border-right:1px solid #1E1E1E">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:38px;line-height:1;letter-spacing:0.01em">1,095</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#8C857A;margin-top:8px">Schedules Analysed</div>
+    </div>
+  </section>
+
+  <section id="tools" style="padding:88px 48px 72px;background:#0F0E0D;border-bottom:1px solid #1E1E1E">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:32px;margin-bottom:40px">
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#C17F24;margin-bottom:14px">01 &mdash; Tools</div>
+        <h2 style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:52px;line-height:1;margin:0 0 12px;text-transform:uppercase">Practical tools for construction<br>and project controls</h2>
+        <p style="font-size:15px;color:#8C857A;margin:0">Built for the way schedules, claims and site works actually run.</p>
+      </div>
+      <a href="tools.html" style="font-size:14px;font-weight:600;white-space:nowrap">Browse the full tool library &rarr;</a>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px">
+
+      <a class="tool-card" href="floatcheck.html" style="display:block;border-radius:6px;padding:26px 26px 22px;position:relative;min-height:196px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px">
+          <div style="width:34px;height:34px;border-radius:4px;background:rgba(193,127,36,0.14);display:flex;align-items:center;justify-content:center">
+            <div style="width:12px;height:12px;background:#C17F24;border-radius:2px"></div>
+          </div>
+          <div style="color:#8C857A;font-size:16px">&#8599;</div>
+        </div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:25px;line-height:1.1;text-transform:uppercase;letter-spacing:0.01em;margin-bottom:8px">P6 Schedule Checker</div>
+        <div style="font-size:14px;line-height:1.55;color:#9A9287;margin-bottom:18px">Upload your XER file and run a full DCMA-14 schedule health check &mdash; FloatCheck.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">P6</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">DCMA</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Schedule</span>
+        </div>
+      </a>
+
+      <a class="tool-card" href="tools.html" style="display:block;border-radius:6px;padding:26px 26px 22px;position:relative;min-height:196px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px">
+          <div style="width:34px;height:34px;border-radius:4px;background:rgba(193,127,36,0.14);display:flex;align-items:center;justify-content:center">
+            <div style="width:12px;height:12px;background:#C17F24;border-radius:2px"></div>
+          </div>
+          <div style="color:#8C857A;font-size:16px">&#8599;</div>
+        </div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:25px;line-height:1.1;text-transform:uppercase;letter-spacing:0.01em;margin-bottom:8px">Working Days Calculator</div>
+        <div style="font-size:14px;line-height:1.55;color:#9A9287;margin-bottom:18px">Calculate working days with Victorian public holidays.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Calendar</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Victoria</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Dates</span>
+        </div>
+        <span style="position:absolute;top:26px;right:44px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:#C17F24;border:1px solid rgba(193,127,36,0.4);border-radius:3px;padding:3px 7px">Coming Soon</span>
+      </a>
+
+      <a class="tool-card" href="percent-complete.html" style="display:block;border-radius:6px;padding:26px 26px 22px;position:relative;min-height:196px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px">
+          <div style="width:34px;height:34px;border-radius:4px;background:rgba(193,127,36,0.14);display:flex;align-items:center;justify-content:center">
+            <div style="width:12px;height:12px;background:#C17F24;border-radius:2px"></div>
+          </div>
+          <div style="color:#8C857A;font-size:16px">&#8599;</div>
+        </div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:25px;line-height:1.1;text-transform:uppercase;letter-spacing:0.01em;margin-bottom:8px">% Complete</div>
+        <div style="font-size:14px;line-height:1.55;color:#9A9287;margin-bottom:18px">Physical, duration, units and cost percent-complete &mdash; weighted, bucketed, and checked for consistency.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Progress</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Quality</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">XER</span>
+        </div>
+      </a>
+
+      <a class="tool-card" href="leadtime.html" style="display:block;border-radius:6px;padding:26px 26px 22px;position:relative;min-height:196px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px">
+          <div style="width:34px;height:34px;border-radius:4px;background:rgba(193,127,36,0.14);display:flex;align-items:center;justify-content:center">
+            <div style="width:12px;height:12px;background:#C17F24;border-radius:2px"></div>
+          </div>
+          <div style="color:#8C857A;font-size:16px">&#8599;</div>
+        </div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:25px;line-height:1.1;text-transform:uppercase;letter-spacing:0.01em;margin-bottom:8px">Lead Time</div>
+        <div style="font-size:14px;line-height:1.55;color:#9A9287;margin-bottom:18px">Calculate order-by dates and procurement timelines from your schedule's own float.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Procurement</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Supply Chain</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Dates</span>
+        </div>
+      </a>
+
+      <a class="tool-card" href="dcma.html" style="display:block;border-radius:6px;padding:26px 26px 22px;position:relative;min-height:196px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px">
+          <div style="width:34px;height:34px;border-radius:4px;background:rgba(193,127,36,0.14);display:flex;align-items:center;justify-content:center">
+            <div style="width:12px;height:12px;background:#C17F24;border-radius:2px"></div>
+          </div>
+          <div style="color:#8C857A;font-size:16px">&#8599;</div>
+        </div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:25px;line-height:1.1;text-transform:uppercase;letter-spacing:0.01em;margin-bottom:8px">DCMA Reference</div>
+        <div style="font-size:14px;line-height:1.55;color:#9A9287;margin-bottom:18px">All 14 DCMA schedule health checks explained &mdash; what each measures, why it matters, the standard threshold.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">DCMA</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Reference</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Schedule Quality</span>
+        </div>
+      </a>
+
+      <a class="tool-card" href="melbourne.html" style="display:block;border-radius:6px;padding:26px 26px 22px;position:relative;min-height:196px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px">
+          <div style="width:34px;height:34px;border-radius:4px;background:rgba(193,127,36,0.14);display:flex;align-items:center;justify-content:center">
+            <div style="width:12px;height:12px;background:#C17F24;border-radius:2px"></div>
+          </div>
+          <div style="color:#8C857A;font-size:16px">&#8599;</div>
+        </div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:25px;line-height:1.1;text-transform:uppercase;letter-spacing:0.01em;margin-bottom:8px">Melbourne Construction Map</div>
+        <div style="font-size:14px;line-height:1.55;color:#9A9287;margin-bottom:18px">Explore current and upcoming projects across Melbourne.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Melbourne</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Map</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Developments</span>
+        </div>
+        <span style="position:absolute;top:26px;right:44px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:#C17F24;border:1px solid rgba(193,127,36,0.4);border-radius:3px;padding:3px 7px">Coming Soon</span>
+      </a>
+
+      <a class="tool-card" href="validate.html" style="display:block;border-radius:6px;padding:26px 26px 22px;position:relative;min-height:196px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px">
+          <div style="width:34px;height:34px;border-radius:4px;background:rgba(193,127,36,0.14);display:flex;align-items:center;justify-content:center">
+            <div style="width:12px;height:12px;background:#C17F24;border-radius:2px"></div>
+          </div>
+          <div style="color:#8C857A;font-size:16px">&#8599;</div>
+        </div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:25px;line-height:1.1;text-transform:uppercase;letter-spacing:0.01em;margin-bottom:8px">Validation Harness</div>
+        <div style="font-size:14px;line-height:1.55;color:#9A9287;margin-bottom:18px">Diffs the CPM engine against P6's own stored dates and float &mdash; a diagnostic, not a planner-facing tool.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Engine</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Diagnostic</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">CPM</span>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <section id="melbourne" style="padding:88px 48px;background:#0C0C0C;border-bottom:1px solid #1E1E1E">
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);gap:48px;align-items:center">
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#C17F24;margin-bottom:14px">02 &mdash; Melbourne</div>
+        <h2 style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:52px;line-height:1;margin:0 0 18px;text-transform:uppercase">Every project<br>on one map</h2>
+        <p style="font-size:16px;line-height:1.6;color:#9A9287;margin:0 0 26px;max-width:420px;">Current and upcoming major projects, commercial, residential and infrastructure developments across Melbourne &mdash; mapped, filterable and kept current.</p>
+        <div style="display:flex;flex-direction:column;gap:10px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#8C857A">
+          <div style="display:flex;align-items:center;gap:10px"><span style="width:8px;height:8px;border-radius:50%;background:#C17F24"></span>Major Project</div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="width:8px;height:8px;border-radius:50%;background:#7E6A4A"></span>Commercial</div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="width:8px;height:8px;border-radius:50%;background:#4E4A44"></span>Residential</div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="width:8px;height:8px;border-radius:50%;background:#3A3733"></span>Infrastructure</div>
+        </div>
+      </div>
+
+      <div style="position:relative;border:1px solid #262320;border-radius:6px;background:#111111;min-height:440px;overflow:hidden">
+        <div style="position:absolute;inset:0;background-image:linear-gradient(#191919 1px,transparent 1px),linear-gradient(90deg,#191919 1px,transparent 1px);background-size:56px 56px"></div>
+        <div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(193,127,36,0.07),transparent 62%)"></div>
+        <div style="position:absolute;top:22px;left:22px;display:flex;align-items:center;gap:10px;background:#C17F24;color:#12100C;border-radius:4px;padding:8px 12px">
+          <svg width="14" height="16" viewBox="0 0 26 30" fill="none" aria-hidden="true"><path d="M2 2 L2 28 L24 28" stroke="#12100C" stroke-width="3"></path><path d="M2 2 L20 13 L2 20 Z" fill="#12100C"></path></svg>
+          <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;letter-spacing:0.16em;text-transform:uppercase">Planning Toolkit</span>
+        </div>
+        <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:30px;letter-spacing:0.04em;text-transform:uppercase;color:#F2EEE8">Coming Soon</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:30px;letter-spacing:0.04em;text-transform:uppercase;color:#C17F24;margin-bottom:14px">Melbourne Construction Map</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#6E6559">Interactive map area &mdash; reserved</div>
+        </div>
+        <div style="position:absolute;bottom:22px;right:22px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.16em;color:#6E6559">37.8136&deg; S &nbsp; 144.9631&deg; E</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Academy - aspirational content from the design mockup, same category
+       as the Templates/Insights/Melbourne nav anchors: no course pages
+       exist yet, kept as illustrative per the mockup, not claiming to be
+       real/available today. -->
+  <section id="academy" style="padding:88px 48px;background:#0F0E0D;border-bottom:1px solid #1E1E1E">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:32px;margin-bottom:40px">
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#C17F24;margin-bottom:14px">03 &mdash; Academy</div>
+        <h2 style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:52px;line-height:1;margin:0 0 12px;text-transform:uppercase">Learn the craft<br>of project controls</h2>
+        <p style="font-size:15px;color:#8C857A;margin:0">Short, practical courses written by working planners.</p>
+      </div>
+      <a href="academy/index.html" style="display:inline-flex;align-items:center;gap:12px;background:#C17F24;color:#12100C;font-size:15px;font-weight:600;padding:15px 22px;border-radius:4px;white-space:nowrap">Start Learning <span>&rarr;</span></a>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px">
+
+      <a class="course-card" href="academy/what-is-cpm.html" style="display:flex;flex-direction:column;justify-content:space-between;border-radius:6px;padding:26px;min-height:210px">
+        <div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#C17F24;margin-bottom:18px">Foundation</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:27px;line-height:1.08;text-transform:uppercase;margin-bottom:10px">What Is CPM?</div>
+          <div style="font-size:14px;line-height:1.55;color:#9A9287">Step through P6's own forward and backward pass, one activity at a time.</div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:24px;padding-top:16px;border-top:1px solid #262320;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#8C857A">
+          <span>~8 min &middot; Interactive</span><span style="color:#C17F24">&rarr;</span>
+        </div>
+      </a>
+
+      <a class="course-card" href="academy/total-float-explained.html" style="display:flex;flex-direction:column;justify-content:space-between;border-radius:6px;padding:26px;min-height:210px">
+        <div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#C17F24;margin-bottom:18px">Foundation</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:27px;line-height:1.08;text-transform:uppercase;margin-bottom:10px">Total Float Explained</div>
+          <div style="font-size:14px;line-height:1.55;color:#9A9287">Drag a slider, watch float collapse to zero, and see why P6's float type setting matters.</div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:24px;padding-top:16px;border-top:1px solid #262320;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#8C857A">
+          <span>~6 min &middot; Interactive</span><span style="color:#C17F24">&rarr;</span>
+        </div>
+      </a>
+
+      <a class="course-card" href="academy/how-to-read-xer.html" style="display:flex;flex-direction:column;justify-content:space-between;border-radius:6px;padding:26px;min-height:210px">
+        <div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#C17F24;margin-bottom:18px">Foundation</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:27px;line-height:1.08;text-transform:uppercase;margin-bottom:10px">How to Read a P6 XER</div>
+          <div style="font-size:14px;line-height:1.55;color:#9A9287">Click through an annotated XER file &mdash; it's just text, once you know the structure.</div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:24px;padding-top:16px;border-top:1px solid #262320;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#8C857A">
+          <span>~7 min &middot; Interactive</span><span style="color:#C17F24">&rarr;</span>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <section style="padding:0 48px;background:#0C0C0C">
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:stretch;border:1px solid #262320;border-radius:6px;overflow:hidden;margin:64px 0">
+      <div style="padding:44px 40px;background:#141210">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:34px;line-height:1.05;text-transform:uppercase;margin-bottom:10px">Not sure which tool to use?</div>
+        <p style="font-size:15px;color:#9A9287;margin:0 0 20px;max-width:380px">Find the right tool for your project with our guide.</p>
+        <a href="tools.html" style="font-size:14px;font-weight:600">Browse the full tool library &rarr;</a>
+      </div>
+      <div style="position:relative;min-height:210px;background:repeating-linear-gradient(135deg,#1A1613 0 14px,#141210 14px 28px);display:flex;align-items:center;justify-content:flex-end;padding:40px">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:40px;line-height:0.92;text-transform:uppercase;text-align:right">Built<br>for a more<br>productive<br><span style="color:#C17F24">Melbourne</span></div>
+      </div>
+    </div>
+  </section>
+
+  <footer style="border-top:1px solid #1E1E1E;background:#0A0A0A;padding:56px 48px 36px">
+    <div style="display:grid;grid-template-columns:minmax(0,1.4fr) repeat(3,minmax(0,1fr));gap:40px;padding-bottom:40px;border-bottom:1px solid #1A1A1A">
+      <div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px">
+          <svg width="24" height="28" viewBox="0 0 26 30" fill="none" aria-hidden="true"><path d="M2 2 L2 28 L24 28" stroke="#C17F24" stroke-width="2.5"></path><path d="M2 2 L20 13 L2 20 Z" fill="#C17F24"></path></svg>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:17px;line-height:1.05;letter-spacing:0.16em;text-transform:uppercase">Planning<br>Toolkit</div>
+        </div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;line-height:1.15;text-transform:uppercase;color:#F2EEE8">Plan Better.<br><span style="color:#C17F24">Build Melbourne.</span></div>
+      </div>
+
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:#6E6559;margin-bottom:16px">Product</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <a class="footer-link" href="tools.html" style="font-size:14px;">Tools</a>
+          <a class="footer-link" href="academy/index.html" style="font-size:14px;">Academy</a>
+          <a class="footer-link" href="#templates" style="font-size:14px;">Templates</a>
+          <a class="footer-link" href="blog/index.html" style="font-size:14px;">Insights</a>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:#6E6559;margin-bottom:16px">Melbourne</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <a class="footer-link" href="melbourne.html" style="font-size:14px;">Construction Map</a>
+          <a class="footer-link" href="melbourne.html" style="font-size:14px;">Major Projects</a>
+          <a class="footer-link" href="melbourne.html" style="font-size:14px;">Public Holidays</a>
+          <a class="footer-link" href="melbourne.html" style="font-size:14px;">Pipeline Data</a>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:#6E6559;margin-bottom:16px">Company</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <a class="footer-link" href="#" style="font-size:14px;">About</a>
+          <a class="footer-link" href="mailto:Sashreek33@gmail.com" style="font-size:14px;">Contact</a>
+          <a class="footer-link" href="#" style="font-size:14px;">Careers</a>
+          <a class="footer-link" href="#" style="font-size:14px;">Support</a>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:24px;padding-top:24px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#6E6559;flex-wrap:wrap;">
+      <span>&copy; 2026 Planning Toolkit &mdash; Melbourne, Australia</span>
+      <span>Privacy &nbsp;&middot;&nbsp; Terms</span>
+    </div>
+    <div style="padding-top:14px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.08em;color:#4A4640;">
+      Built by Sashreek Vijayakumar &mdash; RMIT Civil Engineering
+    </div>
+  </footer>
+</div>
+</body>
+</html>
