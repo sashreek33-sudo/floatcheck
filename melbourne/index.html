@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Melbourne Construction Map &mdash; Planning Toolkit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/toolkit-ui.css">
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js"></script>
+<style>
+  :root{
+    --bg:#0C0C0C; --panel:#141210; --panel-raised:#1B1815; --line:#262320;
+    --line-dashed:#3A3733;
+    --text:#F2EEE8; --body:#C9C3B9; --muted:#9A9287; --muted2:#6E6559;
+    --crit:#D9584C; --warn:#D6A23C; --ok:#6FA285; --accent:#C17F24; --accent-hi:#E0A050; --accent-ink:#12100C;
+    --gold:#C17F24; --orange:#E05A2B; --red:#DC2626; --green:#35C26A;
+  }
+  html,body{margin:0;padding:0;background:#0C0C0C;color:#F2EEE8;height:100%;}
+  *{box-sizing:border-box;}
+  a{color:#C17F24;text-decoration:none;}
+  a:hover{color:#E0A045;}
+  ::selection{background:#C17F24;color:#0C0C0C;}
+  ::-webkit-scrollbar{width:8px;height:8px;}
+  ::-webkit-scrollbar-track{background:#0C0C0C;}
+  ::-webkit-scrollbar-thumb{background:#26231e;}
+
+  @keyframes ptDot{0%,100%{opacity:1;}50%{opacity:.25;}}
+
+  .mel-wrap{height:calc(100vh - 76px);min-height:520px;display:flex;flex-direction:column;background:#0C0C0C;color:#F2EEE8;font-family:'IBM Plex Mono',ui-monospace,monospace;overflow:hidden;}
+
+  .status-bar{flex:0 0 auto;height:36px;display:flex;align-items:stretch;border-bottom:1px solid #262320;background:#0F0E0D;font-size:10px;}
+  .status-seg{display:flex;align-items:center;gap:11px;padding:0 12px;white-space:nowrap;}
+  .status-seg + .status-seg{border-left:1px solid #262320;}
+  .status-right{flex:1 1 auto;min-width:0;overflow:hidden;display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:0 12px;border-left:1px solid #262320;color:#8C8679;}
+  .live-dot{width:6px;height:6px;border-radius:50%;background:#C17F24;animation:ptDot 1.6s infinite;display:inline-block;}
+  .ok-dot{width:6px;height:6px;border-radius:50%;background:#35C26A;animation:ptDot 2.4s infinite;display:inline-block;}
+  .warn-dot{width:6px;height:6px;border-radius:50%;background:#D6A23C;display:inline-block;}
+  .crit-dot{width:6px;height:6px;border-radius:50%;background:#DC2626;display:inline-block;}
+
+  .mel-body{flex:1 1 auto;display:flex;min-height:0;}
+
+  .mel-sidebar{flex:0 0 320px;width:320px;border-right:1px solid #262320;background:#0F0E0D;overflow-y:auto;overflow-x:hidden;}
+  .side-block{padding:14px 16px;border-bottom:1px solid #262320;}
+  .side-title{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:600;line-height:1;letter-spacing:.04em;text-transform:uppercase;}
+  .side-sub{margin-top:8px;font-size:10px;letter-spacing:.18em;color:#8C8679;}
+  .label-sm{font-size:10px;letter-spacing:.18em;color:#6E6961;margin-bottom:10px;}
+
+  .layer-row{display:flex;align-items:center;gap:9px;padding:8px 8px;background:#111010;cursor:pointer;color:#77716A;border:none;width:100%;text-align:left;font-family:inherit;}
+  .layer-row.on{background:#15130F;color:#F2EEE8;}
+  .layer-row:hover{background:#1A1815;}
+  .layer-box{width:13px;height:13px;border:1px solid #3A352E;color:#C17F24;font-size:9px;line-height:11px;text-align:center;flex:0 0 auto;}
+  .layer-row.on .layer-box{border-color:#C17F24;}
+  .layer-dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto;opacity:.4;}
+  .layer-row.on .layer-dot{opacity:1;}
+  .layer-name{flex:1 1 auto;font-family:'Barlow Condensed',sans-serif;font-size:15px;letter-spacing:.06em;text-transform:uppercase;}
+  .layer-count{font-size:10px;letter-spacing:.06em;color:#5E5A53;white-space:nowrap;}
+  .layer-row.on .layer-count{color:#8C8679;}
+  .layer-status{font-size:9px;letter-spacing:.08em;}
+  .layer-status.err{color:#D9584C;}
+  .layer-status.ok2{color:#6FA285;}
+  .layer-status.loading{color:#D6A23C;}
+
+  .chip-row{display:flex;flex-wrap:wrap;gap:1px;}
+  .chip-btn{background:none;border:1px solid #302C26;color:#B9B2A6;padding:6px 9px;font-size:10px;letter-spacing:.1em;cursor:pointer;flex:1 1 auto;white-space:nowrap;font-family:inherit;}
+  .chip-btn.active{background:#C17F24;border-color:#C17F24;color:#0C0C0C;}
+  .chip-btn:hover:not(.active){border-color:#C17F24;color:#F2EEE8;}
+
+  .suburb-input{width:100%;background:#0C0C0C;border:1px solid #302C26;padding:8px 10px;font-size:11px;letter-spacing:.06em;outline:none;color:#F2EEE8;font-family:inherit;}
+  .suburb-input:focus{border-color:#C17F24;}
+
+  .reset-btn{background:none;border:1px solid #302C26;padding:3px 7px;font-size:9px;letter-spacing:.12em;color:#8C8679;cursor:pointer;font-family:inherit;}
+  .reset-btn:hover{color:#F2EEE8;border-color:#C17F24;}
+
+  .stats-grid{padding:14px 16px;border-bottom:1px solid #262320;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#262320;}
+  .stat-cell{background:#131211;padding:12px 12px 14px;}
+  .stat-label{font-size:9px;letter-spacing:.16em;color:#8C8679;}
+  .stat-value{font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:600;line-height:1.05;color:#C17F24;margin-top:6px;}
+  .stat-note{font-size:9px;letter-spacing:.1em;color:#6E6961;margin-top:4px;}
+
+  .nearby-row{display:flex;gap:8px;align-items:baseline;padding:7px 8px;background:#131211;cursor:pointer;border:none;width:100%;text-align:left;font-family:inherit;color:inherit;}
+  .nearby-row:hover{background:#1A1815;}
+  .nearby-title{flex:1 1 auto;font-size:10px;letter-spacing:.04em;color:#D9D3C8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .nearby-dist{font-size:10px;color:#8C8679;white-space:nowrap;}
+
+  .sources-note{padding:14px 16px 28px;font-size:9px;line-height:1.6;letter-spacing:.06em;color:#5E5A53;}
+
+  .mel-map-wrap{flex:1 1 auto;position:relative;min-width:0;background:#0C0C0C;overflow:hidden;}
+  #mel-map{position:absolute;inset:0;width:100%;height:100%;}
+
+  .map-loading-overlay{position:absolute;inset:0;background:#0C0C0C;display:flex;align-items:center;justify-content:center;z-index:20;transition:opacity .4s ease;}
+  .map-loading-overlay.hide{opacity:0;pointer-events:none;}
+  .map-loading-text{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.22em;color:#C17F24;}
+  .map-loading-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#C17F24;margin-right:10px;animation:ptDot 1s infinite;}
+
+  .map-controls-top{position:absolute;top:14px;right:14px;display:flex;gap:1px;border:1px solid #302C26;background:#0C0C0C;z-index:10;}
+  .map-toggle-btn{background:none;border:none;color:#B9B2A6;padding:7px 14px;font-size:10px;letter-spacing:.16em;cursor:pointer;font-family:'IBM Plex Mono',monospace;}
+  .map-toggle-btn.active{background:#C17F24;color:#0C0C0C;}
+
+  .map-legend{position:absolute;top:14px;left:14px;background:rgba(12,12,12,0.86);border:1px solid #262320;padding:10px 12px;z-index:10;max-width:230px;}
+  .legend-title{font-size:9px;letter-spacing:.16em;color:#6E6961;margin-bottom:8px;}
+  .legend-row{display:flex;align-items:center;gap:8px;font-size:10px;letter-spacing:.06em;color:#B9B2A6;margin-bottom:6px;}
+  .legend-row:last-child{margin-bottom:0;}
+
+  .locate-btn{position:absolute;right:14px;bottom:14px;display:flex;align-items:center;gap:8px;background:rgba(12,12,12,0.9);border:1px solid #302C26;color:#B9B2A6;padding:9px 13px;font-size:10px;letter-spacing:.16em;cursor:pointer;font-family:'IBM Plex Mono',monospace;z-index:10;}
+  .locate-btn.active{border-color:#35C26A;color:#F2EEE8;}
+  .locate-btn:hover{border-color:#C17F24;}
+
+  .sel-panel{position:absolute;left:0;right:0;bottom:0;background:#0C0C0C;border-top:1px solid #C17F24;box-shadow:0 -24px 48px rgba(0,0,0,0.6);transform:translateY(102%);transition:transform .28s cubic-bezier(.2,.8,.2,1);max-height:58%;overflow-y:auto;z-index:15;}
+  .sel-panel.open{transform:translateY(0);}
+  .sel-head{display:flex;align-items:center;gap:14px;padding:12px 20px;border-bottom:1px solid #262320;}
+  .sel-badge{padding:4px 8px;color:#0C0C0C;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;}
+  .sel-ref{font-size:12px;letter-spacing:.14em;color:#B9B2A6;}
+  .sel-close{background:none;border:1px solid #302C26;width:26px;height:26px;line-height:1;color:#8C8679;cursor:pointer;font-size:13px;margin-left:auto;}
+  .sel-close:hover{color:#F2EEE8;border-color:#C17F24;}
+  .sel-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr) minmax(0,0.85fr);gap:1px;background:#262320;}
+  .sel-col{background:#0F0E0D;padding:18px 20px;}
+  .sel-title{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:600;line-height:1.1;letter-spacing:.03em;}
+  .sel-subtitle{font-size:11px;letter-spacing:.08em;color:#8C8679;margin-top:6px;}
+  .sel-body-label{font-size:10px;letter-spacing:.18em;color:#6E6961;margin-top:18px;}
+  .sel-body{font-size:12px;line-height:1.6;color:#D9D3C8;margin-top:6px;max-width:46ch;}
+  .sel-row{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:7px 0;border-bottom:1px solid #1C1A17;}
+  .sel-row-label{font-size:10px;letter-spacing:.16em;color:#8C8679;white-space:nowrap;}
+  .sel-row-value{font-size:13px;letter-spacing:.04em;color:#F2EEE8;text-align:right;white-space:nowrap;}
+  .sel-status-label{font-size:10px;letter-spacing:.18em;color:#6E6961;}
+  .sel-status-line{display:flex;align-items:center;gap:9px;margin-top:8px;}
+  .sel-status-dot{width:9px;height:9px;border-radius:50%;}
+  .sel-status-text{font-size:13px;letter-spacing:.08em;color:#F2EEE8;}
+  .sel-note{font-size:10px;line-height:1.6;letter-spacing:.04em;color:#6E6961;margin-top:14px;max-width:34ch;}
+  .sel-actions{display:flex;flex-wrap:wrap;gap:1px;margin-top:14px;}
+  .sel-action-btn{background:none;border:1px solid #302C26;padding:8px 12px;font-size:10px;letter-spacing:.14em;color:#B9B2A6;cursor:pointer;font-family:inherit;}
+  .sel-action-btn:hover{color:#F2EEE8;border-color:#C17F24;}
+  .sel-action-btn.primary{background:#C17F24;border-color:#C17F24;color:#0C0C0C;}
+  .sel-action-btn.primary:hover{background:#E0A045;border-color:#E0A045;}
+
+  .mapboxgl-popup{display:none !important;}
+
+  @media (max-width:760px){
+    .toolkit-nav-inner{flex-wrap:wrap;height:auto;padding:10px 16px;}
+  }
+  html{overflow-x:hidden;}
+  @media (max-width:900px){
+    .mel-body{flex-direction:column;}
+    .mel-sidebar{flex:0 0 auto;width:100%;max-height:280px;}
+    .sel-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<nav class="toolkit-nav">
+  <div class="toolkit-nav-inner">
+    <a class="toolkit-nav-brand" href="../index.html">Planning <span class="tnb-accent">Toolkit</span></a>
+    <div class="toolkit-nav-tools">
+      <a class="toolkit-nav-tool" href="../floatcheck.html">Analyse</a>
+      <a class="toolkit-nav-tool" href="../academy/index.html">Academy</a>
+      <a class="toolkit-nav-tool" href="../blog/index.html">Insights</a>
+      <a class="toolkit-nav-tool" href="../tools.html">Tools</a>
+      <span class="toolkit-nav-tool active">Melbourne</span>
+    </div>
+    <div class="toolkit-nav-actions">
+      <a class="toolkit-nav-login" href="#">Log in</a>
+      <a class="toolkit-nav-cta" href="../floatcheck.html">Get Started</a>
+    </div>
+  </div>
+</nav>
+
+<div class="mel-wrap">
+
+  <div class="status-bar">
+    <div class="status-seg"><span id="stat-permits" style="color:#C17F24">&mdash;</span>&nbsp;ACTIVE PERMITS</div>
+    <div class="status-seg"><span id="stat-disruptions" style="color:#E05A2B">&mdash;</span>&nbsp;ROAD DISRUPTIONS</div>
+    <div class="status-seg"><span id="stat-incidents-inline">0 INCIDENTS</span></div>
+    <div class="status-right">
+      <span id="conn-dot" class="warn-dot"></span>
+      <span id="last-updated-text">Connecting&hellip;</span>
+    </div>
+  </div>
+
+  <div class="mel-body">
+
+    <div class="mel-sidebar">
+      <div class="side-block">
+        <div class="side-title">Melbourne<br>Construction</div>
+        <div class="side-sub">LIVE DATA &mdash; SEPT 2026</div>
+      </div>
+
+      <div class="side-block">
+        <div class="label-sm">LAYERS</div>
+        <div style="display:flex;flex-direction:column;gap:1px;" id="layer-toggles"></div>
+      </div>
+
+      <div class="side-block" style="display:flex;flex-direction:column;gap:14px;">
+        <div>
+          <div class="label-sm">PERMIT VALUE</div>
+          <div class="chip-row" id="value-filters"></div>
+        </div>
+        <div>
+          <div class="label-sm">WORKS TYPE SEARCH</div>
+          <input type="text" id="works-search" class="suburb-input" placeholder="e.g. residential, tunnel, road&hellip;">
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;font-size:10px;letter-spacing:.12em;color:#8C8679;">
+          <span id="showing-count">SHOWING &mdash; / &mdash; PERMITS</span>
+          <button class="reset-btn" id="reset-filters-btn">RESET</button>
+        </div>
+      </div>
+
+      <div class="stats-grid" id="stats-grid"></div>
+
+      <div class="side-block" id="nearby-block" style="display:none;">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:10px;">
+          <span class="ok-dot"></span>
+          <span style="font-size:10px;letter-spacing:.16em;color:#6E6961;">NEARBY &mdash; WITHIN 500 M</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:1px;" id="nearby-list"></div>
+      </div>
+
+      <div class="sources-note">
+        SOURCES: CITY OF MELBOURNE BUILDING PERMIT REGISTER &middot; DEPARTMENT OF TRANSPORT AND PLANNING (VICDTP) OPEN DATA &middot; HAND-CURATED MAJOR PROJECT DATA. FIGURES INDICATIVE. STATUS DERIVED FROM PUBLISHED DATES ONLY.
+      </div>
+    </div>
+
+    <div class="mel-map-wrap">
+      <div id="mel-map"></div>
+
+      <div class="map-loading-overlay" id="loading-overlay">
+        <div class="map-loading-text"><span class="map-loading-dot"></span>LOADING MELBOURNE CONSTRUCTION DATA&hellip;</div>
+      </div>
+
+      <div class="map-controls-top">
+        <button class="map-toggle-btn active" id="btn-map-style">MAP</button>
+        <button class="map-toggle-btn" id="btn-sat-style">SATELLITE</button>
+      </div>
+
+      <div class="map-legend">
+        <div class="legend-title">LEGEND</div>
+        <div class="legend-row"><span style="width:9px;height:9px;border-radius:50%;background:#C17F24;display:inline-block;"></span>BUILDING PERMIT &mdash; SIZED BY VALUE</div>
+        <div class="legend-row"><span style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:9px solid #E05A2B;display:inline-block;"></span>PLANNED ROADWORKS</div>
+        <div class="legend-row"><span style="width:9px;height:9px;border-radius:50%;background:#DC2626;display:inline-block;"></span>LIVE INCIDENT</div>
+        <div class="legend-row"><span style="width:12px;height:12px;color:#C17F24;display:inline-block;">&#9733;</span>MAJOR PROJECT</div>
+      </div>
+
+      <button class="locate-btn" id="locate-btn">
+        <span style="width:7px;height:7px;border-radius:50%;background:#35C26A;display:inline-block;"></span>
+        LOCATE ME
+      </button>
+
+      <div class="sel-panel" id="sel-panel">
+        <div id="sel-content"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+mapboxgl.accessToken = 'pk.eyJ1Ijoic2FzaDM0MzQzNDM0IiwiYSI6ImNtdHp5Y3IzbzB1eWgyeHBxdnFjMmM4NHUifQ.ZsCAlC4YgYdA3Df6dSnWng';
+
+const VICDTP_KEY = '6bfd9f47-2cfa-406c-acb4-b3ded45258aa';
+const GOLD = '#C17F24', ORANGE = '#E05A2B', RED = '#DC2626', GREEN = '#35C26A';
+
+const state = {
+  layers: { permits: true, roadworks: true, incidents: true, majors: true },
+  valueFilter: 'All',
+  worksQuery: '',
+  satellite: false,
+  located: false,
+  userLoc: null,
+  sel: null,
+  layerStatus: { permits: 'loading', roadworks: 'loading', incidents: 'loading', majors: 'loading' },
+  data: { permits: null, roadworks: [], incidents: [], majors: [] },
+  lastUpdated: new Date()
+};
+
+function fmtMoney(v){
+  if (v == null || isNaN(v)) return 'N/A';
+  return '$' + Math.round(v).toLocaleString('en-AU');
+}
+
+function escapeHtml(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+
+// ---------- Map init ----------
+const map = new mapboxgl.Map({
+  container: 'mel-map',
+  style: 'mapbox://styles/mapbox/dark-v11',
+  center: [144.9631, -37.8136],
+  zoom: 13
+});
+map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'bottom-left');
+
+map.on('error', function(e){
+  console.error('[Melbourne Map] Mapbox GL error:', e && e.error ? e.error.message : e);
+});
+
+map.on('load', function(){
+  initPermitLayers();
+  initSimpleLayers();
+  loadAllData();
+  startPulseAnimation();
+});
+
+// ---------- Layer setup (empty sources first, populated once fetched) ----------
+function initPermitLayers(){
+  map.addSource('permits', {
+    type: 'geojson',
+    data: { type: 'FeatureCollection', features: [] },
+    cluster: true,
+    clusterMaxZoom: 14,
+    clusterRadius: 40
+  });
+
+  map.addLayer({
+    id: 'permits-clusters',
+    type: 'circle',
+    source: 'permits',
+    filter: ['has', 'point_count'],
+    paint: {
+      'circle-color': GOLD,
+      'circle-opacity': 0.55,
+      'circle-radius': ['step', ['get', 'point_count'], 14, 10, 18, 30, 24, 100, 30]
+    }
+  });
+  map.addLayer({
+    id: 'permits-cluster-count',
+    type: 'symbol',
+    source: 'permits',
+    filter: ['has', 'point_count'],
+    layout: {
+      'text-field': ['get', 'point_count_abbreviated'],
+      'text-font': ['DIN Pro Medium', 'Arial Unicode MS Bold'],
+      'text-size': 11
+    },
+    paint: { 'text-color': '#12100C' }
+  });
+
+  // pulse ring behind recent permits — radius/opacity animated in JS
+  map.addLayer({
+    id: 'permits-recent-pulse',
+    type: 'circle',
+    source: 'permits',
+    filter: ['all', ['!', ['has', 'point_count']], ['==', ['get', 'recent'], true]],
+    paint: {
+      'circle-color': GOLD,
+      'circle-opacity': 0.5,
+      'circle-radius': 8,
+      'circle-stroke-width': 0
+    }
+  });
+
+  map.addLayer({
+    id: 'permits-points',
+    type: 'circle',
+    source: 'permits',
+    filter: ['!', ['has', 'point_count']],
+    paint: {
+      'circle-color': GOLD,
+      'circle-opacity': 0.85,
+      'circle-stroke-color': '#F2C46A',
+      'circle-stroke-width': 0.6,
+      'circle-radius': [
+        'step', ['get', 'estimated_cost_of_works'],
+        4,
+        1000000, 7,
+        10000000, 11
+      ]
+    }
+  });
+
+  map.on('click', 'permits-clusters', function(e){
+    const features = map.queryRenderedFeatures(e.point, { layers: ['permits-clusters'] });
+    const clusterId = features[0].properties.cluster_id;
+    map.getSource('permits').getClusterExpansionZoom(clusterId, function(err, zoom){
+      if (err) return;
+      map.easeTo({ center: features[0].geometry.coordinates, zoom: zoom });
+    });
+  });
+
+  map.on('click', 'permits-points', function(e){
+    if (!e.features.length) return;
+    openPermitPanel(e.features[0]);
+  });
+
+  ['permits-clusters', 'permits-points'].forEach(function(id){
+    map.on('mouseenter', id, function(){ map.getCanvas().style.cursor = 'pointer'; });
+    map.on('mouseleave', id, function(){ map.getCanvas().style.cursor = ''; });
+  });
+}
+
+function initSimpleLayers(){
+  // Planned road disruptions — orange triangles (rendered as circles w/ triangle-ish icon via symbol text)
+  map.addSource('roadworks', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+  map.addLayer({
+    id: 'roadworks-points',
+    type: 'symbol',
+    source: 'roadworks',
+    layout: {
+      'text-field': '▲',
+      'text-size': 16,
+      'text-allow-overlap': true,
+      'text-ignore-placement': true
+    },
+    paint: { 'text-color': ORANGE, 'text-halo-color': '#0C0C0C', 'text-halo-width': 1 }
+  });
+
+  // Unplanned incidents — red circles, pulsing
+  map.addSource('incidents', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+  map.addLayer({
+    id: 'incidents-pulse',
+    type: 'circle',
+    source: 'incidents',
+    paint: { 'circle-color': RED, 'circle-opacity': 0.45, 'circle-radius': 10 }
+  });
+  map.addLayer({
+    id: 'incidents-points',
+    type: 'circle',
+    source: 'incidents',
+    paint: {
+      'circle-color': RED,
+      'circle-radius': 5.5,
+      'circle-stroke-color': '#0C0C0C',
+      'circle-stroke-width': 1
+    }
+  });
+
+  // Major projects — gold stars, always visible, labelled
+  map.addSource('majors', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+  map.addLayer({
+    id: 'majors-points',
+    type: 'symbol',
+    source: 'majors',
+    layout: {
+      'text-field': '★  {name}',
+      'text-font': ['DIN Pro Medium', 'Arial Unicode MS Bold'],
+      'text-size': 13,
+      'text-anchor': 'left',
+      'text-offset': [0.6, 0],
+      'text-allow-overlap': true,
+      'text-ignore-placement': true
+    },
+    paint: { 'text-color': GOLD, 'text-halo-color': '#0C0C0C', 'text-halo-width': 1.4 }
+  });
+
+  ['roadworks-points', 'incidents-points', 'majors-points'].forEach(function(id){
+    map.on('click', id, function(e){
+      if (!e.features.length) return;
+      const f = e.features[0];
+      if (id === 'roadworks-points') openRoadworkPanel(f, false);
+      else if (id === 'incidents-points') openRoadworkPanel(f, true);
+      else openMajorPanel(f);
+    });
+    map.on('mouseenter', id, function(){ map.getCanvas().style.cursor = 'pointer'; });
+    map.on('mouseleave', id, function(){ map.getCanvas().style.cursor = ''; });
+  });
+}
+
+let pulseT = 0, pulseRaf = null;
+function startPulseAnimation(){
+  function frame(){
+    pulseT += 0.035;
+    const k = (Math.sin(pulseT) + 1) / 2; // 0..1
+    if (map.getLayer('permits-recent-pulse')){
+      map.setPaintProperty('permits-recent-pulse', 'circle-radius', 8 + k * 10);
+      map.setPaintProperty('permits-recent-pulse', 'circle-opacity', 0.5 * (1 - k));
+    }
+    if (map.getLayer('incidents-pulse')){
+      map.setPaintProperty('incidents-pulse', 'circle-radius', 10 + k * 14);
+      map.setPaintProperty('incidents-pulse', 'circle-opacity', 0.45 * (1 - k));
+    }
+    pulseRaf = requestAnimationFrame(frame);
+  }
+  pulseRaf = requestAnimationFrame(frame);
+}
+
+// ---------- Style toggle ----------
+document.getElementById('btn-map-style').addEventListener('click', function(){ setSatellite(false); });
+document.getElementById('btn-sat-style').addEventListener('click', function(){ setSatellite(true); });
+
+function setSatellite(on){
+  state.satellite = on;
+  document.getElementById('btn-map-style').classList.toggle('active', !on);
+  document.getElementById('btn-sat-style').classList.toggle('active', on);
+  map.setStyle(on ? 'mapbox://styles/mapbox/satellite-streets-v12' : 'mapbox://styles/mapbox/dark-v11');
+  map.once('style.load', function(){
+    initPermitLayers();
+    initSimpleLayers();
+    refreshMapSources();
+    applyFilters();
+  });
+}
+
+// ---------- Data loading ----------
+function setLayerStatus(key, status){
+  state.layerStatus[key] = status;
+  renderLayerToggles();
+}
+
+function loadAllData(){
+  loadPermits();
+  loadRoadworks();
+  loadIncidents();
+  loadMajors();
+
+  setInterval(loadRoadworks, 10 * 60 * 1000);
+  setInterval(loadIncidents, 2 * 60 * 1000);
+  setInterval(updateLastUpdatedText, 60 * 1000);
+  updateLastUpdatedText();
+}
+
+// The City of Melbourne building-permits dataset carries no lat/lng or geo_point
+// field — only a free-text `address`. To plot real permits we pull the most
+// recent priced records from the catalog's /records endpoint (not the ~80MB
+// full export, most of which has no usable location anyway) and geocode each
+// address once via the Mapbox Geocoding API, caching results for the session.
+const GEOCODE_CACHE_KEY = 'mel_geocode_cache_v1';
+function getGeocodeCache(){
+  try { return JSON.parse(sessionStorage.getItem(GEOCODE_CACHE_KEY) || '{}'); } catch(e){ return {}; }
+}
+function saveGeocodeCache(cache){
+  try { sessionStorage.setItem(GEOCODE_CACHE_KEY, JSON.stringify(cache)); } catch(e){}
+}
+function geocodeAddress(address, cache){
+  if (Object.prototype.hasOwnProperty.call(cache, address)) return Promise.resolve(cache[address]);
+  const q = encodeURIComponent(address);
+  return fetch('https://api.mapbox.com/geocoding/v5/mapbox.places/' + q + '.json?access_token=' + mapboxgl.accessToken + '&country=AU&proximity=144.9631,-37.8136&limit=1')
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      const f = j.features && j.features[0];
+      const coords = f ? f.center : null;
+      cache[address] = coords;
+      return coords;
+    })
+    .catch(function(){ return null; });
+}
+function geocodeBatch(items, cache, concurrency, onProgress){
+  let idx = 0, done = 0;
+  const results = new Array(items.length);
+  function worker(){
+    if (idx >= items.length) return Promise.resolve();
+    const i = idx++;
+    return geocodeAddress(items[i], cache).then(function(coords){
+      results[i] = coords;
+      done++;
+      if (onProgress) onProgress(done, items.length);
+      return worker();
+    });
+  }
+  const workers = [];
+  for (let i = 0; i < concurrency; i++) workers.push(worker());
+  return Promise.all(workers).then(function(){ return results; });
+}
+function setLoadingText(t){
+  const el = document.querySelector('.map-loading-text');
+  if (el) el.innerHTML = '<span class="map-loading-dot"></span>' + t;
+}
+
+function loadPermits(){
+  setLayerStatus('permits', 'loading');
+  const PAGE_SIZE = 100, PAGES = 2;
+  const base = 'https://data.melbourne.vic.gov.au/api/v2/catalog/datasets/building-permits/records';
+  const where = encodeURIComponent('estimated_cost_of_works > 0 and not(address is null)');
+  Promise.all([0, 1].slice(0, PAGES).map(function(p){
+    return fetch(base + '?limit=' + PAGE_SIZE + '&offset=' + (p * PAGE_SIZE) + '&order_by=issue_date%20desc&where=' + where)
+      .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
+  }))
+    .then(function(pages){
+      const records = [].concat.apply([], pages.map(function(pg){ return pg.records.map(function(r){ return r.record.fields; }); }));
+      const cache = getGeocodeCache();
+      const addresses = records.map(function(r){ return r.address; });
+      setLoadingText('GEOCODING ' + records.length + ' PERMITS&hellip;');
+      return geocodeBatch(addresses, cache, 8, function(done, total){
+        setLoadingText('GEOCODING PERMITS&hellip; (' + done + '/' + total + ')');
+      }).then(function(coordsList){
+        saveGeocodeCache(cache);
+        const now = Date.now();
+        const ninetyDays = 90 * 864e5;
+        const features = [];
+        records.forEach(function(rec, i){
+          const coords = coordsList[i];
+          if (!coords) return;
+          const issue = rec.issue_date ? Date.parse(rec.issue_date) : NaN;
+          features.push({
+            type: 'Feature',
+            geometry: { type: 'Point', coordinates: coords },
+            properties: {
+              permit_number: rec.permit_number,
+              address: rec.address,
+              desc_of_works: rec.desc_of_works,
+              estimated_cost_of_works: Number(rec.estimated_cost_of_works) || 0,
+              issue_date: rec.issue_date,
+              commence_by_date: rec.commence_by_date,
+              completed_by_date: rec.completed_by_date,
+              recent: !isNaN(issue) && (now - issue) < ninetyDays
+            }
+          });
+        });
+        state.data.permits = { type: 'FeatureCollection', features: features };
+        setLayerStatus('permits', 'ok');
+        refreshMapSources();
+        applyFilters();
+        hideLoadingOverlay();
+      });
+    })
+    .catch(function(err){
+      console.error('[Melbourne Map] City of Melbourne permits layer failed:', err);
+      setLayerStatus('permits', 'error');
+      hideLoadingOverlay();
+    });
+}
+
+function loadRoadworks(){
+  setLayerStatus('roadworks', 'loading');
+  fetch('https://api.opendata.transport.vic.gov.au/opendata/roads/disruptions/planned/v1/', {
+    headers: { 'KeyID': VICDTP_KEY }
+  })
+    .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function(data){
+      state.data.roadworks = normaliseVicDtp(data);
+      setLayerStatus('roadworks', 'ok');
+      refreshMapSources();
+    })
+    .catch(function(err){
+      console.error('[Melbourne Map] VicDTP planned disruptions layer failed:', err);
+      setLayerStatus('roadworks', 'error');
+    });
+}
+
+function loadIncidents(){
+  setLayerStatus('incidents', 'loading');
+  fetch('https://api.opendata.transport.vic.gov.au/opendata/roads/disruptions/unplanned/v2/', {
+    headers: { 'KeyID': VICDTP_KEY }
+  })
+    .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function(data){
+      state.data.incidents = normaliseVicDtp(data);
+      setLayerStatus('incidents', 'ok');
+      refreshMapSources();
+    })
+    .catch(function(err){
+      console.error('[Melbourne Map] VicDTP unplanned incidents layer failed:', err);
+      setLayerStatus('incidents', 'error');
+    });
+}
+
+function normaliseVicDtp(data){
+  // VicDTP responses vary by dataset; handle common shapes defensively.
+  const list = Array.isArray(data) ? data : (data.features || data.disruptions || data.value || data.results || []);
+  return list.map(function(item){
+    const p = item.properties || item;
+    const geom = item.geometry;
+    let lng = null, lat = null;
+    if (geom && geom.type === 'Point') { lng = geom.coordinates[0]; lat = geom.coordinates[1]; }
+    else if (geom && geom.type === 'LineString' && geom.coordinates.length) { lng = geom.coordinates[0][0]; lat = geom.coordinates[0][1]; }
+    else { lng = p.longitude || p.lon || p.lng; lat = p.latitude || p.lat; }
+    return {
+      id: p.id || p.disruption_id || p.eventId || Math.random().toString(36).slice(2),
+      road: p.road_name || p.roadName || p.location_description || 'Unnamed road',
+      worksType: p.work_type || p.workType || p.category || 'Works',
+      lanesAffected: p.lanes_affected || p.lanesAffected || 'Not specified',
+      delay: p.delay || p.estimated_delay || 'Not specified',
+      start: p.start_datetime || p.startDate || p.from,
+      end: p.end_datetime || p.endDate || p.to,
+      lat: lat, lng: lng
+    };
+  }).filter(function(d){ return d.lat != null && d.lng != null; });
+}
+
+function loadMajors(){
+  setLayerStatus('majors', 'loading');
+  fetch('major-projects.json')
+    .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function(list){
+      state.data.majors = list;
+      setLayerStatus('majors', 'ok');
+      refreshMapSources();
+    })
+    .catch(function(err){
+      console.error('[Melbourne Map] Major projects layer failed:', err);
+      setLayerStatus('majors', 'error');
+    });
+}
+
+// ---------- Source refresh + filtering ----------
+function filteredPermitFeatures(){
+  if (!state.data.permits) return [];
+  const q = state.worksQuery.trim().toLowerCase();
+  return state.data.permits.features.filter(function(f){
+    const p = f.properties || {};
+    const v = p.estimated_cost_of_works || 0;
+    const band = v < 1e6 ? '<$1M' : v < 1e7 ? '$1M-$10M' : '$10M+';
+    if (state.valueFilter !== 'All' && band !== state.valueFilter) return false;
+    if (q && !(String(p.desc_of_works || '').toLowerCase().indexOf(q) > -1)) return false;
+    return true;
+  });
+}
+
+function refreshMapSources(){
+  if (!map.isStyleLoaded() && !map.getSource('permits')) return;
+  if (map.getSource('permits') && state.data.permits){
+    map.getSource('permits').setData({ type: 'FeatureCollection', features: filteredPermitFeatures() });
+  }
+  if (map.getSource('roadworks')){
+    map.getSource('roadworks').setData({
+      type: 'FeatureCollection',
+      features: state.data.roadworks.map(function(r){
+        return { type: 'Feature', geometry: { type: 'Point', coordinates: [r.lng, r.lat] }, properties: r };
+      })
+    });
+  }
+  if (map.getSource('incidents')){
+    map.getSource('incidents').setData({
+      type: 'FeatureCollection',
+      features: state.data.incidents.map(function(r){
+        return { type: 'Feature', geometry: { type: 'Point', coordinates: [r.lng, r.lat] }, properties: r };
+      })
+    });
+  }
+  if (map.getSource('majors')){
+    map.getSource('majors').setData({
+      type: 'FeatureCollection',
+      features: state.data.majors.map(function(m){
+        return { type: 'Feature', geometry: { type: 'Point', coordinates: [m.lng, m.lat] }, properties: m };
+      })
+    });
+  }
+  renderStats();
+  renderLayerToggles();
+}
+
+function applyFilters(){
+  refreshMapSources();
+}
+
+function hideLoadingOverlay(){
+  document.getElementById('loading-overlay').classList.add('hide');
+}
+
+// ---------- Sidebar rendering ----------
+const LAYER_DEFS = [
+  { key: 'permits', name: 'Building Permits', color: GOLD },
+  { key: 'roadworks', name: 'Planned Roadworks', color: ORANGE },
+  { key: 'incidents', name: 'Live Incidents', color: RED },
+  { key: 'majors', name: 'Major Projects', color: GOLD }
+];
+
+function statusLabel(key){
+  const s = state.layerStatus[key];
+  if (s === 'loading') return { text: 'LOADING…', cls: 'loading' };
+  if (s === 'error') return { text: 'UNAVAILABLE', cls: 'err' };
+  return null;
+}
+
+function layerCount(key){
+  if (key === 'permits') return state.data.permits ? filteredPermitFeatures().length : null;
+  if (key === 'roadworks') return state.data.roadworks.length;
+  if (key === 'incidents') return state.data.incidents.length;
+  if (key === 'majors') return state.data.majors.length;
+  return null;
+}
+
+function renderLayerToggles(){
+  const el = document.getElementById('layer-toggles');
+  el.innerHTML = '';
+  LAYER_DEFS.forEach(function(d){
+    const on = state.layers[d.key];
+    const st = statusLabel(d.key);
+    const count = layerCount(d.key);
+    const btn = document.createElement('button');
+    btn.className = 'layer-row' + (on ? ' on' : '');
+    btn.innerHTML =
+      '<span class="layer-box">' + (on ? '✕' : '') + '</span>' +
+      '<span class="layer-dot" style="background:' + d.color + '"></span>' +
+      '<span class="layer-name">' + d.name + '</span>' +
+      (st ? '<span class="layer-status ' + st.cls + '">' + st.text + '</span>' : '<span class="layer-count">' + (count == null ? '—' : count) + '</span>');
+    btn.disabled = state.layerStatus[d.key] === 'error';
+    btn.addEventListener('click', function(){
+      state.layers[d.key] = !state.layers[d.key];
+      const layerIds = {
+        permits: ['permits-clusters', 'permits-cluster-count', 'permits-recent-pulse', 'permits-points'],
+        roadworks: ['roadworks-points'],
+        incidents: ['incidents-pulse', 'incidents-points'],
+        majors: ['majors-points']
+      }[d.key];
+      layerIds.forEach(function(id){
+        if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', state.layers[d.key] ? 'visible' : 'none');
+      });
+      renderLayerToggles();
+    });
+    el.appendChild(btn);
+  });
+}
+
+function renderValueFilters(){
+  const el = document.getElementById('value-filters');
+  el.innerHTML = '';
+  ['All', '<$1M', '$1M-$10M', '$10M+'].forEach(function(v){
+    const btn = document.createElement('button');
+    btn.className = 'chip-btn' + (state.valueFilter === v ? ' active' : '');
+    btn.textContent = v;
+    btn.addEventListener('click', function(){
+      state.valueFilter = v;
+      renderValueFilters();
+      applyFilters();
+    });
+    el.appendChild(btn);
+  });
+}
+
+document.getElementById('works-search').addEventListener('input', function(e){
+  state.worksQuery = e.target.value;
+  applyFilters();
+});
+
+document.getElementById('reset-filters-btn').addEventListener('click', function(){
+  state.valueFilter = 'All';
+  state.worksQuery = '';
+  document.getElementById('works-search').value = '';
+  renderValueFilters();
+  applyFilters();
+});
+
+function renderStats(){
+  const permits = state.data.permits ? filteredPermitFeatures() : [];
+  const totalValue = permits.reduce(function(sum, f){ return sum + (f.properties.estimated_cost_of_works || 0); }, 0);
+  const activeDisruptions = state.data.roadworks.length + state.data.incidents.length;
+
+  document.getElementById('stat-permits').textContent = state.data.permits ? permits.length : '—';
+  document.getElementById('stat-disruptions').textContent = (state.layerStatus.roadworks === 'error' && state.layerStatus.incidents === 'error') ? '—' : activeDisruptions;
+  document.getElementById('stat-incidents-inline').textContent = state.data.incidents.length + ' LIVE INCIDENTS';
+  document.getElementById('showing-count').textContent = 'SHOWING ' + permits.length + ' / ' + (state.data.permits ? state.data.permits.features.length : 0) + ' PERMITS';
+
+  const cells = [
+    { label: 'VISIBLE PERMITS', value: state.data.permits ? String(permits.length) : '—', note: 'City of Melb' },
+    { label: 'EST. VALUE VISIBLE', value: state.data.permits ? fmtMoney(totalValue) : '—', note: 'sum of visible permits' },
+    { label: 'ACTIVE DISRUPTIONS', value: String(activeDisruptions), note: 'planned + live' },
+    { label: 'MAJOR PROJECTS', value: String(state.data.majors.length), note: 'curated' }
+  ];
+  const grid = document.getElementById('stats-grid');
+  grid.innerHTML = '';
+  cells.forEach(function(c){
+    const cell = document.createElement('div');
+    cell.className = 'stat-cell';
+    cell.innerHTML =
+      '<div class="stat-label">' + c.label + '</div>' +
+      '<div class="stat-value">' + c.value + '</div>' +
+      '<div class="stat-note">' + c.note + '</div>';
+    grid.appendChild(cell);
+  });
+
+  // top status bar connection dot
+  const anyError = Object.values(state.layerStatus).some(function(s){ return s === 'error'; });
+  const anyLoading = Object.values(state.layerStatus).some(function(s){ return s === 'loading'; });
+  const dot = document.getElementById('conn-dot');
+  dot.className = anyLoading ? 'warn-dot' : (anyError ? 'crit-dot' : 'ok-dot');
+}
+
+function updateLastUpdatedText(){
+  const mins = Math.round((Date.now() - state.lastUpdated.getTime()) / 60000);
+  document.getElementById('last-updated-text').textContent = mins <= 0 ? 'Last updated just now' : ('Last updated ' + mins + ' min ago');
+}
+
+// ---------- Selection panel ----------
+function openSelPanel(html){
+  document.getElementById('sel-content').innerHTML = html;
+  document.getElementById('sel-panel').classList.add('open');
+}
+function closeSelPanel(){
+  document.getElementById('sel-panel').classList.remove('open');
+}
+
+function permitStatus(p){
+  const now = Date.now();
+  const commence = p.commence_by_date ? Date.parse(p.commence_by_date) : NaN;
+  const complete = p.completed_by_date ? Date.parse(p.completed_by_date) : NaN;
+  if (!isNaN(commence) && now < commence) return { text: 'APPROVED', color: GOLD };
+  if (!isNaN(complete) && now > complete) return { text: 'COMPLETED / OVERDUE', color: '#6FA285' };
+  return { text: 'ACTIVE', color: GREEN };
+}
+
+function openPermitPanel(feature){
+  const p = feature.properties;
+  const st = permitStatus(p);
+  const html =
+    '<div class="sel-head">' +
+      '<span class="sel-badge" style="background:' + GOLD + '">Building Permit</span>' +
+      '<span class="sel-ref">' + escapeHtml(p.permit_number || 'N/A') + '</span>' +
+      '<button class="sel-close" id="sel-close-btn">✕</button>' +
+    '</div>' +
+    '<div class="sel-grid">' +
+      '<div class="sel-col">' +
+        '<div class="sel-title">' + escapeHtml(p.address || 'Unknown address') + '</div>' +
+        '<div class="sel-subtitle">' + fmtMoney(p.estimated_cost_of_works) + '</div>' +
+        '<div class="sel-body-label">DESCRIPTION OF WORKS</div>' +
+        '<div class="sel-body">' + escapeHtml(p.desc_of_works || 'Not provided') + '</div>' +
+      '</div>' +
+      '<div class="sel-col">' +
+        row('ISSUE DATE', p.issue_date) +
+        row('COMMENCE BY', p.commence_by_date) +
+        row('COMPLETE BY', p.completed_by_date) +
+        row('VALUE', fmtMoney(p.estimated_cost_of_works)) +
+      '</div>' +
+      '<div class="sel-col">' +
+        '<div class="sel-status-label">STATUS</div>' +
+        '<div class="sel-status-line"><span class="sel-status-dot" style="background:' + st.color + '"></span><span class="sel-status-text">' + st.text + '</span></div>' +
+        '<div class="sel-note">Status derived from permit dates only. Actual site status may differ.</div>' +
+      '</div>' +
+    '</div>';
+  openSelPanel(html);
+  document.getElementById('sel-close-btn').addEventListener('click', closeSelPanel);
+}
+
+function openRoadworkPanel(feature, isIncident){
+  const p = feature.properties;
+  const html =
+    '<div class="sel-head">' +
+      '<span class="sel-badge" style="background:' + (isIncident ? RED : ORANGE) + '">' + (isIncident ? 'Live Incident' : 'Planned Disruption') + '</span>' +
+      '<span class="sel-ref">' + escapeHtml(p.id || '') + '</span>' +
+      '<button class="sel-close" id="sel-close-btn">✕</button>' +
+    '</div>' +
+    '<div class="sel-grid">' +
+      '<div class="sel-col">' +
+        '<div class="sel-title">' + escapeHtml(p.road) + '</div>' +
+        '<div class="sel-subtitle">' + escapeHtml(p.worksType) + '</div>' +
+        '<div class="sel-body-label">LANES AFFECTED</div>' +
+        '<div class="sel-body">' + escapeHtml(p.lanesAffected) + '</div>' +
+      '</div>' +
+      '<div class="sel-col">' +
+        row('WORKS TYPE', p.worksType) +
+        row('DELAY ESTIMATE', p.delay) +
+        row('START', p.start) +
+        row('END', p.end) +
+      '</div>' +
+      '<div class="sel-col">' +
+        '<div class="sel-status-label">STATUS</div>' +
+        '<div class="sel-status-line"><span class="sel-status-dot" style="background:' + (isIncident ? RED : ORANGE) + '"></span><span class="sel-status-text">' + (isIncident ? 'LIVE — refreshes every 2 min' : 'SCHEDULED — refreshes every 10 min') + '</span></div>' +
+      '</div>' +
+    '</div>';
+  openSelPanel(html);
+  document.getElementById('sel-close-btn').addEventListener('click', closeSelPanel);
+}
+
+function openMajorPanel(feature){
+  const p = feature.properties;
+  const html =
+    '<div class="sel-head">' +
+      '<span class="sel-badge" style="background:' + GOLD + '">Major Project</span>' +
+      '<span class="sel-ref">' + escapeHtml(p.type || '') + '</span>' +
+      '<button class="sel-close" id="sel-close-btn">✕</button>' +
+    '</div>' +
+    '<div class="sel-grid">' +
+      '<div class="sel-col">' +
+        '<div class="sel-title">' + escapeHtml(p.name) + '</div>' +
+        '<div class="sel-subtitle">' + escapeHtml(p.status) + '</div>' +
+        '<div class="sel-body-label">NOTES</div>' +
+        '<div class="sel-body">' + escapeHtml(p.notes || '') + '</div>' +
+      '</div>' +
+      '<div class="sel-col">' +
+        row('VALUE', p.value) +
+        row('PLANNED COMPLETION', p.planned_completion) +
+        row('TYPE', p.type) +
+      '</div>' +
+      '<div class="sel-col">' +
+        '<div class="sel-status-label">STATUS</div>' +
+        '<div class="sel-status-line"><span class="sel-status-dot" style="background:' + GOLD + '"></span><span class="sel-status-text">' + escapeHtml(p.status) + '</span></div>' +
+        '<div class="sel-note">Hand-curated from government project announcements. Figures as published.</div>' +
+      '</div>' +
+    '</div>';
+  openSelPanel(html);
+  document.getElementById('sel-close-btn').addEventListener('click', closeSelPanel);
+}
+
+function row(label, value){
+  return '<div class="sel-row"><span class="sel-row-label">' + label + '</span><span class="sel-row-value">' + escapeHtml(value || 'N/A') + '</span></div>';
+}
+
+// ---------- Locate me ----------
+document.getElementById('locate-btn').addEventListener('click', function(){
+  if (!navigator.geolocation){ return; }
+  const btn = document.getElementById('locate-btn');
+  if (state.located){
+    state.located = false;
+    state.userLoc = null;
+    btn.classList.remove('active');
+    document.getElementById('nearby-block').style.display = 'none';
+    if (map.getLayer('user-loc-point')) { map.removeLayer('user-loc-point'); map.removeSource('user-loc'); }
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(function(pos){
+    state.located = true;
+    state.userLoc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+    btn.classList.add('active');
+    map.flyTo({ center: [state.userLoc.lng, state.userLoc.lat], zoom: 15, essential: true });
+    if (!map.getSource('user-loc')){
+      map.addSource('user-loc', { type: 'geojson', data: { type: 'Feature', geometry: { type: 'Point', coordinates: [state.userLoc.lng, state.userLoc.lat] } } });
+      map.addLayer({ id: 'user-loc-point', type: 'circle', source: 'user-loc', paint: { 'circle-color': GREEN, 'circle-radius': 7, 'circle-stroke-color': '#0C0C0C', 'circle-stroke-width': 2 } });
+    } else {
+      map.getSource('user-loc').setData({ type: 'Feature', geometry: { type: 'Point', coordinates: [state.userLoc.lng, state.userLoc.lat] } });
+    }
+    renderNearby();
+  }, function(err){
+    console.error('[Melbourne Map] Geolocation failed:', err.message);
+  });
+});
+
+function haversineMeters(lat1, lng1, lat2, lng2){
+  const R = 6371000, toRad = Math.PI / 180;
+  const dLat = (lat2 - lat1) * toRad, dLng = (lng2 - lng1) * toRad;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*toRad) * Math.cos(lat2*toRad) * Math.sin(dLng/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+function renderNearby(){
+  if (!state.located || !state.userLoc) { document.getElementById('nearby-block').style.display = 'none'; return; }
+  const loc = state.userLoc;
+  let items = [];
+  if (state.data.permits){
+    state.data.permits.features.forEach(function(f){
+      const d = haversineMeters(loc.lat, loc.lng, f.geometry.coordinates[1], f.geometry.coordinates[0]);
+      if (d <= 500) items.push({ title: f.properties.address || f.properties.permit_number, dist: d, color: GOLD, open: function(){ openPermitPanel(f); } });
+    });
+  }
+  state.data.roadworks.forEach(function(r){
+    const d = haversineMeters(loc.lat, loc.lng, r.lat, r.lng);
+    if (d <= 500) items.push({ title: r.road, dist: d, color: ORANGE, open: function(){ openRoadworkPanel({ properties: r }, false); } });
+  });
+  state.data.incidents.forEach(function(r){
+    const d = haversineMeters(loc.lat, loc.lng, r.lat, r.lng);
+    if (d <= 500) items.push({ title: r.road, dist: d, color: RED, open: function(){ openRoadworkPanel({ properties: r }, true); } });
+  });
+  items.sort(function(a, b){ return a.dist - b.dist; });
+
+  const block = document.getElementById('nearby-block');
+  const list = document.getElementById('nearby-list');
+  list.innerHTML = '';
+  if (!items.length){
+    block.style.display = 'block';
+    list.innerHTML = '<div style="font-size:10px;color:#6E6961;padding:8px;">No permits or disruptions within 500 m.</div>';
+    return;
+  }
+  block.style.display = 'block';
+  items.forEach(function(it){
+    const btn = document.createElement('button');
+    btn.className = 'nearby-row';
+    btn.innerHTML = '<span style="width:7px;height:7px;border-radius:50%;background:' + it.color + ';flex:0 0 auto;margin-top:3px;"></span>' +
+      '<span class="nearby-title">' + escapeHtml(it.title) + '</span>' +
+      '<span class="nearby-dist">' + Math.round(it.dist) + ' m</span>';
+    btn.addEventListener('click', it.open);
+    list.appendChild(btn);
+  });
+}
+
+// ---------- initial sidebar render ----------
+renderLayerToggles();
+renderValueFilters();
+renderStats();
+</script>
+
+</body>
+</html>

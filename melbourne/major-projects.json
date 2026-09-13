@@ -1,0 +1,72 @@
+[
+  {
+    "name": "Suburban Rail Loop East",
+    "status": "Under Construction",
+    "value": "$34.5 billion (government estimate)",
+    "planned_completion": "2035",
+    "lat": -37.8199,
+    "lng": 145.1225,
+    "type": "Rail Infrastructure",
+    "notes": "Twenty-six kilometres of twin tunnel and six new underground stations between Cheltenham and Box Hill, connecting to the Frankston, Cranbourne, Pakenham, Glen Waverley and Belgrave/Lilydale lines. Early works and tunnelling underway at multiple sites."
+  },
+  {
+    "name": "North East Link",
+    "status": "Under Construction",
+    "value": "$26 billion",
+    "planned_completion": "2028",
+    "lat": -37.7717,
+    "lng": 145.0863,
+    "type": "Road Infrastructure",
+    "notes": "Twin three-lane tunnels connecting the M80 Ring Road at Greensborough to the Eastern Freeway at Bulleen, plus upgrades to the Eastern Freeway and a dedicated busway. Jointly funded by the Australian ($5B) and Victorian ($21.21B) governments. Tunnel boring on the northbound tunnel substantially complete as of mid-2026. Head contractor: Spark North East Link (John Holland, Gamuda, CPB Contractions, WSP)."
+  },
+  {
+    "name": "Arden Urban Renewal Precinct",
+    "status": "Under Development",
+    "value": "Precinct-scale renewal (individual project values vary)",
+    "planned_completion": "Ongoing — construction of Arden Central expected to commence 2026",
+    "lat": -37.7983,
+    "lng": 144.9367,
+    "type": "Urban Renewal",
+    "notes": "Employment and transport precinct around the Metro Tunnel's new Arden Station, targeting approximately 34,000 jobs and 20,000 residents. Planning amendment C489melb gazetted May 2026. A Master Developer for Arden Central is being selected from a shortlist, with a decision expected in 2026."
+  },
+  {
+    "name": "Fishermans Bend",
+    "status": "Under Development",
+    "value": "Precinct-scale renewal (individual project values vary)",
+    "planned_completion": "Ongoing — long-term renewal to c.2040",
+    "lat": -37.8267,
+    "lng": 144.9297,
+    "type": "Urban Renewal",
+    "notes": "480-hectare urban renewal precinct across Port Melbourne, South Melbourne and Montague, including planned tram extension and levee/drainage infrastructure. Led by Development Victoria."
+  },
+  {
+    "name": "Queen Victoria Market Renewal",
+    "status": "Under Construction",
+    "value": "$268 million (market renewal) — Gurrowa Place precinct development $1.7 billion",
+    "planned_completion": "Market renewal substantially complete; Gurrowa Place construction to commence April 2026",
+    "lat": -37.8076,
+    "lng": 144.9568,
+    "type": "Urban Renewal",
+    "notes": "City of Melbourne's renewal of the Queen Victoria Market precinct. The Gurrowa Place southern precinct, developed with Lendlease, includes Market Square — the first new CBD park since 1980 — with construction expected to start April 2026."
+  },
+  {
+    "name": "West Gate Tunnel",
+    "status": "Completed December 2025",
+    "value": "$10.2 billion",
+    "planned_completion": "2025 (completed)",
+    "lat": -37.8146,
+    "lng": 144.8925,
+    "type": "Road Infrastructure",
+    "notes": "Twin road tunnels under Yarraville linking the West Gate Freeway to CityLink and the Port of Melbourne, with a widened West Gate Freeway and a new bridge over the Maribyrnong River. Head contractor: CPB Contractors / John Holland joint venture (Wurundjeri Way / Westgate Tunnel JV)."
+  },
+  {
+    "name": "Melbourne Metro Tunnel",
+    "status": "Completed December 2025",
+    "value": "$13.48 billion",
+    "planned_completion": "2025 (completed)",
+    "lat": -37.8107,
+    "lng": 144.9628,
+    "type": "Rail Infrastructure",
+    "notes": "Twin nine-kilometre rail tunnels and five new underground stations (Arden, Parkville, State Library, Town Hall, Anzac) linking the Sunbury and Cranbourne-Pakenham lines. Head contractor: Cross Yarra Partnership (CYP)."
+  }
+]
