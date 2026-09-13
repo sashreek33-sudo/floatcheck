@@ -10,175 +10,352 @@
 <link rel="stylesheet" href="lib/toolkit-ui.css">
 <style>
   :root{
-    --bg:#0C0C0C; --panel:#141210; --panel-raised:#1B1815; --line:#262320;
-    --line-dashed:#3A3733;
-    --text:#F2EEE8; --body:#C9C3B9; --muted:#9A9287; --muted2:#6E6559;
-    --crit:#D9584C; --warn:#D6A23C; --ok:#6FA285; --accent:#C17F24; --accent-hi:#E0A050; --accent-ink:#12100C;
-    --crit-bg:rgba(217,88,76,0.15); --warn-bg:rgba(214,162,60,0.15); --ok-bg:rgba(111,162,133,0.15);
+    --bg:#0C0C0C; --text:#F2EEE8; --body:#C9C3B9; --accent:#C17F24; --accent-hi:#E0A04A; --accent-ink:#12100C;
   }
-  body{margin:0;background:#0C0C0C;}
   *{box-sizing:border-box;}
+  body{margin:0;background:#0C0C0C;}
   a{color:#C17F24;text-decoration:none;}
   a:hover{color:#E0A04A;}
   ::selection{background:#C17F24;color:#0C0C0C;}
-  .tool-card{background:#141210;border:1px solid #262320;color:#F2EEE8;}
-  .tool-card:hover{border-color:#C17F24;background:#171512;color:#F2EEE8;}
-  .footer-link{color:#9A9287;}
-  .footer-link:hover{color:#F2EEE8;}
+
+  .tools-page{position:relative;background:#F2EEE8;color:#14120F;font-family:Archivo,Helvetica,Arial,sans-serif;padding:64px 56px 96px;min-height:100vh;}
+  .tools-page-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(20,18,15,0.055) 1px,transparent 1px),linear-gradient(90deg,rgba(20,18,15,0.055) 1px,transparent 1px),linear-gradient(rgba(20,18,15,0.1) 1px,transparent 1px),linear-gradient(90deg,rgba(20,18,15,0.1) 1px,transparent 1px);background-size:24px 24px,24px 24px,120px 120px,120px 120px;pointer-events:none;}
+  .tools-page-inner{position:relative;max-width:1240px;margin:0 auto;}
+
+  .tools-hero{border-bottom:2px solid #14120F;padding-bottom:28px;margin-bottom:32px;}
+  .tools-hero .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.24em;text-transform:uppercase;color:#8A6520;margin-bottom:14px;}
+  .tools-hero h1{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:clamp(38px,4vw,56px);line-height:0.98;margin:0 0 12px;text-transform:uppercase;}
+  .tools-hero p{font-size:15px;color:#59544C;margin:0;max-width:64ch;}
+
+  .filter-tabs{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:36px;}
+  .filter-tab{font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:0.08em;text-transform:uppercase;color:#59544C;background:#FBF9F5;border:1px solid #D6D0C6;padding:9px 18px;cursor:pointer;transition:background .15s ease,color .15s ease,border-color .15s ease;}
+  .filter-tab:hover{border-color:#8A6520;color:#14120F;}
+  .filter-tab.active{background:#14120F;color:#F2EEE8;border-color:#14120F;font-weight:600;}
+
+  .tools-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:#D6D0C6;border:1px solid #D6D0C6;}
+  .tool-card{display:block;background:#FBF9F5;padding:26px;color:#14120F;position:relative;min-height:180px;transition:background .15s ease,box-shadow .15s ease;}
+  .tool-card:hover{background:#FFFFFF;box-shadow:inset 0 0 0 2px #C17F24;}
+  .tool-card.soon{background:#EFECE4;color:#8A857B;cursor:default;}
+  .tool-card .tc-icon{width:30px;height:30px;background:rgba(193,127,36,0.16);display:flex;align-items:center;justify-content:center;margin-bottom:20px;}
+  .tool-card.soon .tc-icon{background:rgba(20,18,15,0.06);}
+  .tool-card .tc-icon span{width:11px;height:11px;background:#C17F24;}
+  .tool-card.soon .tc-icon span{background:#A8A296;}
+  .tc-name{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;line-height:1.1;text-transform:uppercase;margin-bottom:8px;}
+  .tc-desc{font-size:13.5px;line-height:1.5;color:#59544C;margin-bottom:16px;}
+  .tool-card.soon .tc-desc{color:#948F85;}
+  .tc-cat{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase;color:#8A6520;border:1px solid rgba(138,101,32,0.35);padding:4px 8px;display:inline-block;}
+  .tool-card.soon .tc-cat{color:#948F85;border-color:#D6D0C6;}
+  .tc-use{font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:600;color:#8A6520;margin-top:16px;}
+  .tool-card:hover .tc-use{color:#C17F24;}
+  .tc-soon-badge{position:absolute;top:22px;right:22px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#59544C;background:#D6D0C6;padding:4px 8px;}
+
+  @media (max-width:900px){ .tools-grid{grid-template-columns:repeat(2,minmax(0,1fr));} }
+  @media (max-width:600px){ .tools-grid{grid-template-columns:1fr;} .filter-tabs{gap:8px;} }
+  @media (max-width:760px){
+    .toolkit-nav-inner{flex-wrap:wrap;height:auto;padding:14px 20px;row-gap:10px;}
+    .toolkit-nav-tools{overflow:visible;white-space:normal;flex:1 1 100%;order:3;height:auto;border-top:1px solid #1E1E1E;padding-top:10px;}
+    .toolkit-nav-tool{height:auto;padding:6px 10px;}
+    .toolkit-nav-actions{order:2;margin-left:auto;}
+  }
+  html{overflow-x:hidden;}
 </style>
 </head>
 <body>
-<div style="background:#0C0C0C;color:#F2EEE8;font-family:Archivo,Helvetica,Arial,sans-serif;min-height:100vh">
 
-  <nav class="toolkit-nav">
-    <div class="toolkit-nav-inner">
-      <a class="toolkit-nav-brand" href="index.html">Planning <span class="tnb-accent">Toolkit</span></a>
-      <div class="toolkit-nav-tools">
-        <a class="toolkit-nav-tool" href="floatcheck.html">Analyse</a>
-        <a class="toolkit-nav-tool" href="academy/index.html">Academy</a>
-        <a class="toolkit-nav-tool" href="blog/index.html">Insights</a>
-        <span class="toolkit-nav-tool active">Tools</span>
-        <a class="toolkit-nav-tool" href="melbourne.html">Melbourne</a>
+<nav class="toolkit-nav">
+  <div class="toolkit-nav-inner">
+    <a class="toolkit-nav-brand" href="index.html">Planning <span class="tnb-accent">Toolkit</span></a>
+    <div class="toolkit-nav-tools">
+      <a class="toolkit-nav-tool" href="floatcheck.html">Analyse</a>
+      <a class="toolkit-nav-tool" href="academy/index.html">Academy</a>
+      <a class="toolkit-nav-tool" href="blog/index.html">Insights</a>
+      <span class="toolkit-nav-tool active">Tools</span>
+      <a class="toolkit-nav-tool" href="melbourne.html">Melbourne</a>
+    </div>
+    <div class="toolkit-nav-actions">
+      <a class="toolkit-nav-login" href="#">Log in</a>
+      <a class="toolkit-nav-cta" href="floatcheck.html">Get Started</a>
+    </div>
+  </div>
+</nav>
+
+<div class="tools-page">
+  <div class="tools-page-bg"></div>
+  <div class="tools-page-inner">
+
+    <div class="tools-hero">
+      <div class="eyebrow">Tools</div>
+      <h1>Tools</h1>
+      <p>Calculators and utilities for construction, project controls, and everyday use.</p>
+    </div>
+
+    <div class="filter-tabs" id="filterTabs">
+      <button class="filter-tab active" data-filter="all">All</button>
+      <button class="filter-tab" data-filter="everyday">Everyday</button>
+      <button class="filter-tab" data-filter="construction">Construction</button>
+      <button class="filter-tab" data-filter="controls">Project Controls</button>
+    </div>
+
+    <div class="tools-grid" id="toolsGrid">
+
+      <a class="tool-card" href="floatcheck.html" data-cat="controls">
+        <div class="tc-icon"><span></span></div>
+        <div class="tc-name">P6 Schedule Checker</div>
+        <div class="tc-desc">Upload your XER file and run a full DCMA-14 schedule health check.</div>
+        <div class="tc-cat">Project Controls</div>
+        <div class="tc-use">Use tool &rarr;</div>
+      </a>
+
+      <a class="tool-card" href="dcma.html" data-cat="controls">
+        <div class="tc-icon"><span></span></div>
+        <div class="tc-name">DCMA Reference</div>
+        <div class="tc-desc">All 14 DCMA schedule health checks explained &mdash; what each measures, why it matters.</div>
+        <div class="tc-cat">Project Controls</div>
+        <div class="tc-use">Use tool &rarr;</div>
+      </a>
+
+      <a class="tool-card" href="leadtime.html" data-cat="controls">
+        <div class="tc-icon"><span></span></div>
+        <div class="tc-name">Lead Time</div>
+        <div class="tc-desc">Calculate order-by dates and procurement timelines from your schedule's own float.</div>
+        <div class="tc-cat">Project Controls</div>
+        <div class="tc-use">Use tool &rarr;</div>
+      </a>
+
+      <a class="tool-card" href="percent-complete.html" data-cat="controls">
+        <div class="tc-icon"><span></span></div>
+        <div class="tc-name">% Complete</div>
+        <div class="tc-desc">Physical, duration, units and cost percent-complete &mdash; weighted and bucketed.</div>
+        <div class="tc-cat">Project Controls</div>
+        <div class="tc-use">Use tool &rarr;</div>
+      </a>
+
+      <a class="tool-card" href="tools/float-calculator.html" data-cat="controls">
+        <div class="tc-icon"><span></span></div>
+        <div class="tc-name">Float Calculator</div>
+        <div class="tc-desc">Enter ES/EF/LS/LF manually and get total float, criticality and the DCMA high-float flag.</div>
+        <div class="tc-cat">Project Controls</div>
+        <div class="tc-use">Use tool &rarr;</div>
+      </a>
+
+      <a class="tool-card" href="tools/earned-value-calculator.html" data-cat="controls">
+        <div class="tc-icon"><span></span></div>
+        <div class="tc-name">Earned Value Calculator</div>
+        <div class="tc-desc">PV, EV, AC, BAC in &mdash; SV, CV, SPI, CPI, EAC, ETC, VAC and TCPI out.</div>
+        <div class="tc-cat">Project Controls</div>
+        <div class="tc-use">Use tool &rarr;</div>
+      </a>
+
+      <a class="tool-card" href="tools/schedule-variance-calculator.html" data-cat="controls">
+        <div class="tc-icon"><span></span></div>
+        <div class="tc-name">Schedule Variance Calculator</div>
+        <div class="tc-desc">A simplified schedule variance for planners who just want SV in days and %.</div>
+        <div class="tc-cat">Project Controls</div>
+        <div class="tc-use">Use tool &rarr;</div>
+      </a>
+
+      <a class="tool-card" href="tools/procurement-leadtime-calculator.html" data-cat="controls">
+        <div class="tc-icon"><span></span></div>
+        <div class="tc-name">Procurement Lead Time</div>
+        <div class="tc-desc">Order-by and required-by dates from lead time in weeks &mdash; no XER needed.</div>
+        <div class="tc-cat">Project Controls</div>
+        <div class="tc-use">Use tool &rarr;</div>
+      </a>
+
+      <div class="tool-card soon" data-cat="controls">
+        <div class="tc-icon"><span></span></div>
+        <div class="tc-name">CPI Calculator</div>
+        <div class="tc-desc">Standalone cost performance index calculator.</div>
+        <div class="tc-cat">Project Controls</div>
+        <div class="tc-soon-badge">Coming Soon</div>
       </div>
-      <div class="toolkit-nav-actions">
-        <a class="toolkit-nav-login" href="#">Log in</a>
-        <a class="toolkit-nav-cta" href="floatcheck.html">Get Started</a>
+
+      <div class="tool-card soon" data-cat="controls">
+        <div class="tc-icon"><span></span></div>
+        <div class="tc-name">Critical Path Calculator</div>
+        <div class="tc-desc">Visualise the critical path from your activities and logic.</div>
+        <div class="tc-cat">Project Controls</div>
+        <div class="tc-soon-badge">Coming Soon</div>
       </div>
+
+      <a class="tool-card" href="tools/percentage-calculator.html" data-cat="everyday">
+        <div class="tc-icon"><span></span></div>
+        <div class="tc-name">Percentage Calculator</div>
+        <div class="tc-desc">% of a number, percentage change, and increase/decrease by %.</div>
+        <div class="tc-cat">Everyday</div>
+        <div class="tc-use">Use tool &rarr;</div>
+      </a>
+
+      <a class="tool-card" href="tools/days-between-dates.html" data-cat="everyday">
+        <div class="tc-icon"><span></span></div>
+        <div class="tc-name">Days Between Dates</div>
+        <div class="tc-desc">Calendar days between two dates, plus weeks/days and months/days.</div>
+        <div class="tc-cat">Everyday</div>
+        <div class="tc-use">Use tool &rarr;</div>
+      </a>
+
+      <a class="tool-card" href="tools/working-days-calculator.html" data-cat="everyday">
+        <div class="tc-icon"><span></span></div>
+        <div class="tc-name">Working Days Calculator</div>
+        <div class="tc-desc">Working days between dates, excluding weekends and Victorian public holidays.</div>
+        <div class="tc-cat">Everyday</div>
+        <div class="tc-use">Use tool &rarr;</div>
+      </a>
+
+      <a class="tool-card" href="tools/unit-converter.html" data-cat="everyday">
+        <div class="tc-icon"><span></span></div>
+        <div class="tc-name">Unit Converter</div>
+        <div class="tc-desc">Length, weight, temperature, area, volume and speed &mdash; metric and imperial.</div>
+        <div class="tc-cat">Everyday</div>
+        <div class="tc-use">Use tool &rarr;</div>
+      </a>
+
+      <a class="tool-card" href="tools/time-duration-calculator.html" data-cat="everyday">
+        <div class="tc-icon"><span></span></div>
+        <div class="tc-name">Time Duration Calculator</div>
+        <div class="tc-desc">Start and end time to duration &mdash; hours/minutes and decimal, for timesheets.</div>
+        <div class="tc-cat">Everyday</div>
+        <div class="tc-use">Use tool &rarr;</div>
+      </a>
+
+      <a class="tool-card" href="tools/discount-calculator.html" data-cat="everyday">
+        <div class="tc-icon"><span></span></div>
+        <div class="tc-name">Discount Calculator</div>
+        <div class="tc-desc">Sale price and savings from a discount %, or work out the % from two prices.</div>
+        <div class="tc-cat">Everyday</div>
+        <div class="tc-use">Use tool &rarr;</div>
+      </a>
+
+      <div class="tool-card soon" data-cat="everyday">
+        <div class="tc-icon"><span></span></div>
+        <div class="tc-name">Age Calculator</div>
+        <div class="tc-desc">Exact age in years, months and days from a date of birth.</div>
+        <div class="tc-cat">Everyday</div>
+        <div class="tc-soon-badge">Coming Soon</div>
+      </div>
+
+      <div class="tool-card soon" data-cat="everyday">
+        <div class="tc-icon"><span></span></div>
+        <div class="tc-name">Word Counter</div>
+        <div class="tc-desc">Word, character and sentence counts as you type.</div>
+        <div class="tc-cat">Everyday</div>
+        <div class="tc-soon-badge">Coming Soon</div>
+      </div>
+
+      <div class="tool-card soon" data-cat="everyday">
+        <div class="tc-icon"><span></span></div>
+        <div class="tc-name">Fuel Cost Calculator</div>
+        <div class="tc-desc">Trip fuel cost from distance, consumption and fuel price.</div>
+        <div class="tc-cat">Everyday</div>
+        <div class="tc-soon-badge">Coming Soon</div>
+      </div>
+
+      <div class="tool-card soon" data-cat="everyday">
+        <div class="tc-icon"><span></span></div>
+        <div class="tc-name">Split Bill Calculator</div>
+        <div class="tc-desc">Split a bill between people, with optional tip.</div>
+        <div class="tc-cat">Everyday</div>
+        <div class="tc-soon-badge">Coming Soon</div>
+      </div>
+
+      <a class="tool-card" href="tools/concrete-volume-calculator.html" data-cat="construction">
+        <div class="tc-icon"><span></span></div>
+        <div class="tc-name">Concrete Volume Calculator</div>
+        <div class="tc-desc">Slabs, footings, columns, beams and cylinders &mdash; volume, waste and truck estimate.</div>
+        <div class="tc-cat">Construction</div>
+        <div class="tc-use">Use tool &rarr;</div>
+      </a>
+
+      <a class="tool-card" href="tools/excavation-calculator.html" data-cat="construction">
+        <div class="tc-icon"><span></span></div>
+        <div class="tc-name">Excavation Calculator</div>
+        <div class="tc-desc">Excavation volume, spoil bulking and truck loads, with optional batter slopes.</div>
+        <div class="tc-cat">Construction</div>
+        <div class="tc-use">Use tool &rarr;</div>
+      </a>
+
+      <a class="tool-card" href="tools/rebar-weight-calculator.html" data-cat="construction">
+        <div class="tc-icon"><span></span></div>
+        <div class="tc-name">Rebar Weight Calculator</div>
+        <div class="tc-desc">Total steel weight from bar size, length and count &mdash; with an AS reference table.</div>
+        <div class="tc-cat">Construction</div>
+        <div class="tc-use">Use tool &rarr;</div>
+      </a>
+
+      <a class="tool-card" href="tools/concrete-cost-calculator.html" data-cat="construction">
+        <div class="tc-icon"><span></span></div>
+        <div class="tc-name">Concrete Cost Calculator</div>
+        <div class="tc-desc">Material, waste and pump-hire cost from volume and your own supplier pricing.</div>
+        <div class="tc-cat">Construction</div>
+        <div class="tc-use">Use tool &rarr;</div>
+      </a>
+
+      <a class="tool-card" href="tools/gradient-calculator.html" data-cat="construction">
+        <div class="tc-icon"><span></span></div>
+        <div class="tc-name">Gradient Calculator</div>
+        <div class="tc-desc">Rise, run, gradient % and angle &mdash; for drainage, roads, ramps and footpaths.</div>
+        <div class="tc-cat">Construction</div>
+        <div class="tc-use">Use tool &rarr;</div>
+      </a>
+
+      <div class="tool-card soon" data-cat="construction">
+        <div class="tc-icon"><span></span></div>
+        <div class="tc-name">Melbourne Construction Map</div>
+        <div class="tc-desc">Explore current and upcoming projects across Melbourne.</div>
+        <div class="tc-cat">Construction</div>
+        <div class="tc-soon-badge">Coming Soon</div>
+      </div>
+
+      <div class="tool-card soon" data-cat="construction">
+        <div class="tc-icon"><span></span></div>
+        <div class="tc-name">Steel Weight Calculator</div>
+        <div class="tc-desc">Structural steel section weights by profile and length.</div>
+        <div class="tc-cat">Construction</div>
+        <div class="tc-soon-badge">Coming Soon</div>
+      </div>
+
+      <div class="tool-card soon" data-cat="construction">
+        <div class="tc-icon"><span></span></div>
+        <div class="tc-name">Paint Calculator</div>
+        <div class="tc-desc">Paint quantity and coats needed from wall area.</div>
+        <div class="tc-cat">Construction</div>
+        <div class="tc-soon-badge">Coming Soon</div>
+      </div>
+
+      <div class="tool-card soon" data-cat="construction">
+        <div class="tc-icon"><span></span></div>
+        <div class="tc-name">Construction Duration Calculator</div>
+        <div class="tc-desc">Rough programme duration estimate from project type and scale.</div>
+        <div class="tc-cat">Construction</div>
+        <div class="tc-soon-badge">Coming Soon</div>
+      </div>
+
     </div>
-  </nav>
-
-  <section style="padding:64px 48px 40px;background:#0C0C0C;border-bottom:1px solid #1E1E1E">
-    <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#C17F24;margin-bottom:14px">Tools</div>
-    <h1 style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:52px;line-height:1;margin:0 0 12px;text-transform:uppercase">Practical tools for construction<br>and project controls</h1>
-    <p style="font-size:15px;color:#8C857A;margin:0;max-width:60ch">Built for the way schedules, claims and site works actually run.</p>
-  </section>
-
-  <section style="padding:56px 48px 72px;background:#0F0E0D;border-bottom:1px solid #1E1E1E">
-    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px">
-
-      <a class="tool-card" href="floatcheck.html" style="display:block;border-radius:6px;padding:26px 26px 22px;position:relative;min-height:196px">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px">
-          <div style="width:34px;height:34px;border-radius:4px;background:rgba(193,127,36,0.14);display:flex;align-items:center;justify-content:center">
-            <div style="width:12px;height:12px;background:#C17F24;border-radius:2px"></div>
-          </div>
-          <div style="color:#8C857A;font-size:16px">&#8599;</div>
-        </div>
-        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:25px;line-height:1.1;text-transform:uppercase;letter-spacing:0.01em;margin-bottom:8px">P6 Schedule Checker</div>
-        <div style="font-size:14px;line-height:1.55;color:#9A9287;margin-bottom:18px">Upload your XER file and run a full DCMA-14 schedule health check &mdash; FloatCheck.</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">P6</span>
-          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">DCMA</span>
-          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Schedule</span>
-        </div>
-      </a>
-
-      <a class="tool-card" href="blog/victorian-public-holidays-p6.html" style="display:block;border-radius:6px;padding:26px 26px 22px;position:relative;min-height:196px">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px">
-          <div style="width:34px;height:34px;border-radius:4px;background:rgba(193,127,36,0.14);display:flex;align-items:center;justify-content:center">
-            <div style="width:12px;height:12px;background:#C17F24;border-radius:2px"></div>
-          </div>
-          <div style="color:#8C857A;font-size:16px">&#8599;</div>
-        </div>
-        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:25px;line-height:1.1;text-transform:uppercase;letter-spacing:0.01em;margin-bottom:8px">Working Days Calculator</div>
-        <div style="font-size:14px;line-height:1.55;color:#9A9287;margin-bottom:18px">Calculate working days with Victorian public holidays.</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Calendar</span>
-          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Victoria</span>
-          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Dates</span>
-        </div>
-        <span style="position:absolute;top:26px;right:44px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:#C17F24;border:1px solid rgba(193,127,36,0.4);border-radius:3px;padding:3px 7px">In Insights</span>
-      </a>
-
-      <a class="tool-card" href="percent-complete.html" style="display:block;border-radius:6px;padding:26px 26px 22px;position:relative;min-height:196px">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px">
-          <div style="width:34px;height:34px;border-radius:4px;background:rgba(193,127,36,0.14);display:flex;align-items:center;justify-content:center">
-            <div style="width:12px;height:12px;background:#C17F24;border-radius:2px"></div>
-          </div>
-          <div style="color:#8C857A;font-size:16px">&#8599;</div>
-        </div>
-        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:25px;line-height:1.1;text-transform:uppercase;letter-spacing:0.01em;margin-bottom:8px">% Complete</div>
-        <div style="font-size:14px;line-height:1.55;color:#9A9287;margin-bottom:18px">Physical, duration, units and cost percent-complete &mdash; weighted, bucketed, and checked for consistency.</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Progress</span>
-          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Quality</span>
-          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">XER</span>
-        </div>
-      </a>
-
-      <a class="tool-card" href="leadtime.html" style="display:block;border-radius:6px;padding:26px 26px 22px;position:relative;min-height:196px">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px">
-          <div style="width:34px;height:34px;border-radius:4px;background:rgba(193,127,36,0.14);display:flex;align-items:center;justify-content:center">
-            <div style="width:12px;height:12px;background:#C17F24;border-radius:2px"></div>
-          </div>
-          <div style="color:#8C857A;font-size:16px">&#8599;</div>
-        </div>
-        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:25px;line-height:1.1;text-transform:uppercase;letter-spacing:0.01em;margin-bottom:8px">Lead Time</div>
-        <div style="font-size:14px;line-height:1.55;color:#9A9287;margin-bottom:18px">Calculate order-by dates and procurement timelines from your schedule's own float.</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Procurement</span>
-          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Supply Chain</span>
-          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Dates</span>
-        </div>
-      </a>
-
-      <a class="tool-card" href="dcma.html" style="display:block;border-radius:6px;padding:26px 26px 22px;position:relative;min-height:196px">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px">
-          <div style="width:34px;height:34px;border-radius:4px;background:rgba(193,127,36,0.14);display:flex;align-items:center;justify-content:center">
-            <div style="width:12px;height:12px;background:#C17F24;border-radius:2px"></div>
-          </div>
-          <div style="color:#8C857A;font-size:16px">&#8599;</div>
-        </div>
-        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:25px;line-height:1.1;text-transform:uppercase;letter-spacing:0.01em;margin-bottom:8px">DCMA Reference</div>
-        <div style="font-size:14px;line-height:1.55;color:#9A9287;margin-bottom:18px">All 14 DCMA schedule health checks explained &mdash; what each measures, why it matters, the standard threshold.</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">DCMA</span>
-          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Reference</span>
-          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Schedule Quality</span>
-        </div>
-      </a>
-
-      <a class="tool-card" href="melbourne.html" style="display:block;border-radius:6px;padding:26px 26px 22px;position:relative;min-height:196px">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px">
-          <div style="width:34px;height:34px;border-radius:4px;background:rgba(193,127,36,0.14);display:flex;align-items:center;justify-content:center">
-            <div style="width:12px;height:12px;background:#C17F24;border-radius:2px"></div>
-          </div>
-          <div style="color:#8C857A;font-size:16px">&#8599;</div>
-        </div>
-        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:25px;line-height:1.1;text-transform:uppercase;letter-spacing:0.01em;margin-bottom:8px">Melbourne Construction Map</div>
-        <div style="font-size:14px;line-height:1.55;color:#9A9287;margin-bottom:18px">Explore current and upcoming projects across Melbourne.</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Melbourne</span>
-          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Map</span>
-          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Developments</span>
-        </div>
-        <span style="position:absolute;top:26px;right:44px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:#C17F24;border:1px solid rgba(193,127,36,0.4);border-radius:3px;padding:3px 7px">Coming Soon</span>
-      </a>
-
-      <a class="tool-card" href="validate.html" style="display:block;border-radius:6px;padding:26px 26px 22px;position:relative;min-height:196px">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px">
-          <div style="width:34px;height:34px;border-radius:4px;background:rgba(193,127,36,0.14);display:flex;align-items:center;justify-content:center">
-            <div style="width:12px;height:12px;background:#C17F24;border-radius:2px"></div>
-          </div>
-          <div style="color:#8C857A;font-size:16px">&#8599;</div>
-        </div>
-        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:25px;line-height:1.1;text-transform:uppercase;letter-spacing:0.01em;margin-bottom:8px">Validation Harness</div>
-        <div style="font-size:14px;line-height:1.55;color:#9A9287;margin-bottom:18px">Diffs the CPM engine against P6's own stored dates and float &mdash; a diagnostic, not a planner-facing tool.</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Engine</span>
-          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Diagnostic</span>
-          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">CPM</span>
-        </div>
-      </a>
-
-    </div>
-  </section>
-
-  <footer style="border-top:1px solid #1E1E1E;background:#0A0A0A;padding:40px 48px 32px">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:24px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#6E6559;flex-wrap:wrap;">
-      <span>Part of the <a class="footer-link" href="index.html" style="text-transform:none;letter-spacing:normal;font-family:Archivo,sans-serif;">Planning Toolkit</a></span>
-      <span><a class="footer-link" href="privacy.html">Privacy</a> &nbsp;&middot;&nbsp; <a class="footer-link" href="mailto:Sashreek33@gmail.com">Email</a></span>
-    </div>
-  </footer>
+  </div>
 </div>
+
+<footer class="site-footer" style="max-width:1240px;margin:0 auto;padding:24px 56px 40px;background:#F2EEE8;">
+  <p style="color:#59544C;font-size:12px;">Part of the <a href="index.html" style="color:#8A6520;">Planning Toolkit</a>. Every calculator on this page runs entirely in your browser &mdash; no file upload, no server round-trip.</p>
+  <p style="color:#59544C;font-size:12px;"><a href="https://github.com/sashreek33-sudo/floatcheck" target="_blank" rel="noopener" style="color:#8A6520;">View source on GitHub</a> &middot; <a href="privacy.html" style="color:#8A6520;">Privacy</a> &middot; <a href="mailto:Sashreek33@gmail.com" style="color:#8A6520;">Email</a>.</p>
+</footer>
+
+<script>
+(function(){
+  var tabs = document.querySelectorAll('.filter-tab');
+  var cards = document.querySelectorAll('.tool-card');
+  tabs.forEach(function(tab){
+    tab.addEventListener('click', function(){
+      tabs.forEach(function(t){ t.classList.remove('active'); });
+      tab.classList.add('active');
+      var f = tab.getAttribute('data-filter');
+      cards.forEach(function(card){
+        var cat = card.getAttribute('data-cat');
+        card.style.display = (f === 'all' || cat === f) ? '' : 'none';
+      });
+    });
+  });
+})();
+</script>
+
 </body>
 </html>

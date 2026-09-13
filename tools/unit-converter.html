@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Unit Converter &mdash; Planning Toolkit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/toolkit-ui.css">
+<style>
+  :root{
+    --bg:#0C0C0C; --panel:#141210; --panel-raised:#1B1815; --line:#262320; --line-dashed:#3A3733;
+    --text:#F2EEE8; --body:#C9C3B9; --muted:#9A9287; --muted2:#6E6559;
+    --crit:#D9584C; --warn:#D6A23C; --ok:#6FA285; --accent:#C17F24; --accent-hi:#E0A050; --accent-ink:#12100C;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:Archivo,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.55;}
+  a{color:var(--accent);text-decoration:none;}
+  a:hover{color:var(--accent-hi);}
+  .wrap{max-width:820px;margin:0 auto;padding:0 20px 80px;}
+  .tool-hero{padding:40px 0 8px;}
+  .tool-hero h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:36px;line-height:1.1;margin:0 0 10px;text-transform:uppercase;}
+  .tool-hero p{font-size:15px;color:var(--body);margin:0;max-width:64ch;}
+  .back-link{font-size:13px;margin-bottom:20px;display:inline-block;}
+  .calc-box{background:var(--panel);border:1px solid var(--line);padding:24px;margin:24px 0;}
+  .field-row{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px;align-items:flex-end;}
+  .field{display:flex;flex-direction:column;gap:6px;flex:1;min-width:140px;}
+  .field label{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);}
+  .field input, .field select{background:var(--panel-raised);border:1px solid var(--line-dashed);color:var(--text);padding:10px 12px;font-size:14px;font-family:Archivo,sans-serif;}
+  .field input:focus, .field select:focus{outline:none;border-color:var(--accent);}
+  .result-box{background:var(--panel-raised);border-left:3px solid var(--accent);padding:16px 18px;margin-top:18px;}
+  .result-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:6px 0;border-bottom:1px solid var(--line);}
+  .result-row:last-child{border-bottom:none;}
+  .result-label{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);}
+  .result-value{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;color:var(--text);}
+  .result-value.big{font-size:34px;}
+  .note{font-size:12.5px;color:var(--muted2);margin-top:10px;line-height:1.5;}
+  .tab-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+  .tab-btn{font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);background:var(--panel);border:1px solid var(--line);padding:8px 16px;cursor:pointer;border-radius:20px;}
+  .tab-btn.active{color:var(--accent-ink);background:var(--accent);border-color:var(--accent);font-weight:600;}
+  .related-tools{margin-top:48px;padding-top:24px;border-top:1px solid var(--line);}
+  .related-tools h3{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;}
+  .related-links{display:flex;gap:16px;flex-wrap:wrap;}
+  .related-links a{font-size:14px;font-weight:600;}
+  table.ref-table{width:100%;border-collapse:collapse;margin-top:16px;font-size:13px;}
+  table.ref-table th, table.ref-table td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--line);}
+  table.ref-table th{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);}
+  .status-ok{color:var(--ok);}
+  .status-warn{color:var(--warn);}
+  .status-crit{color:var(--crit);}
+  .add-row-btn{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:var(--accent);background:transparent;border:1px solid var(--line-dashed);padding:8px 16px;cursor:pointer;}
+  .item-row{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;margin-bottom:10px;align-items:end;}
+  @media (max-width:600px){ .field-row{flex-direction:column;align-items:stretch;} .item-row{grid-template-columns:1fr 1fr;} }
+  @media (max-width:760px){
+    .toolkit-nav-inner{flex-wrap:wrap;height:auto;padding:14px 20px;row-gap:10px;}
+    .toolkit-nav-tools{overflow:visible;white-space:normal;flex:1 1 100%;order:3;height:auto;border-top:1px solid var(--line);padding-top:10px;}
+    .toolkit-nav-tool{height:auto;padding:6px 10px;}
+    .toolkit-nav-actions{order:2;margin-left:auto;}
+  }
+  .result-row{flex-wrap:wrap;}
+  html{overflow-x:hidden;}
+</style>
+</head>
+<body>
+
+<nav class="toolkit-nav">
+  <div class="toolkit-nav-inner">
+    <a class="toolkit-nav-brand" href="../index.html">Planning <span class="tnb-accent">Toolkit</span></a>
+    <div class="toolkit-nav-tools">
+      <a class="toolkit-nav-tool" href="../floatcheck.html">Analyse</a>
+      <a class="toolkit-nav-tool" href="../academy/index.html">Academy</a>
+      <a class="toolkit-nav-tool" href="../blog/index.html">Insights</a>
+      <span class="toolkit-nav-tool active">Tools</span>
+      <a class="toolkit-nav-tool" href="../melbourne.html">Melbourne</a>
+    </div>
+    <div class="toolkit-nav-actions">
+      <a class="toolkit-nav-login" href="#">Log in</a>
+      <a class="toolkit-nav-cta" href="../floatcheck.html">Get Started</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+  <a class="back-link" href="../tools.html">&larr; All tools</a>
+  <div class="tool-hero">
+    <h1>Unit Converter</h1>
+    <p>Length, weight, temperature, area, volume and speed &mdash; metric and imperial, converted instantly.</p>
+  </div>
+
+
+  <div class="tab-row" id="ucTabs">
+    <button class="tab-btn active" data-cat="length">Length</button>
+    <button class="tab-btn" data-cat="weight">Weight</button>
+    <button class="tab-btn" data-cat="temperature">Temperature</button>
+    <button class="tab-btn" data-cat="area">Area</button>
+    <button class="tab-btn" data-cat="volume">Volume</button>
+    <button class="tab-btn" data-cat="speed">Speed</button>
+  </div>
+  <div class="calc-box">
+    <div class="field-row">
+      <div class="field"><label>Value</label><input type="number" id="ucValue" value="1"></div>
+      <div class="field"><label>From</label><select id="ucFrom"></select></div>
+      <div class="field"><label>To</label><select id="ucTo"></select></div>
+    </div>
+    <div class="result-box"><div class="result-row"><span class="result-label">Result</span><span class="result-value big" id="ucOut">&mdash;</span></div></div>
+  </div>
+  
+
+  <div class="related-tools">
+    <h3>Related Tools</h3>
+    <div class="related-links">
+      <a href="percentage-calculator.html">Percentage Calculator</a>
+      <a href="concrete-volume-calculator.html">Concrete Volume Calculator</a>
+      <a href="gradient-calculator.html">Gradient Calculator</a>
+    </div>
+  </div>
+
+</div>
+
+<footer class="site-footer" style="max-width:820px;margin:0 auto;padding:0 20px 40px;">
+  <p>Part of the <a href="../tools.html">Planning Toolkit</a> tools library. Runs entirely in your browser &mdash; no upload, no server round-trip.</p>
+  <p><a href="https://github.com/sashreek33-sudo/floatcheck" target="_blank" rel="noopener">View source on GitHub</a> &middot; <a href="../privacy.html">Privacy</a> &middot; <a href="mailto:Sashreek33@gmail.com">Email</a>.</p>
+</footer>
+
+<script>
+
+  var UNITS = {
+    length: { base:'m', units: {
+      mm:0.001, cm:0.01, m:1, km:1000, inches:0.0254, feet:0.3048, yards:0.9144, miles:1609.344
+    }},
+    weight: { base:'kg', units: {
+      g:0.001, kg:1, tonnes:1000, oz:0.0283495, lb:0.453592, 'US tons':907.185
+    }},
+    area: { base:'m2', units: {
+      'mm\u00b2':0.000001, 'cm\u00b2':0.0001, 'm\u00b2':1, hectares:10000, acres:4046.8564224,
+      'sq ft':0.09290304, 'sq yards':0.83612736
+    }},
+    volume: { base:'L', units: {
+      mL:0.001, L:1, 'm\u00b3':1000, 'cubic feet':28.316846592, 'cubic yards':764.554857984, gallons:3.785411784
+    }},
+    speed: { base:'m/s', units: {
+      'm/s':1, 'km/h':0.277778, mph:0.44704, knots:0.514444
+    }}
+  };
+  var currentCat = 'length';
+
+  function populateSelects(){
+    var from = document.getElementById('ucFrom'), to = document.getElementById('ucTo');
+    from.innerHTML=''; to.innerHTML='';
+    if(currentCat==='temperature'){
+      ['Celsius','Fahrenheit','Kelvin'].forEach(function(u){
+        var o1=document.createElement('option'); o1.value=u; o1.textContent=u; from.appendChild(o1);
+        var o2=document.createElement('option'); o2.value=u; o2.textContent=u; to.appendChild(o2);
+      });
+      to.value='Fahrenheit';
+      return;
+    }
+    var keys = Object.keys(UNITS[currentCat].units);
+    keys.forEach(function(u){
+      var o1=document.createElement('option'); o1.value=u; o1.textContent=u; from.appendChild(o1);
+      var o2=document.createElement('option'); o2.value=u; o2.textContent=u; to.appendChild(o2);
+    });
+    to.selectedIndex = Math.min(1, keys.length-1);
+  }
+
+  function toCelsius(v,u){ if(u==='Celsius') return v; if(u==='Fahrenheit') return (v-32)*5/9; return v-273.15; }
+  function fromCelsius(c,u){ if(u==='Celsius') return c; if(u==='Fahrenheit') return c*9/5+32; return c+273.15; }
+
+  function convert(){
+    var val = parseFloat(document.getElementById('ucValue').value);
+    var fromU = document.getElementById('ucFrom').value, toU = document.getElementById('ucTo').value;
+    if(isNaN(val)){ document.getElementById('ucOut').textContent='—'; return; }
+    var result;
+    if(currentCat==='temperature'){
+      result = fromCelsius(toCelsius(val, fromU), toU);
+    } else {
+      var u = UNITS[currentCat].units;
+      result = val * u[fromU] / u[toU];
+    }
+    var rounded = Math.abs(result) >= 1000 ? Math.round(result*100)/100 : Math.round(result*100000)/100000;
+    document.getElementById('ucOut').textContent = rounded.toLocaleString() + ' ' + toU;
+  }
+
+  document.querySelectorAll('#ucTabs .tab-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('#ucTabs .tab-btn').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      currentCat = btn.dataset.cat;
+      populateSelects();
+      convert();
+    });
+  });
+  document.getElementById('ucValue').addEventListener('input', convert);
+  document.getElementById('ucFrom').addEventListener('change', convert);
+  document.getElementById('ucTo').addEventListener('change', convert);
+  populateSelects();
+  convert();
+  
+</script>
+</body>
+</html>

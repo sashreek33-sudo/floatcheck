@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Earned Value Calculator &mdash; Planning Toolkit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/toolkit-ui.css">
+<style>
+  :root{
+    --bg:#0C0C0C; --panel:#141210; --panel-raised:#1B1815; --line:#262320; --line-dashed:#3A3733;
+    --text:#F2EEE8; --body:#C9C3B9; --muted:#9A9287; --muted2:#6E6559;
+    --crit:#D9584C; --warn:#D6A23C; --ok:#6FA285; --accent:#C17F24; --accent-hi:#E0A050; --accent-ink:#12100C;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:Archivo,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.55;}
+  a{color:var(--accent);text-decoration:none;}
+  a:hover{color:var(--accent-hi);}
+  .wrap{max-width:820px;margin:0 auto;padding:0 20px 80px;}
+  .tool-hero{padding:40px 0 8px;}
+  .tool-hero h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:36px;line-height:1.1;margin:0 0 10px;text-transform:uppercase;}
+  .tool-hero p{font-size:15px;color:var(--body);margin:0;max-width:64ch;}
+  .back-link{font-size:13px;margin-bottom:20px;display:inline-block;}
+  .calc-box{background:var(--panel);border:1px solid var(--line);padding:24px;margin:24px 0;}
+  .field-row{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px;align-items:flex-end;}
+  .field{display:flex;flex-direction:column;gap:6px;flex:1;min-width:140px;}
+  .field label{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);}
+  .field input, .field select{background:var(--panel-raised);border:1px solid var(--line-dashed);color:var(--text);padding:10px 12px;font-size:14px;font-family:Archivo,sans-serif;}
+  .field input:focus, .field select:focus{outline:none;border-color:var(--accent);}
+  .result-box{background:var(--panel-raised);border-left:3px solid var(--accent);padding:16px 18px;margin-top:18px;}
+  .result-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:6px 0;border-bottom:1px solid var(--line);}
+  .result-row:last-child{border-bottom:none;}
+  .result-label{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);}
+  .result-value{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;color:var(--text);}
+  .result-value.big{font-size:34px;}
+  .note{font-size:12.5px;color:var(--muted2);margin-top:10px;line-height:1.5;}
+  .tab-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+  .tab-btn{font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);background:var(--panel);border:1px solid var(--line);padding:8px 16px;cursor:pointer;border-radius:20px;}
+  .tab-btn.active{color:var(--accent-ink);background:var(--accent);border-color:var(--accent);font-weight:600;}
+  .related-tools{margin-top:48px;padding-top:24px;border-top:1px solid var(--line);}
+  .related-tools h3{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;}
+  .related-links{display:flex;gap:16px;flex-wrap:wrap;}
+  .related-links a{font-size:14px;font-weight:600;}
+  table.ref-table{width:100%;border-collapse:collapse;margin-top:16px;font-size:13px;}
+  table.ref-table th, table.ref-table td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--line);}
+  table.ref-table th{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);}
+  .status-ok{color:var(--ok);}
+  .status-warn{color:var(--warn);}
+  .status-crit{color:var(--crit);}
+  .add-row-btn{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:var(--accent);background:transparent;border:1px solid var(--line-dashed);padding:8px 16px;cursor:pointer;}
+  .item-row{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;margin-bottom:10px;align-items:end;}
+  @media (max-width:600px){ .field-row{flex-direction:column;align-items:stretch;} .item-row{grid-template-columns:1fr 1fr;} }
+  @media (max-width:760px){
+    .toolkit-nav-inner{flex-wrap:wrap;height:auto;padding:14px 20px;row-gap:10px;}
+    .toolkit-nav-tools{overflow:visible;white-space:normal;flex:1 1 100%;order:3;height:auto;border-top:1px solid var(--line);padding-top:10px;}
+    .toolkit-nav-tool{height:auto;padding:6px 10px;}
+    .toolkit-nav-actions{order:2;margin-left:auto;}
+  }
+  .result-row{flex-wrap:wrap;}
+  html{overflow-x:hidden;}
+</style>
+</head>
+<body>
+
+<nav class="toolkit-nav">
+  <div class="toolkit-nav-inner">
+    <a class="toolkit-nav-brand" href="../index.html">Planning <span class="tnb-accent">Toolkit</span></a>
+    <div class="toolkit-nav-tools">
+      <a class="toolkit-nav-tool" href="../floatcheck.html">Analyse</a>
+      <a class="toolkit-nav-tool" href="../academy/index.html">Academy</a>
+      <a class="toolkit-nav-tool" href="../blog/index.html">Insights</a>
+      <span class="toolkit-nav-tool active">Tools</span>
+      <a class="toolkit-nav-tool" href="../melbourne.html">Melbourne</a>
+    </div>
+    <div class="toolkit-nav-actions">
+      <a class="toolkit-nav-login" href="#">Log in</a>
+      <a class="toolkit-nav-cta" href="../floatcheck.html">Get Started</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+  <a class="back-link" href="../tools.html">&larr; All tools</a>
+  <div class="tool-hero">
+    <h1>Earned Value Calculator</h1>
+    <p>Enter PV, EV, AC and BAC &mdash; get every standard EVM metric, computed instantly, no AI involved.</p>
+  </div>
+
+
+  <div class="calc-box">
+    <div class="field-row">
+      <div class="field"><label>Planned Value (PV / BCWS)</label><input type="number" id="evPV" value="100000"></div>
+      <div class="field"><label>Earned Value (EV / BCWP)</label><input type="number" id="evEV" value="90000"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Actual Cost (AC / ACWP)</label><input type="number" id="evAC" value="95000"></div>
+      <div class="field"><label>Budget at Completion (BAC)</label><input type="number" id="evBAC" value="500000"></div>
+    </div>
+    <div class="result-box">
+      <div class="result-row"><span class="result-label">Schedule Variance (SV = EV&minus;PV)</span><span class="result-value" id="evSV">&mdash;</span></div>
+      <div class="result-row"><span class="result-label">Cost Variance (CV = EV&minus;AC)</span><span class="result-value" id="evCV">&mdash;</span></div>
+      <div class="result-row"><span class="result-label">Schedule Performance Index (SPI)</span><span class="result-value" id="evSPI">&mdash;</span></div>
+      <div class="result-row"><span class="result-label">Cost Performance Index (CPI)</span><span class="result-value" id="evCPI">&mdash;</span></div>
+      <div class="result-row"><span class="result-label">Estimate at Completion (EAC)</span><span class="result-value" id="evEAC">&mdash;</span></div>
+      <div class="result-row"><span class="result-label">Estimate to Complete (ETC)</span><span class="result-value" id="evETC">&mdash;</span></div>
+      <div class="result-row"><span class="result-label">Variance at Completion (VAC)</span><span class="result-value" id="evVAC">&mdash;</span></div>
+      <div class="result-row"><span class="result-label">To-Complete Perf. Index (TCPI)</span><span class="result-value" id="evTCPI">&mdash;</span></div>
+    </div>
+    <div id="evMeaning" style="margin-top:16px;"></div>
+  </div>
+  
+
+  <div class="related-tools">
+    <h3>Related Tools</h3>
+    <div class="related-links">
+      <a href="schedule-variance-calculator.html">Schedule Variance Calculator</a>
+      <a href="float-calculator.html">Float Calculator</a>
+      <a href="../percent-complete.html">% Complete</a>
+    </div>
+  </div>
+
+</div>
+
+<footer class="site-footer" style="max-width:820px;margin:0 auto;padding:0 20px 40px;">
+  <p>Part of the <a href="../tools.html">Planning Toolkit</a> tools library. Runs entirely in your browser &mdash; no upload, no server round-trip.</p>
+  <p><a href="https://github.com/sashreek33-sudo/floatcheck" target="_blank" rel="noopener">View source on GitHub</a> &middot; <a href="../privacy.html">Privacy</a> &middot; <a href="mailto:Sashreek33@gmail.com">Email</a>.</p>
+</footer>
+
+<script>
+
+  function money(n){ return isFinite(n) ? '$'+Math.round(n).toLocaleString() : '—'; }
+  function idx(n){ return isFinite(n) ? n.toFixed(2) : '—'; }
+  function statusClass(n){ if(!isFinite(n)) return ''; if(n>1) return 'status-ok'; if(n>=0.9) return 'status-warn'; return 'status-crit'; }
+  function calc(){
+    var PV=parseFloat(document.getElementById('evPV').value)||0;
+    var EV=parseFloat(document.getElementById('evEV').value)||0;
+    var AC=parseFloat(document.getElementById('evAC').value)||0;
+    var BAC=parseFloat(document.getElementById('evBAC').value)||0;
+
+    var SV = EV-PV, CV = EV-AC;
+    var SPI = PV!==0 ? EV/PV : NaN;
+    var CPI = AC!==0 ? EV/AC : NaN;
+    var EAC = CPI!==0 && isFinite(CPI) ? BAC/CPI : NaN;
+    var ETC = EAC-AC;
+    var VAC = BAC-EAC;
+    var TCPI = (BAC-AC)!==0 ? (BAC-EV)/(BAC-AC) : NaN;
+
+    document.getElementById('evSV').innerHTML = '<span class="'+(SV>=0?'status-ok':'status-crit')+'">'+money(SV)+'</span>';
+    document.getElementById('evCV').innerHTML = '<span class="'+(CV>=0?'status-ok':'status-crit')+'">'+money(CV)+'</span>';
+    document.getElementById('evSPI').innerHTML = '<span class="'+statusClass(SPI)+'">'+idx(SPI)+'</span>';
+    document.getElementById('evCPI').innerHTML = '<span class="'+statusClass(CPI)+'">'+idx(CPI)+'</span>';
+    document.getElementById('evEAC').textContent = money(EAC);
+    document.getElementById('evETC').textContent = money(ETC);
+    document.getElementById('evVAC').innerHTML = '<span class="'+(VAC>=0?'status-ok':'status-crit')+'">'+money(VAC)+'</span>';
+    document.getElementById('evTCPI').textContent = idx(TCPI);
+
+    document.getElementById('evMeaning').innerHTML =
+      '<div class="note"><strong style="color:var(--text);">SV</strong>: positive means ahead of schedule (by value), negative means behind.</div>' +
+      '<div class="note"><strong style="color:var(--text);">CV</strong>: positive means under budget for work done, negative means over budget.</div>' +
+      '<div class="note"><strong style="color:var(--text);">SPI</strong>: &gt;1 ahead of schedule, &lt;1 behind &mdash; a ratio of value earned to value planned.</div>' +
+      '<div class="note"><strong style="color:var(--text);">CPI</strong>: &gt;1 under budget, &lt;1 over budget &mdash; a ratio of value earned to cost spent.</div>' +
+      '<div class="note"><strong style="color:var(--text);">EAC</strong>: the forecast total cost at completion if current cost efficiency continues.</div>' +
+      '<div class="note"><strong style="color:var(--text);">ETC</strong>: the forecast remaining cost needed to finish the project.</div>' +
+      '<div class="note"><strong style="color:var(--text);">VAC</strong>: the forecast variance between budget and the new estimate at completion.</div>' +
+      '<div class="note"><strong style="color:var(--text);">TCPI</strong>: the cost efficiency required on remaining work to still hit BAC.</div>';
+  }
+  ['evPV','evEV','evAC','evBAC'].forEach(function(id){ document.getElementById(id).addEventListener('input', calc); });
+  calc();
+  
+</script>
+</body>
+</html>

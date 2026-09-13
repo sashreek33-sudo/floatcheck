@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gradient Calculator &mdash; Planning Toolkit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/toolkit-ui.css">
+<style>
+  :root{
+    --bg:#0C0C0C; --panel:#141210; --panel-raised:#1B1815; --line:#262320; --line-dashed:#3A3733;
+    --text:#F2EEE8; --body:#C9C3B9; --muted:#9A9287; --muted2:#6E6559;
+    --crit:#D9584C; --warn:#D6A23C; --ok:#6FA285; --accent:#C17F24; --accent-hi:#E0A050; --accent-ink:#12100C;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:Archivo,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.55;}
+  a{color:var(--accent);text-decoration:none;}
+  a:hover{color:var(--accent-hi);}
+  .wrap{max-width:820px;margin:0 auto;padding:0 20px 80px;}
+  .tool-hero{padding:40px 0 8px;}
+  .tool-hero h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:36px;line-height:1.1;margin:0 0 10px;text-transform:uppercase;}
+  .tool-hero p{font-size:15px;color:var(--body);margin:0;max-width:64ch;}
+  .back-link{font-size:13px;margin-bottom:20px;display:inline-block;}
+  .calc-box{background:var(--panel);border:1px solid var(--line);padding:24px;margin:24px 0;}
+  .field-row{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px;align-items:flex-end;}
+  .field{display:flex;flex-direction:column;gap:6px;flex:1;min-width:140px;}
+  .field label{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);}
+  .field input, .field select{background:var(--panel-raised);border:1px solid var(--line-dashed);color:var(--text);padding:10px 12px;font-size:14px;font-family:Archivo,sans-serif;}
+  .field input:focus, .field select:focus{outline:none;border-color:var(--accent);}
+  .result-box{background:var(--panel-raised);border-left:3px solid var(--accent);padding:16px 18px;margin-top:18px;}
+  .result-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:6px 0;border-bottom:1px solid var(--line);}
+  .result-row:last-child{border-bottom:none;}
+  .result-label{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);}
+  .result-value{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;color:var(--text);}
+  .result-value.big{font-size:34px;}
+  .note{font-size:12.5px;color:var(--muted2);margin-top:10px;line-height:1.5;}
+  .tab-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+  .tab-btn{font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);background:var(--panel);border:1px solid var(--line);padding:8px 16px;cursor:pointer;border-radius:20px;}
+  .tab-btn.active{color:var(--accent-ink);background:var(--accent);border-color:var(--accent);font-weight:600;}
+  .related-tools{margin-top:48px;padding-top:24px;border-top:1px solid var(--line);}
+  .related-tools h3{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;}
+  .related-links{display:flex;gap:16px;flex-wrap:wrap;}
+  .related-links a{font-size:14px;font-weight:600;}
+  table.ref-table{width:100%;border-collapse:collapse;margin-top:16px;font-size:13px;}
+  table.ref-table th, table.ref-table td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--line);}
+  table.ref-table th{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);}
+  .status-ok{color:var(--ok);}
+  .status-warn{color:var(--warn);}
+  .status-crit{color:var(--crit);}
+  .add-row-btn{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:var(--accent);background:transparent;border:1px solid var(--line-dashed);padding:8px 16px;cursor:pointer;}
+  .item-row{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;margin-bottom:10px;align-items:end;}
+  @media (max-width:600px){ .field-row{flex-direction:column;align-items:stretch;} .item-row{grid-template-columns:1fr 1fr;} }
+  @media (max-width:760px){
+    .toolkit-nav-inner{flex-wrap:wrap;height:auto;padding:14px 20px;row-gap:10px;}
+    .toolkit-nav-tools{overflow:visible;white-space:normal;flex:1 1 100%;order:3;height:auto;border-top:1px solid var(--line);padding-top:10px;}
+    .toolkit-nav-tool{height:auto;padding:6px 10px;}
+    .toolkit-nav-actions{order:2;margin-left:auto;}
+  }
+  .result-row{flex-wrap:wrap;}
+  html{overflow-x:hidden;}
+</style>
+</head>
+<body>
+
+<nav class="toolkit-nav">
+  <div class="toolkit-nav-inner">
+    <a class="toolkit-nav-brand" href="../index.html">Planning <span class="tnb-accent">Toolkit</span></a>
+    <div class="toolkit-nav-tools">
+      <a class="toolkit-nav-tool" href="../floatcheck.html">Analyse</a>
+      <a class="toolkit-nav-tool" href="../academy/index.html">Academy</a>
+      <a class="toolkit-nav-tool" href="../blog/index.html">Insights</a>
+      <span class="toolkit-nav-tool active">Tools</span>
+      <a class="toolkit-nav-tool" href="../melbourne.html">Melbourne</a>
+    </div>
+    <div class="toolkit-nav-actions">
+      <a class="toolkit-nav-login" href="#">Log in</a>
+      <a class="toolkit-nav-cta" href="../floatcheck.html">Get Started</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+  <a class="back-link" href="../tools.html">&larr; All tools</a>
+  <div class="tool-hero">
+    <h1>Gradient Calculator</h1>
+    <p>Rise, run, gradient % and angle &mdash; convert between them for drainage, roads, ramps and footpaths.</p>
+  </div>
+
+
+  <div class="tab-row" id="gcTabs">
+    <button class="tab-btn active" data-mode="rr">Rise + Run</button>
+    <button class="tab-btn" data-mode="gr">Gradient % + Run</button>
+    <button class="tab-btn" data-mode="gh">Gradient % + Rise</button>
+    <button class="tab-btn" data-mode="ang">Angle</button>
+  </div>
+
+  <div class="calc-box">
+    <div id="gcFields"></div>
+    <div style="margin:18px 0;"><svg id="gcSvg" viewBox="0 0 300 160" style="width:100%;max-width:320px;height:auto;background:var(--panel-raised);border:1px solid var(--line);"></svg></div>
+    <div class="result-box">
+      <div class="result-row"><span class="result-label">Gradient (%)</span><span class="result-value big" id="gcPct">&mdash;</span></div>
+      <div class="result-row"><span class="result-label">Ratio</span><span class="result-value" id="gcRatio">&mdash;</span></div>
+      <div class="result-row"><span class="result-label">Angle</span><span class="result-value" id="gcAngle">&mdash;</span></div>
+      <div class="result-row"><span class="result-label">mm per m</span><span class="result-value" id="gcMmPerM">&mdash;</span></div>
+    </div>
+  </div>
+  
+
+  <div class="related-tools">
+    <h3>Related Tools</h3>
+    <div class="related-links">
+      <a href="excavation-calculator.html">Excavation Calculator</a>
+      <a href="unit-converter.html">Unit Converter</a>
+      <a href="concrete-volume-calculator.html">Concrete Volume Calculator</a>
+    </div>
+  </div>
+
+</div>
+
+<footer class="site-footer" style="max-width:820px;margin:0 auto;padding:0 20px 40px;">
+  <p>Part of the <a href="../tools.html">Planning Toolkit</a> tools library. Runs entirely in your browser &mdash; no upload, no server round-trip.</p>
+  <p><a href="https://github.com/sashreek33-sudo/floatcheck" target="_blank" rel="noopener">View source on GitHub</a> &middot; <a href="../privacy.html">Privacy</a> &middot; <a href="mailto:Sashreek33@gmail.com">Email</a>.</p>
+</footer>
+
+<script>
+
+  var mode = 'rr';
+  var FIELD_DEFS = {
+    rr: [ ['Rise (m)','gRise','0.6'], ['Run (m)','gRun','12'] ],
+    gr: [ ['Gradient (%)','gPct','5'], ['Run (m)','gRun2','12'] ],
+    gh: [ ['Gradient (%)','gPct2','5'], ['Rise (m)','gRise2','0.6'] ],
+    ang: [ ['Angle (degrees)','gAngle','2.86'] ]
+  };
+  function renderFields(){
+    var el = document.getElementById('gcFields');
+    el.innerHTML = '<div class="field-row">' + FIELD_DEFS[mode].map(function(d){
+      return '<div class="field"><label>'+d[0]+'</label><input type="number" id="'+d[1]+'" value="'+d[2]+'" step="any"></div>';
+    }).join('') + '</div>';
+    FIELD_DEFS[mode].forEach(function(d){ document.getElementById(d[1]).addEventListener('input', calc); });
+  }
+  function val(id){ return parseFloat(document.getElementById(id).value)||0; }
+  function calc(){
+    var rise, run, pct, angleDeg;
+    if(mode==='rr'){ rise=val('gRise'); run=val('gRun'); pct = run!==0 ? (rise/run)*100 : 0; }
+    else if(mode==='gr'){ pct=val('gPct'); run=val('gRun2'); rise = run*pct/100; }
+    else if(mode==='gh'){ pct=val('gPct2'); rise=val('gRise2'); run = pct!==0 ? rise/(pct/100) : 0; }
+    else if(mode==='ang'){ angleDeg=val('gAngle'); pct = Math.tan(angleDeg*Math.PI/180)*100; rise=pct/100; run=1; }
+
+    if(mode!=='ang'){ angleDeg = Math.atan2(rise, run)*180/Math.PI; }
+
+    document.getElementById('gcPct').textContent = pct.toFixed(2) + '%';
+    var ratioRun = pct!==0 ? (100/pct) : 0;
+    document.getElementById('gcRatio').textContent = '1 : ' + ratioRun.toFixed(2);
+    document.getElementById('gcAngle').textContent = angleDeg.toFixed(2) + '\u00b0';
+    document.getElementById('gcMmPerM').textContent = (pct*10).toFixed(1) + ' mm/m';
+    drawSvg(rise, run);
+  }
+  function drawSvg(rise, run){
+    var svg = document.getElementById('gcSvg');
+    var stroke='#C17F24', txt='#C9C3B9';
+    var s = '<line x1="30" y1="130" x2="270" y2="130" stroke="#3A3733" stroke-width="1"/>';
+    s += '<line x1="30" y1="130" x2="270" y2="40" stroke="'+stroke+'" stroke-width="2.5"/>';
+    s += '<line x1="270" y1="130" x2="270" y2="40" stroke="#3A3733" stroke-width="1" stroke-dasharray="3 3"/>';
+    s += '<text x="150" y="150" fill="'+txt+'" font-size="12" text-anchor="middle">Run</text>';
+    s += '<text x="285" y="90" fill="'+txt+'" font-size="12" text-anchor="middle" transform="rotate(90 285 90)">Rise</text>';
+    svg.innerHTML = s;
+  }
+  document.querySelectorAll('#gcTabs .tab-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('#gcTabs .tab-btn').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      mode = btn.dataset.mode;
+      renderFields(); calc();
+    });
+  });
+  renderFields(); calc();
+  
+</script>
+</body>
+</html>

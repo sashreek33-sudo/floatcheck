@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Procurement Lead Time Calculator &mdash; Planning Toolkit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/toolkit-ui.css">
+<style>
+  :root{
+    --bg:#0C0C0C; --panel:#141210; --panel-raised:#1B1815; --line:#262320; --line-dashed:#3A3733;
+    --text:#F2EEE8; --body:#C9C3B9; --muted:#9A9287; --muted2:#6E6559;
+    --crit:#D9584C; --warn:#D6A23C; --ok:#6FA285; --accent:#C17F24; --accent-hi:#E0A050; --accent-ink:#12100C;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:Archivo,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.55;}
+  a{color:var(--accent);text-decoration:none;}
+  a:hover{color:var(--accent-hi);}
+  .wrap{max-width:820px;margin:0 auto;padding:0 20px 80px;}
+  .tool-hero{padding:40px 0 8px;}
+  .tool-hero h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:36px;line-height:1.1;margin:0 0 10px;text-transform:uppercase;}
+  .tool-hero p{font-size:15px;color:var(--body);margin:0;max-width:64ch;}
+  .back-link{font-size:13px;margin-bottom:20px;display:inline-block;}
+  .calc-box{background:var(--panel);border:1px solid var(--line);padding:24px;margin:24px 0;}
+  .field-row{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px;align-items:flex-end;}
+  .field{display:flex;flex-direction:column;gap:6px;flex:1;min-width:140px;}
+  .field label{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);}
+  .field input, .field select{background:var(--panel-raised);border:1px solid var(--line-dashed);color:var(--text);padding:10px 12px;font-size:14px;font-family:Archivo,sans-serif;}
+  .field input:focus, .field select:focus{outline:none;border-color:var(--accent);}
+  .result-box{background:var(--panel-raised);border-left:3px solid var(--accent);padding:16px 18px;margin-top:18px;}
+  .result-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:6px 0;border-bottom:1px solid var(--line);}
+  .result-row:last-child{border-bottom:none;}
+  .result-label{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);}
+  .result-value{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;color:var(--text);}
+  .result-value.big{font-size:34px;}
+  .note{font-size:12.5px;color:var(--muted2);margin-top:10px;line-height:1.5;}
+  .tab-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+  .tab-btn{font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);background:var(--panel);border:1px solid var(--line);padding:8px 16px;cursor:pointer;border-radius:20px;}
+  .tab-btn.active{color:var(--accent-ink);background:var(--accent);border-color:var(--accent);font-weight:600;}
+  .related-tools{margin-top:48px;padding-top:24px;border-top:1px solid var(--line);}
+  .related-tools h3{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;}
+  .related-links{display:flex;gap:16px;flex-wrap:wrap;}
+  .related-links a{font-size:14px;font-weight:600;}
+  table.ref-table{width:100%;border-collapse:collapse;margin-top:16px;font-size:13px;}
+  table.ref-table th, table.ref-table td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--line);}
+  table.ref-table th{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);}
+  .status-ok{color:var(--ok);}
+  .status-warn{color:var(--warn);}
+  .status-crit{color:var(--crit);}
+  .add-row-btn{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:var(--accent);background:transparent;border:1px solid var(--line-dashed);padding:8px 16px;cursor:pointer;}
+  .item-row{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;margin-bottom:10px;align-items:end;}
+  @media (max-width:600px){ .field-row{flex-direction:column;align-items:stretch;} .item-row{grid-template-columns:1fr 1fr;} }
+  @media (max-width:760px){
+    .toolkit-nav-inner{flex-wrap:wrap;height:auto;padding:14px 20px;row-gap:10px;}
+    .toolkit-nav-tools{overflow:visible;white-space:normal;flex:1 1 100%;order:3;height:auto;border-top:1px solid var(--line);padding-top:10px;}
+    .toolkit-nav-tool{height:auto;padding:6px 10px;}
+    .toolkit-nav-actions{order:2;margin-left:auto;}
+  }
+  .result-row{flex-wrap:wrap;}
+  html{overflow-x:hidden;}
+</style>
+</head>
+<body>
+
+<nav class="toolkit-nav">
+  <div class="toolkit-nav-inner">
+    <a class="toolkit-nav-brand" href="../index.html">Planning <span class="tnb-accent">Toolkit</span></a>
+    <div class="toolkit-nav-tools">
+      <a class="toolkit-nav-tool" href="../floatcheck.html">Analyse</a>
+      <a class="toolkit-nav-tool" href="../academy/index.html">Academy</a>
+      <a class="toolkit-nav-tool" href="../blog/index.html">Insights</a>
+      <span class="toolkit-nav-tool active">Tools</span>
+      <a class="toolkit-nav-tool" href="../melbourne.html">Melbourne</a>
+    </div>
+    <div class="toolkit-nav-actions">
+      <a class="toolkit-nav-login" href="#">Log in</a>
+      <a class="toolkit-nav-cta" href="../floatcheck.html">Get Started</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+  <a class="back-link" href="../tools.html">&larr; All tools</a>
+  <div class="tool-hero">
+    <h1>Procurement Lead Time Calculator</h1>
+    <p>Order-by and required-by dates from a lead time in weeks &mdash; working days only, no XER file needed.</p>
+  </div>
+
+
+  <div class="tab-row" id="plTabs">
+    <button class="tab-btn active" data-mode="orderby">Required Date &rarr; Order By</button>
+    <button class="tab-btn" data-mode="reqby">Order Date &rarr; Required By</button>
+  </div>
+
+  <div class="calc-box" id="mode-orderby">
+    <div class="field-row">
+      <div class="field"><label>Required on Site Date</label><input type="date" id="plReq"></div>
+      <div class="field"><label>Lead Time (weeks)</label><input type="number" id="plWeeks" value="12"></div>
+    </div>
+    <div class="result-box"><div class="result-row"><span class="result-label">Order By</span><span class="result-value big" id="plOrderBy">&mdash;</span></div></div>
+    <div style="margin-top:18px;"><svg id="plSvg1" viewBox="0 0 400 70" style="width:100%;max-width:420px;height:auto;"></svg></div>
+  </div>
+
+  <div class="calc-box" id="mode-reqby" style="display:none;">
+    <div class="field-row">
+      <div class="field"><label>Order Date</label><input type="date" id="plOrderDate"></div>
+      <div class="field"><label>Lead Time (weeks)</label><input type="number" id="plWeeks2" value="12"></div>
+    </div>
+    <div class="result-box"><div class="result-row"><span class="result-label">Required By</span><span class="result-value big" id="plReqBy">&mdash;</span></div></div>
+    <div style="margin-top:18px;"><svg id="plSvg2" viewBox="0 0 400 70" style="width:100%;max-width:420px;height:auto;"></svg></div>
+  </div>
+
+  <div class="calc-box">
+    <div class="result-label" style="margin-bottom:12px;">Multiple Items &mdash; Ranked by Urgency</div>
+    <div id="plItems"></div>
+    <button class="add-row-btn" id="plAddRow">+ Add Item</button>
+    <table class="ref-table" style="margin-top:18px;">
+      <thead><tr><th>Item</th><th>Required On Site</th><th>Order By</th><th>Days Remaining</th></tr></thead>
+      <tbody id="plRanked"></tbody>
+    </table>
+  </div>
+  <div class="note">Uses working days and excludes Victorian public holidays (2025&ndash;2027), same list as the Working Days Calculator.</div>
+  
+
+  <div class="related-tools">
+    <h3>Related Tools</h3>
+    <div class="related-links">
+      <a href="working-days-calculator.html">Working Days Calculator</a>
+      <a href="../leadtime.html">Lead Time</a>
+      <a href="float-calculator.html">Float Calculator</a>
+    </div>
+  </div>
+
+</div>
+
+<footer class="site-footer" style="max-width:820px;margin:0 auto;padding:0 20px 40px;">
+  <p>Part of the <a href="../tools.html">Planning Toolkit</a> tools library. Runs entirely in your browser &mdash; no upload, no server round-trip.</p>
+  <p><a href="https://github.com/sashreek33-sudo/floatcheck" target="_blank" rel="noopener">View source on GitHub</a> &middot; <a href="../privacy.html">Privacy</a> &middot; <a href="mailto:Sashreek33@gmail.com">Email</a>.</p>
+</footer>
+
+<script>
+
+  var VIC_HOLIDAYS = {
+    '2025-01-01':"New Year's Day", '2025-01-27':'Australia Day (observed)', '2025-03-10':'Labour Day',
+    '2025-04-18':'Good Friday', '2025-04-19':'Easter Saturday', '2025-04-20':'Easter Sunday', '2025-04-21':'Easter Monday',
+    '2025-04-25':'ANZAC Day', '2025-06-09':"King's Birthday", '2025-09-26':'AFL Grand Final Friday',
+    '2025-11-04':'Melbourne Cup Day', '2025-12-25':'Christmas Day', '2025-12-26':'Boxing Day',
+    '2026-01-01':"New Year's Day", '2026-01-26':'Australia Day', '2026-03-09':'Labour Day',
+    '2026-04-03':'Good Friday', '2026-04-04':'Easter Saturday', '2026-04-05':'Easter Sunday', '2026-04-06':'Easter Monday',
+    '2026-04-25':'ANZAC Day', '2026-06-08':"King's Birthday", '2026-09-25':'AFL Grand Final Friday',
+    '2026-11-03':'Melbourne Cup Day', '2026-12-25':'Christmas Day', '2026-12-26':'Boxing Day', '2026-12-28':'Boxing Day (substitute)',
+    '2027-01-01':"New Year's Day", '2027-01-26':'Australia Day', '2027-03-08':'Labour Day',
+    '2027-03-26':'Good Friday', '2027-03-27':'Easter Saturday', '2027-03-28':'Easter Sunday', '2027-03-29':'Easter Monday',
+    '2027-04-25':'ANZAC Day', '2027-06-14':"King's Birthday", '2027-09-24':'AFL Grand Final Friday',
+    '2027-11-02':'Melbourne Cup Day', '2027-12-25':'Christmas Day', '2027-12-27':'Christmas Day (substitute)',
+    '2027-12-26':'Boxing Day', '2027-12-28':'Boxing Day (substitute)'
+  };
+  function isWeekend(d){ var wd=d.getUTCDay(); return wd===0||wd===6; }
+  function dkey(d){ return d.toISOString().slice(0,10); }
+  function isWorkday(d){ return !isWeekend(d) && !VIC_HOLIDAYS[dkey(d)]; }
+  function addWorkdays(start, n){
+    var d = new Date(start.getTime());
+    var dir = n>=0?1:-1; var remaining = Math.abs(n);
+    while(remaining>0){ d.setUTCDate(d.getUTCDate()+dir); if(isWorkday(d)) remaining--; }
+    return d;
+  }
+  function workdaysBetween(d1, d2){
+    var lo = d1<=d2?d1:d2, hi = d1<=d2?d2:d1;
+    var count=0; var cur=new Date(lo.getTime());
+    while(cur<hi){ cur.setUTCDate(cur.getUTCDate()+1); if(isWorkday(cur)) count++; }
+    return d1<=d2 ? count : -count;
+  }
+  function holidaysInRange(d1,d2){
+    var lo=d1<=d2?d1:d2, hi=d1<=d2?d2:d1;
+    var out=[]; var cur=new Date(lo.getTime());
+    while(cur<=hi){ var k=dkey(cur); if(VIC_HOLIDAYS[k]) out.push(k+' \u2014 '+VIC_HOLIDAYS[k]); cur.setUTCDate(cur.getUTCDate()+1); }
+    return out;
+  }
+  function parseD(v){ if(!v) return null; var p=v.split('-'); return new Date(Date.UTC(+p[0],+p[1]-1,+p[2])); }
+  function fmtD(d){ return d.toISOString().slice(0,10); }
+
+  function calc1(){
+    var req=parseD(document.getElementById('plReq').value), weeks=parseFloat(document.getElementById('plWeeks').value);
+    if(!req||isNaN(weeks)) return;
+    var orderBy = addWorkdays(req, -Math.round(weeks*5));
+    document.getElementById('plOrderBy').textContent = fmtD(orderBy);
+    drawTimeline('plSvg1', orderBy, req);
+  }
+  function calc2(){
+    var ord=parseD(document.getElementById('plOrderDate').value), weeks=parseFloat(document.getElementById('plWeeks2').value);
+    if(!ord||isNaN(weeks)) return;
+    var reqBy = addWorkdays(ord, Math.round(weeks*5));
+    document.getElementById('plReqBy').textContent = fmtD(reqBy);
+    drawTimeline('plSvg2', ord, reqBy);
+  }
+  function drawTimeline(svgId, start, end){
+    var svg = document.getElementById(svgId);
+    var stroke='#C17F24';
+    var s = '<line x1="20" y1="35" x2="380" y2="35" stroke="#3A3733" stroke-width="2"/>';
+    s += '<circle cx="20" cy="35" r="6" fill="'+stroke+'"/><text x="20" y="60" fill="#C9C3B9" font-size="11" text-anchor="middle">Order<br/></text>';
+    s += '<text x="20" y="60" fill="#C9C3B9" font-size="11" text-anchor="middle">'+fmtD(start)+'</text>';
+    s += '<circle cx="380" cy="35" r="6" fill="'+stroke+'"/>';
+    s += '<text x="380" y="60" fill="#C9C3B9" font-size="11" text-anchor="middle">'+fmtD(end)+'</text>';
+    s += '<text x="200" y="20" fill="#9A9287" font-size="11" text-anchor="middle">Lead Time</text>';
+    s += '<text x="200" y="60" fill="#6E6559" font-size="10" text-anchor="middle">On Site</text>';
+    svg.innerHTML = s;
+  }
+  document.getElementById('plReq').addEventListener('input', calc1);
+  document.getElementById('plWeeks').addEventListener('input', calc1);
+  document.getElementById('plOrderDate').addEventListener('input', calc2);
+  document.getElementById('plWeeks2').addEventListener('input', calc2);
+  document.querySelectorAll('#plTabs .tab-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('#plTabs .tab-btn').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      document.getElementById('mode-orderby').style.display = btn.dataset.mode==='orderby' ? '' : 'none';
+      document.getElementById('mode-reqby').style.display = btn.dataset.mode==='reqby' ? '' : 'none';
+    });
+  });
+
+  var itemCount = 0;
+  var items = [];
+  function addItem(name, reqDate, weeks){
+    var id = itemCount++;
+    items.push({id:id, name:name, reqDate:reqDate, weeks:weeks});
+    renderItems();
+  }
+  function renderItems(){
+    var el = document.getElementById('plItems');
+    el.innerHTML = items.map(function(it){
+      return '<div class="item-row">' +
+        '<div class="field"><label>Item</label><input type="text" value="'+it.name+'" data-id="'+it.id+'" data-field="name"></div>' +
+        '<div class="field"><label>Required On Site</label><input type="date" value="'+it.reqDate+'" data-id="'+it.id+'" data-field="reqDate"></div>' +
+        '<div class="field"><label>Lead (weeks)</label><input type="number" value="'+it.weeks+'" data-id="'+it.id+'" data-field="weeks"></div>' +
+        '<button class="add-row-btn" data-remove="'+it.id+'">&times;</button>' +
+      '</div>';
+    }).join('');
+    el.querySelectorAll('input').forEach(function(inp){
+      inp.addEventListener('input', function(){
+        var id = parseInt(inp.dataset.id, 10);
+        var item = items.find(function(x){ return x.id===id; });
+        if(!item) return;
+        item[inp.dataset.field] = inp.dataset.field==='weeks' ? parseFloat(inp.value) : inp.value;
+        renderRanked();
+      });
+    });
+    el.querySelectorAll('[data-remove]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var id = parseInt(btn.dataset.remove, 10);
+        items = items.filter(function(x){ return x.id!==id; });
+        renderItems(); renderRanked();
+      });
+    });
+    renderRanked();
+  }
+  function renderRanked(){
+    var today = new Date(); today = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+    var rows = items.map(function(it){
+      var req = parseD(it.reqDate);
+      if(!req || isNaN(it.weeks)) return null;
+      var orderBy = addWorkdays(req, -Math.round(it.weeks*5));
+      var daysRemaining = workdaysBetween(today, orderBy);
+      return { name: it.name||'(unnamed)', req: fmtD(req), orderBy: fmtD(orderBy), daysRemaining: daysRemaining };
+    }).filter(Boolean);
+    rows.sort(function(a,b){ return a.daysRemaining - b.daysRemaining; });
+    document.getElementById('plRanked').innerHTML = rows.length ? rows.map(function(r){
+      var overdue = r.daysRemaining < 0;
+      return '<tr' + (overdue ? ' style="color:var(--crit);"' : '') + '><td>'+r.name+'</td><td>'+r.req+'</td><td>'+r.orderBy+'</td><td>'+(overdue ? Math.abs(r.daysRemaining)+'d OVERDUE' : r.daysRemaining+'d')+'</td></tr>';
+    }).join('') : '<tr><td colspan="4" style="color:var(--muted);text-align:center;">No items added yet.</td></tr>';
+  }
+  document.getElementById('plAddRow').addEventListener('click', function(){
+    var d = new Date(); d.setUTCDate(d.getUTCDate()+60);
+    addItem('New item', fmtD(d), 8);
+  });
+
+  var t0 = new Date(); t0.setUTCDate(t0.getUTCDate()+90);
+  document.getElementById('plReq').value = fmtD(t0);
+  document.getElementById('plOrderDate').value = fmtD(new Date());
+  calc1(); calc2();
+  addItem('Structural steel', fmtD(new Date(Date.now()+120*86400000)), 16);
+  addItem('Switchboard', fmtD(new Date(Date.now()+60*86400000)), 24);
+  
+</script>
+</body>
+</html>

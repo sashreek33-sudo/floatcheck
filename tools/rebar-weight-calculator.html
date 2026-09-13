@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rebar Weight Calculator &mdash; Planning Toolkit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/toolkit-ui.css">
+<style>
+  :root{
+    --bg:#0C0C0C; --panel:#141210; --panel-raised:#1B1815; --line:#262320; --line-dashed:#3A3733;
+    --text:#F2EEE8; --body:#C9C3B9; --muted:#9A9287; --muted2:#6E6559;
+    --crit:#D9584C; --warn:#D6A23C; --ok:#6FA285; --accent:#C17F24; --accent-hi:#E0A050; --accent-ink:#12100C;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:Archivo,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.55;}
+  a{color:var(--accent);text-decoration:none;}
+  a:hover{color:var(--accent-hi);}
+  .wrap{max-width:820px;margin:0 auto;padding:0 20px 80px;}
+  .tool-hero{padding:40px 0 8px;}
+  .tool-hero h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:36px;line-height:1.1;margin:0 0 10px;text-transform:uppercase;}
+  .tool-hero p{font-size:15px;color:var(--body);margin:0;max-width:64ch;}
+  .back-link{font-size:13px;margin-bottom:20px;display:inline-block;}
+  .calc-box{background:var(--panel);border:1px solid var(--line);padding:24px;margin:24px 0;}
+  .field-row{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px;align-items:flex-end;}
+  .field{display:flex;flex-direction:column;gap:6px;flex:1;min-width:140px;}
+  .field label{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);}
+  .field input, .field select{background:var(--panel-raised);border:1px solid var(--line-dashed);color:var(--text);padding:10px 12px;font-size:14px;font-family:Archivo,sans-serif;}
+  .field input:focus, .field select:focus{outline:none;border-color:var(--accent);}
+  .result-box{background:var(--panel-raised);border-left:3px solid var(--accent);padding:16px 18px;margin-top:18px;}
+  .result-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:6px 0;border-bottom:1px solid var(--line);}
+  .result-row:last-child{border-bottom:none;}
+  .result-label{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);}
+  .result-value{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;color:var(--text);}
+  .result-value.big{font-size:34px;}
+  .note{font-size:12.5px;color:var(--muted2);margin-top:10px;line-height:1.5;}
+  .tab-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+  .tab-btn{font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);background:var(--panel);border:1px solid var(--line);padding:8px 16px;cursor:pointer;border-radius:20px;}
+  .tab-btn.active{color:var(--accent-ink);background:var(--accent);border-color:var(--accent);font-weight:600;}
+  .related-tools{margin-top:48px;padding-top:24px;border-top:1px solid var(--line);}
+  .related-tools h3{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;}
+  .related-links{display:flex;gap:16px;flex-wrap:wrap;}
+  .related-links a{font-size:14px;font-weight:600;}
+  table.ref-table{width:100%;border-collapse:collapse;margin-top:16px;font-size:13px;}
+  table.ref-table th, table.ref-table td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--line);}
+  table.ref-table th{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);}
+  .status-ok{color:var(--ok);}
+  .status-warn{color:var(--warn);}
+  .status-crit{color:var(--crit);}
+  .add-row-btn{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:var(--accent);background:transparent;border:1px solid var(--line-dashed);padding:8px 16px;cursor:pointer;}
+  .item-row{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;margin-bottom:10px;align-items:end;}
+  @media (max-width:600px){ .field-row{flex-direction:column;align-items:stretch;} .item-row{grid-template-columns:1fr 1fr;} }
+  @media (max-width:760px){
+    .toolkit-nav-inner{flex-wrap:wrap;height:auto;padding:14px 20px;row-gap:10px;}
+    .toolkit-nav-tools{overflow:visible;white-space:normal;flex:1 1 100%;order:3;height:auto;border-top:1px solid var(--line);padding-top:10px;}
+    .toolkit-nav-tool{height:auto;padding:6px 10px;}
+    .toolkit-nav-actions{order:2;margin-left:auto;}
+  }
+  .result-row{flex-wrap:wrap;}
+  html{overflow-x:hidden;}
+</style>
+</head>
+<body>
+
+<nav class="toolkit-nav">
+  <div class="toolkit-nav-inner">
+    <a class="toolkit-nav-brand" href="../index.html">Planning <span class="tnb-accent">Toolkit</span></a>
+    <div class="toolkit-nav-tools">
+      <a class="toolkit-nav-tool" href="../floatcheck.html">Analyse</a>
+      <a class="toolkit-nav-tool" href="../academy/index.html">Academy</a>
+      <a class="toolkit-nav-tool" href="../blog/index.html">Insights</a>
+      <span class="toolkit-nav-tool active">Tools</span>
+      <a class="toolkit-nav-tool" href="../melbourne.html">Melbourne</a>
+    </div>
+    <div class="toolkit-nav-actions">
+      <a class="toolkit-nav-login" href="#">Log in</a>
+      <a class="toolkit-nav-cta" href="../floatcheck.html">Get Started</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+  <a class="back-link" href="../tools.html">&larr; All tools</a>
+  <div class="tool-hero">
+    <h1>Rebar Weight Calculator</h1>
+    <p>Total reinforcement weight from bar size, length and count &mdash; using standard Australian bar masses.</p>
+  </div>
+
+
+  <div class="calc-box">
+    <div class="field-row">
+      <div class="field"><label>Bar Size</label>
+        <select id="rwSize">
+          <option value="N10">N10</option><option value="N12">N12</option><option value="N16" selected>N16</option>
+          <option value="N20">N20</option><option value="N24">N24</option><option value="N28">N28</option>
+          <option value="N32">N32</option><option value="N36">N36</option>
+        </select>
+      </div>
+      <div class="field"><label>Length per Bar (m)</label><input type="number" id="rwLen" value="6"></div>
+      <div class="field"><label>Number of Bars</label><input type="number" id="rwCount" value="50"></div>
+    </div>
+    <div class="result-box">
+      <div class="result-row"><span class="result-label">Mass per Metre</span><span class="result-value" id="rwPerM">&mdash;</span></div>
+      <div class="result-row"><span class="result-label">Total Weight (kg)</span><span class="result-value big" id="rwKg">&mdash;</span></div>
+      <div class="result-row"><span class="result-label">Total Weight (tonnes)</span><span class="result-value" id="rwT">&mdash;</span></div>
+    </div>
+  </div>
+
+  <div class="calc-box">
+    <div class="result-label" style="margin-bottom:10px;">Reference &mdash; Standard Australian Bar Mass (AS/NZS 4671)</div>
+    <table class="ref-table">
+      <thead><tr><th>Bar Size</th><th>Nominal Diameter</th><th>Mass per Metre</th></tr></thead>
+      <tbody id="rwTable"></tbody>
+    </table>
+  </div>
+  
+
+  <div class="related-tools">
+    <h3>Related Tools</h3>
+    <div class="related-links">
+      <a href="concrete-volume-calculator.html">Concrete Volume Calculator</a>
+      <a href="concrete-cost-calculator.html">Concrete Cost Calculator</a>
+      <a href="unit-converter.html">Unit Converter</a>
+    </div>
+  </div>
+
+</div>
+
+<footer class="site-footer" style="max-width:820px;margin:0 auto;padding:0 20px 40px;">
+  <p>Part of the <a href="../tools.html">Planning Toolkit</a> tools library. Runs entirely in your browser &mdash; no upload, no server round-trip.</p>
+  <p><a href="https://github.com/sashreek33-sudo/floatcheck" target="_blank" rel="noopener">View source on GitHub</a> &middot; <a href="../privacy.html">Privacy</a> &middot; <a href="mailto:Sashreek33@gmail.com">Email</a>.</p>
+</footer>
+
+<script>
+
+  var BARS = {
+    N10:{dia:10, mass:0.617}, N12:{dia:12, mass:0.888}, N16:{dia:16, mass:1.58},
+    N20:{dia:20, mass:2.47}, N24:{dia:24, mass:3.55}, N28:{dia:28, mass:4.83},
+    N32:{dia:32, mass:6.31}, N36:{dia:36, mass:7.99}
+  };
+  document.getElementById('rwTable').innerHTML = Object.keys(BARS).map(function(k){
+    var b=BARS[k]; return '<tr><td>'+k+'</td><td>'+b.dia+' mm</td><td>'+b.mass.toFixed(3)+' kg/m</td></tr>';
+  }).join('');
+  function calc(){
+    var size = document.getElementById('rwSize').value;
+    var len = parseFloat(document.getElementById('rwLen').value)||0;
+    var count = parseFloat(document.getElementById('rwCount').value)||0;
+    var perM = BARS[size].mass;
+    var totalKg = perM*len*count;
+    document.getElementById('rwPerM').textContent = perM.toFixed(3) + ' kg/m';
+    document.getElementById('rwKg').textContent = totalKg.toFixed(1) + ' kg';
+    document.getElementById('rwT').textContent = (totalKg/1000).toFixed(3) + ' t';
+  }
+  ['rwSize','rwLen','rwCount'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', calc);
+    document.getElementById(id).addEventListener('change', calc);
+  });
+  calc();
+  
+</script>
+</body>
+</html>
