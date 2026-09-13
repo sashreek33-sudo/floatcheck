@@ -36,6 +36,15 @@
   .course-card-v2:hover{border-color:#C17F24;color:#F2EEE8;}
   .footer-link-v2:hover{color:#F2EEE8;}
 
+  .mel-preview-card{transition:border-color .2s ease;}
+  .mel-preview-card:hover{border-color:#C17F24;}
+  .mel-preview-card .mel-preview-overlay{transition:background .2s ease;}
+  .mel-preview-card:hover .mel-preview-overlay{background:rgba(12,12,12,0.55);}
+  .mel-preview-card .mel-preview-cta{transition:background .2s ease;}
+  .mel-preview-card:hover .mel-preview-cta{background:#E0A04A;}
+  .mel-preview-card .mel-preview-dot{transition:transform .2s ease;}
+  .mel-preview-card:hover .mel-preview-dot{transform:scale(1.15);}
+
   /* Fix 1: hero image slot now the real photo, cover-fit, same gradient
      overlay the design already specified layered on top of it. */
   .hero-image-slot{background-image:url('assets/hero-melbourne.jpg');background-size:cover;background-position:center;}
@@ -50,9 +59,9 @@
       <div class="toolkit-nav-tools">
         <a class="toolkit-nav-tool active" href="floatcheck.html">Analyse</a>
         <a class="toolkit-nav-tool" href="academy/index.html">Academy</a>
-        <a class="toolkit-nav-tool" href="tools.html">Tools</a>
         <a class="toolkit-nav-tool" href="blog/index.html">Insights</a>
-        <a class="toolkit-nav-tool" href="index.html#melbourne">Melbourne</a>
+        <a class="toolkit-nav-tool" href="tools.html">Tools</a>
+        <a class="toolkit-nav-tool" href="melbourne/index.html">Melbourne</a>
       </div>
       <div class="toolkit-nav-actions">
         <a class="toolkit-nav-login" href="#">Log in</a>
@@ -197,21 +206,22 @@
           </div>
         </a>
 
-        <div style="display:block;background:#FBF9F5;padding:28px;color:#14120F;position:relative;min-height:200px">
+        <a class="tool-card-v2" href="melbourne/index.html" style="display:block;background:#FBF9F5;padding:28px;color:#14120F;position:relative;min-height:200px">
           <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px">
             <div style="width:34px;height:34px;background:rgba(193,127,36,0.16);display:flex;align-items:center;justify-content:center">
               <div style="width:12px;height:12px;background:#C17F24"></div>
             </div>
+            <div style="color:#8A857B;font-size:16px">&#8599;</div>
           </div>
           <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:26px;line-height:1.08;text-transform:uppercase;margin-bottom:8px">Melbourne Construction Map</div>
-          <div style="font-size:14px;line-height:1.55;color:#59544C;margin-bottom:18px">Explore current and upcoming projects across Melbourne.</div>
+          <div style="font-size:14px;line-height:1.55;color:#59544C;margin-bottom:18px">Live building permits, road disruptions and major projects &mdash; mapped across the city.</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#6E6A62;border:1px solid #D6D0C6;padding:4px 8px">Melbourne</span>
             <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#6E6A62;border:1px solid #D6D0C6;padding:4px 8px">Map</span>
             <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#6E6A62;border:1px solid #D6D0C6;padding:4px 8px">Developments</span>
           </div>
-          <span style="position:absolute;top:28px;right:46px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:#12100C;background:#C17F24;padding:4px 8px">Coming Soon</span>
-        </div>
+          <span style="position:absolute;top:28px;right:46px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:#12100C;background:#C17F24;padding:4px 8px">Live</span>
+        </a>
 
       </div>
     </div>
@@ -231,20 +241,33 @@
         </div>
       </div>
 
-      <div style="position:relative;border:1px solid #262320;background:#111111;min-height:460px;overflow:hidden">
+      <a class="mel-preview-card" href="melbourne/index.html" style="position:relative;display:block;border:1px solid #262320;background:#111111;min-height:460px;overflow:hidden;cursor:pointer">
         <div style="position:absolute;inset:0;background-image:linear-gradient(#191919 1px,transparent 1px),linear-gradient(90deg,#191919 1px,transparent 1px);background-size:56px 56px"></div>
         <div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(193,127,36,0.07),transparent 62%)"></div>
+
+        <!-- scattered permit dots + major-project star, hinting at the real live map -->
+        <div class="mel-preview-dot" style="position:absolute;top:28%;left:22%;width:9px;height:9px;border-radius:50%;background:#C17F24;opacity:0.85"></div>
+        <div class="mel-preview-dot" style="position:absolute;top:44%;left:34%;width:14px;height:14px;border-radius:50%;background:#C17F24;opacity:0.85"></div>
+        <div class="mel-preview-dot" style="position:absolute;top:62%;left:29%;width:7px;height:7px;border-radius:50%;background:#C17F24;opacity:0.7"></div>
+        <div class="mel-preview-dot" style="position:absolute;top:36%;left:52%;width:11px;height:11px;border-radius:50%;background:#C17F24;opacity:0.8"></div>
+        <div class="mel-preview-dot" style="position:absolute;top:56%;left:61%;width:8px;height:8px;border-radius:50%;background:#C17F24;opacity:0.75"></div>
+        <div class="mel-preview-dot" style="position:absolute;top:70%;left:48%;width:10px;height:10px;border-radius:50%;background:#C17F24;opacity:0.7"></div>
+        <div style="position:absolute;top:24%;left:66%;color:#C17F24;font-size:20px;line-height:1">&#9733;</div>
+
         <div style="position:absolute;top:22px;left:22px;display:flex;align-items:center;gap:10px;background:#C17F24;color:#12100C;padding:9px 13px">
           <svg width="14" height="16" viewBox="0 0 26 30" fill="none" aria-hidden="true"><path d="M2 2 L2 28 L24 28" stroke="#12100C" stroke-width="3"></path><path d="M2 2 L20 13 L2 20 Z" fill="#12100C"></path></svg>
           <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;letter-spacing:0.18em;text-transform:uppercase">Planning Toolkit</span>
         </div>
-        <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center">
-          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:32px;letter-spacing:0.04em;text-transform:uppercase;color:#F2EEE8">Coming Soon</div>
-          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:32px;letter-spacing:0.04em;text-transform:uppercase;color:#C17F24;margin-bottom:14px">Melbourne Construction Map</div>
-          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#6E6559">Interactive map area &mdash; reserved</div>
+        <span style="position:absolute;top:22px;right:22px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:#12100C;background:#C17F24;padding:4px 8px">Live</span>
+
+        <div class="mel-preview-overlay" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(12,12,12,0.35)">
+          <div style="text-align:center">
+            <div class="mel-preview-cta" style="display:inline-flex;align-items:center;gap:12px;background:#C17F24;color:#12100C;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;letter-spacing:0.08em;text-transform:uppercase;padding:14px 26px">View Live Map <span>&rarr;</span></div>
+            <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#D9D3C8">Live permits, disruptions &amp; major projects</div>
+          </div>
         </div>
         <div style="position:absolute;bottom:22px;right:22px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.16em;color:#6E6559">37.8136&deg; S &nbsp; 144.9631&deg; E</div>
-      </div>
+      </a>
     </div>
   </section>
 
