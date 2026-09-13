@@ -10,62 +10,102 @@
    loaded via a normal <link rel="stylesheet">, so it works over file://
    exactly like everything else in this app - no build step, no bundler. */
 
+/* Nav visual language matches the homepage v2 blueprint-construction design
+   exactly (Planning Toolkit Homepage v2.dc.html) - full-height flex bar,
+   Barlow Condensed uppercase links with a bottom-border underline, edge-to-
+   edge (no centered max-width). This is the ONE nav definition every page
+   (including index.html) renders through, so a homepage nav change and a
+   tool-page nav change can never drift apart again - see later.md. */
 .toolkit-nav{
-  border-bottom:1px solid var(--line);
-  background:var(--panel);
+  border-bottom:1px solid #1E1E1E;
+  background:#0A0A0A;
   position:relative;
   z-index:2; /* stays above floatcheck.html's fixed full-viewport watermark */
 }
 .toolkit-nav-inner{
-  max-width:1100px;
-  margin:0 auto;
-  padding:14px 20px;
+  padding:0 28px;
+  height:76px;
   display:flex;
   justify-content:space-between;
   align-items:center;
-  flex-wrap:wrap;
-  gap:12px;
+  gap:20px;
+  flex-wrap:nowrap;
 }
 .toolkit-nav-brand{
   font-family:'Barlow Condensed',sans-serif;
   font-weight:700;
-  font-size:15px;
-  letter-spacing:0.6px;
+  font-size:19px;
+  line-height:1.05;
+  letter-spacing:0.18em;
   text-transform:uppercase;
   text-decoration:none;
   color:var(--text);
   display:inline-flex;
-  gap:5px;
+  align-items:center;
+  gap:12px;
+  flex:0 0 auto;
 }
 .toolkit-nav-brand .tnb-accent{color:var(--accent);}
 .toolkit-nav-brand:hover{opacity:0.85;}
 
 .toolkit-nav-tools{
   display:flex;
-  gap:24px;
   align-items:center;
-  flex-wrap:wrap;
+  height:100%;
+  gap:0;
+  flex:1 1 auto;
+  min-width:0;
+  overflow:hidden;
+  white-space:nowrap;
 }
 .toolkit-nav-tool{
-  font-family:'IBM Plex Mono',monospace;
-  font-size:12px;
-  letter-spacing:0.8px;
+  display:flex;
+  align-items:center;
+  height:100%;
+  padding:0 14px;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:16px;
+  font-weight:600;
+  letter-spacing:0.1em;
   text-transform:uppercase;
-  color:var(--muted);
+  color:var(--body);
   text-decoration:none;
-  padding-bottom:3px;
   border-bottom:2px solid transparent;
   transition:color .15s ease, border-color .15s ease;
 }
-.toolkit-nav-tool:hover{color:var(--accent);}
+.toolkit-nav-tool:hover{color:var(--text);border-bottom-color:#3A3A3A;}
 /* The current page's own tool renders as this same element but a <span>,
    not an <a> - not a link to itself, styled as the active peer. */
 .toolkit-nav-tool.active{
   color:var(--accent);
   border-bottom-color:var(--accent);
-  font-weight:600;
   cursor:default;
 }
+.toolkit-nav-tool.active:hover{color:var(--accent-hi);border-bottom-color:var(--accent);}
+
+.toolkit-nav-actions{display:flex;align-items:center;gap:14px;flex:0 0 auto;white-space:nowrap;}
+.toolkit-nav-login{
+  font-family:Archivo,Helvetica,Arial,sans-serif;
+  font-size:14px;
+  font-weight:500;
+  color:var(--body);
+  border:1px solid #2E2E2E;
+  padding:11px 20px;
+  text-decoration:none;
+  transition:color .15s ease, border-color .15s ease;
+}
+.toolkit-nav-login:hover{color:var(--text);border-color:#4A4A4A;}
+.toolkit-nav-cta{
+  font-family:Archivo,Helvetica,Arial,sans-serif;
+  font-size:14px;
+  font-weight:600;
+  background:var(--accent);
+  color:var(--accent-ink);
+  padding:12px 22px;
+  text-decoration:none;
+  white-space:nowrap;
+}
+.toolkit-nav-cta:hover{background:var(--accent-hi);color:var(--accent-ink);}
 
 /* Footer - identical across all three pages other than the links/notes each
    one includes inside it; the styling itself is fully shared. */

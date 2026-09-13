@@ -7,7 +7,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="lib/toolkit-ui.css">
 <style>
+  :root{
+    --bg:#0C0C0C; --text:#F2EEE8; --body:#C9C3B9; --accent:#C17F24; --accent-hi:#E0A04A; --accent-ink:#12100C;
+  }
   /* Homepage v2 - "blueprint construction" aesthetic, converted from the
      approved Claude Design mockup (Planning Toolkit Homepage v2.dc.html) to
      a plain static page: the design's own <x-dc>/<helmet>/support.js runtime
@@ -22,12 +26,6 @@
   a:hover{color:#E0A04A;}
   ::selection{background:#C17F24;color:#0C0C0C;}
 
-  .nav-link-v2{color:#C9C3B9;border-bottom:2px solid transparent;}
-  .nav-link-v2:hover{color:#F2EEE8;border-bottom-color:#3A3A3A;}
-  .nav-link-v2.active{color:#C17F24;border-bottom-color:#C17F24;}
-  .nav-link-v2.active:hover{color:#E0A04A;border-bottom-color:#C17F24;}
-  .btn-outline-v2{color:#C9C3B9;border:1px solid #2E2E2E;}
-  .btn-outline-v2:hover{color:#F2EEE8;border-color:#4A4A4A;}
   .btn-primary-v2{background:#C17F24;color:#12100C;}
   .btn-primary-v2:hover{background:#E0A04A;color:#12100C;}
   .btn-secondary-v2{border:1px solid #3A3A3A;color:#F2EEE8;}
@@ -46,23 +44,22 @@
 <body>
 <div style="background:#0C0C0C;color:#F2EEE8;font-family:Archivo,Helvetica,Arial,sans-serif">
 
-  <header style="display:flex;align-items:center;justify-content:space-between;gap:20px;padding:0 28px;height:76px;background:#0A0A0A;border-bottom:1px solid #1E1E1E;position:sticky;top:0;z-index:30">
-    <div style="display:flex;align-items:center;gap:12px;flex:0 0 auto">
-      <svg width="26" height="30" viewBox="0 0 26 30" fill="none" aria-hidden="true"><path d="M2 2 L2 28 L24 28" stroke="#C17F24" stroke-width="2.5"></path><path d="M2 2 L20 13 L2 20 Z" fill="#C17F24"></path></svg>
-      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:19px;line-height:1.05;letter-spacing:0.18em;text-transform:uppercase">Planning<br>Toolkit</div>
+  <nav class="toolkit-nav" style="position:sticky;top:0;z-index:30;">
+    <div class="toolkit-nav-inner">
+      <a class="toolkit-nav-brand" href="index.html">Planning <span class="tnb-accent">Toolkit</span></a>
+      <div class="toolkit-nav-tools">
+        <a class="toolkit-nav-tool active" href="floatcheck.html">Analyse</a>
+        <a class="toolkit-nav-tool" href="academy/index.html">Academy</a>
+        <a class="toolkit-nav-tool" href="tools.html">Tools</a>
+        <a class="toolkit-nav-tool" href="blog/index.html">Insights</a>
+        <a class="toolkit-nav-tool" href="index.html#melbourne">Melbourne</a>
+      </div>
+      <div class="toolkit-nav-actions">
+        <a class="toolkit-nav-login" href="#">Log in</a>
+        <a class="toolkit-nav-cta" href="floatcheck.html">Get Started</a>
+      </div>
     </div>
-    <nav style="display:flex;align-items:center;gap:0;height:100%;flex:1 1 auto;min-width:0;overflow:hidden;white-space:nowrap">
-      <a class="nav-link-v2 active" href="floatcheck.html" style="display:flex;align-items:center;height:100%;padding:0 14px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase">Analyse</a>
-      <a class="nav-link-v2" href="academy/index.html" style="display:flex;align-items:center;height:100%;padding:0 14px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase">Academy</a>
-      <a class="nav-link-v2" href="tools.html" style="display:flex;align-items:center;height:100%;padding:0 14px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase">Tools</a>
-      <a class="nav-link-v2" href="blog/index.html" style="display:flex;align-items:center;height:100%;padding:0 14px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase">Insights</a>
-      <a class="nav-link-v2" href="index.html#melbourne" style="display:flex;align-items:center;height:100%;padding:0 14px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase">Melbourne</a>
-    </nav>
-    <div style="display:flex;align-items:center;gap:14px;flex:0 0 auto;white-space:nowrap">
-      <a class="btn-outline-v2" href="#" style="font-size:14px;font-weight:500;padding:11px 20px">Log in</a>
-      <a class="btn-primary-v2" href="floatcheck.html" style="font-size:14px;font-weight:600;padding:12px 22px">Get Started</a>
-    </div>
-  </header>
+  </nav>
 
   <section style="position:relative;display:grid;grid-template-columns:minmax(0,48%) minmax(0,1fr);background:#0C0C0C;border-bottom:1px solid #1E1E1E">
     <div style="padding:84px 56px 72px;display:flex;flex-direction:column;justify-content:center;position:relative;z-index:2">

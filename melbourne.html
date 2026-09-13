@@ -16,11 +16,6 @@
     --crit:#D9584C; --warn:#D6A23C; --ok:#6FA285; --accent:#C17F24; --accent-hi:#E0A050; --accent-ink:#12100C;
     --crit-bg:rgba(217,88,76,0.15); --warn-bg:rgba(214,162,60,0.15); --ok-bg:rgba(111,162,133,0.15);
   }
-  .toolkit-nav-cta{
-    font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;
-    background:var(--accent);color:var(--accent-ink);padding:9px 16px;border-radius:4px;text-decoration:none;white-space:nowrap;
-  }
-  .toolkit-nav-cta:hover{background:var(--accent-hi);color:var(--accent-ink);}
   body{margin:0;background:#0C0C0C;}
   *{box-sizing:border-box;}
   a{color:#C17F24;text-decoration:none;}
@@ -45,7 +40,10 @@
         <a class="toolkit-nav-tool" href="tools.html">Tools</a>
         <span class="toolkit-nav-tool active">Melbourne</span>
       </div>
-      <a class="toolkit-nav-cta" href="floatcheck.html">Get Started</a>
+      <div class="toolkit-nav-actions">
+        <a class="toolkit-nav-login" href="#">Log in</a>
+        <a class="toolkit-nav-cta" href="floatcheck.html">Get Started</a>
+      </div>
     </div>
   </nav>
 
