@@ -63,6 +63,12 @@
   .layer-status.ok2{color:#6FA285;}
   .layer-status.loading{color:#D6A23C;}
 
+  .layer-server-required{background:#111010;padding:10px 8px;border-left:2px solid #3A352E;}
+  .lsr-head{display:flex;align-items:center;gap:9px;margin-bottom:6px;}
+  .lsr-name{font-family:'Barlow Condensed',sans-serif;font-size:15px;letter-spacing:.06em;text-transform:uppercase;color:#77716A;}
+  .lsr-warn{font-size:10px;letter-spacing:.08em;color:#D6A23C;margin-bottom:4px;}
+  .lsr-note{font-size:9px;line-height:1.5;letter-spacing:.02em;color:#6E6961;max-width:34ch;}
+
   .chip-row{display:flex;flex-wrap:wrap;gap:1px;}
   .chip-btn{background:none;border:1px solid #302C26;color:#B9B2A6;padding:6px 9px;font-size:10px;letter-spacing:.1em;cursor:pointer;flex:1 1 auto;white-space:nowrap;font-family:inherit;}
   .chip-btn.active{background:#C17F24;border-color:#C17F24;color:#0C0C0C;}
@@ -257,7 +263,6 @@
 <script>
 mapboxgl.accessToken = 'pk.eyJ1Ijoic2FzaDM0MzQzNDM0IiwiYSI6ImNtdHp5Y3IzbzB1eWgyeHBxdnFjMmM4NHUifQ.ZsCAlC4YgYdA3Df6dSnWng';
 
-const VICDTP_KEY = '6bfd9f47-2cfa-406c-acb4-b3ded45258aa';
 const GOLD = '#C17F24', ORANGE = '#E05A2B', RED = '#DC2626', GREEN = '#35C26A';
 
 const state = {
@@ -501,12 +506,9 @@ function setLayerStatus(key, status){
 
 function loadAllData(){
   loadPermits();
-  loadRoadworks();
-  loadIncidents();
+  markDisruptionLayersServerRequired();
   loadMajors();
 
-  setInterval(loadRoadworks, 10 * 60 * 1000);
-  setInterval(loadIncidents, 2 * 60 * 1000);
   setInterval(updateLastUpdatedText, 60 * 1000);
   updateLastUpdatedText();
 }
@@ -560,13 +562,32 @@ function setLoadingText(t){
 
 function loadPermits(){
   setLayerStatus('permits', 'loading');
-  const PAGE_SIZE = 100, PAGES = 2;
+  // The CoM building-permits dataset carries no coordinates (see note above
+  // geocodeAddress), so every plotted permit costs one Mapbox geocode call.
+  // The dataset's /records endpoint reports total_count (currently ~181,000
+  // priced permits) — geocoding all of them isn't feasible client-side, so
+  // we page through /records (its `limit` caps at 100/request) up to a fixed
+  // cap of the most recent priced permits instead.
+  const PAGE_SIZE = 100;
+  const MAX_RECORDS = 500;
   const base = 'https://data.melbourne.vic.gov.au/api/v2/catalog/datasets/building-permits/records';
   const where = encodeURIComponent('estimated_cost_of_works > 0 and not(address is null)');
-  Promise.all([0, 1].slice(0, PAGES).map(function(p){
-    return fetch(base + '?limit=' + PAGE_SIZE + '&offset=' + (p * PAGE_SIZE) + '&order_by=issue_date%20desc&where=' + where)
-      .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
-  }))
+  const firstUrl = base + '?limit=' + PAGE_SIZE + '&offset=0&order_by=issue_date%20desc&where=' + where;
+
+  fetch(firstUrl)
+    .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function(firstPage){
+      const total = Math.min(firstPage.total_count || PAGE_SIZE, MAX_RECORDS);
+      const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
+      const pagePromises = [Promise.resolve(firstPage)];
+      for (let p = 1; p < pageCount; p++){
+        pagePromises.push(
+          fetch(base + '?limit=' + PAGE_SIZE + '&offset=' + (p * PAGE_SIZE) + '&order_by=issue_date%20desc&where=' + where)
+            .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        );
+      }
+      return Promise.all(pagePromises);
+    })
     .then(function(pages){
       const records = [].concat.apply([], pages.map(function(pg){ return pg.records.map(function(r){ return r.record.fields; }); }));
       const cache = getGeocodeCache();
@@ -612,61 +633,16 @@ function loadPermits(){
     });
 }
 
-function loadRoadworks(){
-  setLayerStatus('roadworks', 'loading');
-  fetch('https://api.opendata.transport.vic.gov.au/opendata/roads/disruptions/planned/v1/', {
-    headers: { 'KeyID': VICDTP_KEY }
-  })
-    .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-    .then(function(data){
-      state.data.roadworks = normaliseVicDtp(data);
-      setLayerStatus('roadworks', 'ok');
-      refreshMapSources();
-    })
-    .catch(function(err){
-      console.error('[Melbourne Map] VicDTP planned disruptions layer failed:', err);
-      setLayerStatus('roadworks', 'error');
-    });
-}
-
-function loadIncidents(){
-  setLayerStatus('incidents', 'loading');
-  fetch('https://api.opendata.transport.vic.gov.au/opendata/roads/disruptions/unplanned/v2/', {
-    headers: { 'KeyID': VICDTP_KEY }
-  })
-    .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-    .then(function(data){
-      state.data.incidents = normaliseVicDtp(data);
-      setLayerStatus('incidents', 'ok');
-      refreshMapSources();
-    })
-    .catch(function(err){
-      console.error('[Melbourne Map] VicDTP unplanned incidents layer failed:', err);
-      setLayerStatus('incidents', 'error');
-    });
-}
-
-function normaliseVicDtp(data){
-  // VicDTP responses vary by dataset; handle common shapes defensively.
-  const list = Array.isArray(data) ? data : (data.features || data.disruptions || data.value || data.results || []);
-  return list.map(function(item){
-    const p = item.properties || item;
-    const geom = item.geometry;
-    let lng = null, lat = null;
-    if (geom && geom.type === 'Point') { lng = geom.coordinates[0]; lat = geom.coordinates[1]; }
-    else if (geom && geom.type === 'LineString' && geom.coordinates.length) { lng = geom.coordinates[0][0]; lat = geom.coordinates[0][1]; }
-    else { lng = p.longitude || p.lon || p.lng; lat = p.latitude || p.lat; }
-    return {
-      id: p.id || p.disruption_id || p.eventId || Math.random().toString(36).slice(2),
-      road: p.road_name || p.roadName || p.location_description || 'Unnamed road',
-      worksType: p.work_type || p.workType || p.category || 'Works',
-      lanesAffected: p.lanes_affected || p.lanesAffected || 'Not specified',
-      delay: p.delay || p.estimated_delay || 'Not specified',
-      start: p.start_datetime || p.startDate || p.from,
-      end: p.end_datetime || p.endDate || p.to,
-      lat: lat, lng: lng
-    };
-  }).filter(function(d){ return d.lat != null && d.lng != null; });
+// VicDTP's planned/unplanned disruption APIs reject direct browser calls
+// (401 — no CORS allowance for client-side origins), and the `KeyID` header
+// they require can't be attached from a static site without a server-side
+// proxy holding the key. Rather than firing requests that always fail (and
+// spamming the console), these two layers are marked server-required up
+// front — see renderLayerToggles' 'server_required' branch below.
+function markDisruptionLayersServerRequired(){
+  state.layerStatus.roadworks = 'server_required';
+  state.layerStatus.incidents = 'server_required';
+  renderLayerToggles();
 }
 
 function loadMajors(){
@@ -762,10 +738,22 @@ function layerCount(key){
   return null;
 }
 
+const SERVER_REQUIRED_NOTE = 'Live disruption data needs a backend proxy to access the VicDTP API.';
+
 function renderLayerToggles(){
   const el = document.getElementById('layer-toggles');
   el.innerHTML = '';
   LAYER_DEFS.forEach(function(d){
+    if (state.layerStatus[d.key] === 'server_required'){
+      const card = document.createElement('div');
+      card.className = 'layer-server-required';
+      card.innerHTML =
+        '<div class="lsr-head"><span class="layer-dot" style="background:' + d.color + ';opacity:.4"></span><span class="lsr-name">' + d.name + '</span></div>' +
+        '<div class="lsr-warn">&#9888; Requires server &mdash; coming soon</div>' +
+        '<div class="lsr-note">' + SERVER_REQUIRED_NOTE + '</div>';
+      el.appendChild(card);
+      return;
+    }
     const on = state.layers[d.key];
     const st = statusLabel(d.key);
     const count = layerCount(d.key);
@@ -829,14 +817,14 @@ function renderStats(){
   const activeDisruptions = state.data.roadworks.length + state.data.incidents.length;
 
   document.getElementById('stat-permits').textContent = state.data.permits ? permits.length : '—';
-  document.getElementById('stat-disruptions').textContent = (state.layerStatus.roadworks === 'error' && state.layerStatus.incidents === 'error') ? '—' : activeDisruptions;
-  document.getElementById('stat-incidents-inline').textContent = state.data.incidents.length + ' LIVE INCIDENTS';
+  document.getElementById('stat-disruptions').textContent = (state.layerStatus.roadworks === 'server_required' && state.layerStatus.incidents === 'server_required') ? '—' : activeDisruptions;
+  document.getElementById('stat-incidents-inline').textContent = state.layerStatus.incidents === 'server_required' ? '— LIVE INCIDENTS' : (state.data.incidents.length + ' LIVE INCIDENTS');
   document.getElementById('showing-count').textContent = 'SHOWING ' + permits.length + ' / ' + (state.data.permits ? state.data.permits.features.length : 0) + ' PERMITS';
 
   const cells = [
     { label: 'VISIBLE PERMITS', value: state.data.permits ? String(permits.length) : '—', note: 'City of Melb' },
     { label: 'EST. VALUE VISIBLE', value: state.data.permits ? fmtMoney(totalValue) : '—', note: 'sum of visible permits' },
-    { label: 'ACTIVE DISRUPTIONS', value: String(activeDisruptions), note: 'planned + live' },
+    { label: 'ACTIVE DISRUPTIONS', value: (state.layerStatus.roadworks === 'server_required' && state.layerStatus.incidents === 'server_required') ? '—' : String(activeDisruptions), note: (state.layerStatus.roadworks === 'server_required' && state.layerStatus.incidents === 'server_required') ? 'requires server' : 'planned + live' },
     { label: 'MAJOR PROJECTS', value: String(state.data.majors.length), note: 'curated' }
   ];
   const grid = document.getElementById('stats-grid');
