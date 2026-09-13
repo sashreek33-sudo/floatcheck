@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tools &mdash; Planning Toolkit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="lib/toolkit-ui.css">
+<style>
+  :root{
+    --bg:#0C0C0C; --panel:#141210; --panel-raised:#1B1815; --line:#262320;
+    --line-dashed:#3A3733;
+    --text:#F2EEE8; --body:#C9C3B9; --muted:#9A9287; --muted2:#6E6559;
+    --crit:#D9584C; --warn:#D6A23C; --ok:#6FA285; --accent:#C17F24; --accent-hi:#E0A050; --accent-ink:#12100C;
+    --crit-bg:rgba(217,88,76,0.15); --warn-bg:rgba(214,162,60,0.15); --ok-bg:rgba(111,162,133,0.15);
+  }
+  .toolkit-nav-cta{
+    font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;
+    background:var(--accent);color:var(--accent-ink);padding:9px 16px;border-radius:4px;text-decoration:none;white-space:nowrap;
+  }
+  .toolkit-nav-cta:hover{background:var(--accent-hi);color:var(--accent-ink);}
+  body{margin:0;background:#0C0C0C;}
+  *{box-sizing:border-box;}
+  a{color:#C17F24;text-decoration:none;}
+  a:hover{color:#E0A04A;}
+  ::selection{background:#C17F24;color:#0C0C0C;}
+  .tool-card{background:#141210;border:1px solid #262320;color:#F2EEE8;}
+  .tool-card:hover{border-color:#C17F24;background:#171512;color:#F2EEE8;}
+  .footer-link{color:#9A9287;}
+  .footer-link:hover{color:#F2EEE8;}
+</style>
+</head>
+<body>
+<div style="background:#0C0C0C;color:#F2EEE8;font-family:Archivo,Helvetica,Arial,sans-serif;min-height:100vh">
+
+  <nav class="toolkit-nav">
+    <div class="toolkit-nav-inner">
+      <a class="toolkit-nav-brand" href="index.html">Planning <span class="tnb-accent">Toolkit</span></a>
+      <div class="toolkit-nav-tools">
+        <a class="toolkit-nav-tool" href="floatcheck.html">Analyse</a>
+        <a class="toolkit-nav-tool" href="academy/index.html">Academy</a>
+        <a class="toolkit-nav-tool" href="blog/index.html">Insights</a>
+        <span class="toolkit-nav-tool active">Tools</span>
+        <a class="toolkit-nav-tool" href="melbourne.html">Melbourne</a>
+      </div>
+      <a class="toolkit-nav-cta" href="floatcheck.html">Get Started</a>
+    </div>
+  </nav>
+
+  <section style="padding:64px 48px 40px;background:#0C0C0C;border-bottom:1px solid #1E1E1E">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#C17F24;margin-bottom:14px">Tools</div>
+    <h1 style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:52px;line-height:1;margin:0 0 12px;text-transform:uppercase">Practical tools for construction<br>and project controls</h1>
+    <p style="font-size:15px;color:#8C857A;margin:0;max-width:60ch">Built for the way schedules, claims and site works actually run.</p>
+  </section>
+
+  <section style="padding:56px 48px 72px;background:#0F0E0D;border-bottom:1px solid #1E1E1E">
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px">
+
+      <a class="tool-card" href="floatcheck.html" style="display:block;border-radius:6px;padding:26px 26px 22px;position:relative;min-height:196px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px">
+          <div style="width:34px;height:34px;border-radius:4px;background:rgba(193,127,36,0.14);display:flex;align-items:center;justify-content:center">
+            <div style="width:12px;height:12px;background:#C17F24;border-radius:2px"></div>
+          </div>
+          <div style="color:#8C857A;font-size:16px">&#8599;</div>
+        </div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:25px;line-height:1.1;text-transform:uppercase;letter-spacing:0.01em;margin-bottom:8px">P6 Schedule Checker</div>
+        <div style="font-size:14px;line-height:1.55;color:#9A9287;margin-bottom:18px">Upload your XER file and run a full DCMA-14 schedule health check &mdash; FloatCheck.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">P6</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">DCMA</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Schedule</span>
+        </div>
+      </a>
+
+      <a class="tool-card" href="blog/victorian-public-holidays-p6.html" style="display:block;border-radius:6px;padding:26px 26px 22px;position:relative;min-height:196px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px">
+          <div style="width:34px;height:34px;border-radius:4px;background:rgba(193,127,36,0.14);display:flex;align-items:center;justify-content:center">
+            <div style="width:12px;height:12px;background:#C17F24;border-radius:2px"></div>
+          </div>
+          <div style="color:#8C857A;font-size:16px">&#8599;</div>
+        </div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:25px;line-height:1.1;text-transform:uppercase;letter-spacing:0.01em;margin-bottom:8px">Working Days Calculator</div>
+        <div style="font-size:14px;line-height:1.55;color:#9A9287;margin-bottom:18px">Calculate working days with Victorian public holidays.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Calendar</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Victoria</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Dates</span>
+        </div>
+        <span style="position:absolute;top:26px;right:44px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:#C17F24;border:1px solid rgba(193,127,36,0.4);border-radius:3px;padding:3px 7px">In Insights</span>
+      </a>
+
+      <a class="tool-card" href="percent-complete.html" style="display:block;border-radius:6px;padding:26px 26px 22px;position:relative;min-height:196px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px">
+          <div style="width:34px;height:34px;border-radius:4px;background:rgba(193,127,36,0.14);display:flex;align-items:center;justify-content:center">
+            <div style="width:12px;height:12px;background:#C17F24;border-radius:2px"></div>
+          </div>
+          <div style="color:#8C857A;font-size:16px">&#8599;</div>
+        </div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:25px;line-height:1.1;text-transform:uppercase;letter-spacing:0.01em;margin-bottom:8px">% Complete</div>
+        <div style="font-size:14px;line-height:1.55;color:#9A9287;margin-bottom:18px">Physical, duration, units and cost percent-complete &mdash; weighted, bucketed, and checked for consistency.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Progress</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Quality</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">XER</span>
+        </div>
+      </a>
+
+      <a class="tool-card" href="leadtime.html" style="display:block;border-radius:6px;padding:26px 26px 22px;position:relative;min-height:196px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px">
+          <div style="width:34px;height:34px;border-radius:4px;background:rgba(193,127,36,0.14);display:flex;align-items:center;justify-content:center">
+            <div style="width:12px;height:12px;background:#C17F24;border-radius:2px"></div>
+          </div>
+          <div style="color:#8C857A;font-size:16px">&#8599;</div>
+        </div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:25px;line-height:1.1;text-transform:uppercase;letter-spacing:0.01em;margin-bottom:8px">Lead Time</div>
+        <div style="font-size:14px;line-height:1.55;color:#9A9287;margin-bottom:18px">Calculate order-by dates and procurement timelines from your schedule's own float.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Procurement</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Supply Chain</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Dates</span>
+        </div>
+      </a>
+
+      <a class="tool-card" href="dcma.html" style="display:block;border-radius:6px;padding:26px 26px 22px;position:relative;min-height:196px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px">
+          <div style="width:34px;height:34px;border-radius:4px;background:rgba(193,127,36,0.14);display:flex;align-items:center;justify-content:center">
+            <div style="width:12px;height:12px;background:#C17F24;border-radius:2px"></div>
+          </div>
+          <div style="color:#8C857A;font-size:16px">&#8599;</div>
+        </div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:25px;line-height:1.1;text-transform:uppercase;letter-spacing:0.01em;margin-bottom:8px">DCMA Reference</div>
+        <div style="font-size:14px;line-height:1.55;color:#9A9287;margin-bottom:18px">All 14 DCMA schedule health checks explained &mdash; what each measures, why it matters, the standard threshold.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">DCMA</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Reference</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Schedule Quality</span>
+        </div>
+      </a>
+
+      <a class="tool-card" href="melbourne.html" style="display:block;border-radius:6px;padding:26px 26px 22px;position:relative;min-height:196px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px">
+          <div style="width:34px;height:34px;border-radius:4px;background:rgba(193,127,36,0.14);display:flex;align-items:center;justify-content:center">
+            <div style="width:12px;height:12px;background:#C17F24;border-radius:2px"></div>
+          </div>
+          <div style="color:#8C857A;font-size:16px">&#8599;</div>
+        </div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:25px;line-height:1.1;text-transform:uppercase;letter-spacing:0.01em;margin-bottom:8px">Melbourne Construction Map</div>
+        <div style="font-size:14px;line-height:1.55;color:#9A9287;margin-bottom:18px">Explore current and upcoming projects across Melbourne.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Melbourne</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Map</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Developments</span>
+        </div>
+        <span style="position:absolute;top:26px;right:44px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:#C17F24;border:1px solid rgba(193,127,36,0.4);border-radius:3px;padding:3px 7px">Coming Soon</span>
+      </a>
+
+      <a class="tool-card" href="validate.html" style="display:block;border-radius:6px;padding:26px 26px 22px;position:relative;min-height:196px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px">
+          <div style="width:34px;height:34px;border-radius:4px;background:rgba(193,127,36,0.14);display:flex;align-items:center;justify-content:center">
+            <div style="width:12px;height:12px;background:#C17F24;border-radius:2px"></div>
+          </div>
+          <div style="color:#8C857A;font-size:16px">&#8599;</div>
+        </div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:25px;line-height:1.1;text-transform:uppercase;letter-spacing:0.01em;margin-bottom:8px">Validation Harness</div>
+        <div style="font-size:14px;line-height:1.55;color:#9A9287;margin-bottom:18px">Diffs the CPM engine against P6's own stored dates and float &mdash; a diagnostic, not a planner-facing tool.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Engine</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">Diagnostic</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;border:1px solid #2A2723;border-radius:3px;padding:4px 8px">CPM</span>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <footer style="border-top:1px solid #1E1E1E;background:#0A0A0A;padding:40px 48px 32px">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:24px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#6E6559;flex-wrap:wrap;">
+      <span>Part of the <a class="footer-link" href="index.html" style="text-transform:none;letter-spacing:normal;font-family:Archivo,sans-serif;">Planning Toolkit</a></span>
+      <span><a class="footer-link" href="privacy.html">Privacy</a> &nbsp;&middot;&nbsp; <a class="footer-link" href="mailto:Sashreek33@gmail.com">Email</a></span>
+    </div>
+  </footer>
+</div>
+</body>
+</html>

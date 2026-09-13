@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Melbourne &mdash; Planning Toolkit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="lib/toolkit-ui.css">
+<style>
+  :root{
+    --bg:#0C0C0C; --panel:#141210; --panel-raised:#1B1815; --line:#262320;
+    --line-dashed:#3A3733;
+    --text:#F2EEE8; --body:#C9C3B9; --muted:#9A9287; --muted2:#6E6559;
+    --crit:#D9584C; --warn:#D6A23C; --ok:#6FA285; --accent:#C17F24; --accent-hi:#E0A050; --accent-ink:#12100C;
+    --crit-bg:rgba(217,88,76,0.15); --warn-bg:rgba(214,162,60,0.15); --ok-bg:rgba(111,162,133,0.15);
+  }
+  .toolkit-nav-cta{
+    font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;
+    background:var(--accent);color:var(--accent-ink);padding:9px 16px;border-radius:4px;text-decoration:none;white-space:nowrap;
+  }
+  .toolkit-nav-cta:hover{background:var(--accent-hi);color:var(--accent-ink);}
+  body{margin:0;background:#0C0C0C;}
+  *{box-sizing:border-box;}
+  a{color:#C17F24;text-decoration:none;}
+  a:hover{color:#E0A04A;}
+  ::selection{background:#C17F24;color:#0C0C0C;}
+  .post-card{background:#141210;border:1px solid #262320;color:#F2EEE8;}
+  .post-card:hover{border-color:#C17F24;background:#171512;color:#F2EEE8;}
+  .footer-link{color:#9A9287;}
+  .footer-link:hover{color:#F2EEE8;}
+</style>
+</head>
+<body>
+<div style="background:#0C0C0C;color:#F2EEE8;font-family:Archivo,Helvetica,Arial,sans-serif;min-height:100vh">
+
+  <nav class="toolkit-nav">
+    <div class="toolkit-nav-inner">
+      <a class="toolkit-nav-brand" href="index.html">Planning <span class="tnb-accent">Toolkit</span></a>
+      <div class="toolkit-nav-tools">
+        <a class="toolkit-nav-tool" href="floatcheck.html">Analyse</a>
+        <a class="toolkit-nav-tool" href="academy/index.html">Academy</a>
+        <a class="toolkit-nav-tool" href="blog/index.html">Insights</a>
+        <a class="toolkit-nav-tool" href="tools.html">Tools</a>
+        <span class="toolkit-nav-tool active">Melbourne</span>
+      </div>
+      <a class="toolkit-nav-cta" href="floatcheck.html">Get Started</a>
+    </div>
+  </nav>
+
+  <section style="padding:64px 48px;background:#0C0C0C;border-bottom:1px solid #1E1E1E">
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);gap:48px;align-items:center">
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#C17F24;margin-bottom:14px">Melbourne</div>
+        <h1 style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:52px;line-height:1;margin:0 0 18px;text-transform:uppercase">Every project<br>on one map</h1>
+        <p style="font-size:16px;line-height:1.6;color:#9A9287;margin:0 0 26px;max-width:420px;">Current and upcoming major projects, commercial, residential and infrastructure developments across Melbourne &mdash; mapped, filterable and kept current.</p>
+        <div style="display:flex;flex-direction:column;gap:10px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#8C857A">
+          <div style="display:flex;align-items:center;gap:10px"><span style="width:8px;height:8px;border-radius:50%;background:#C17F24"></span>Major Project</div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="width:8px;height:8px;border-radius:50%;background:#7E6A4A"></span>Commercial</div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="width:8px;height:8px;border-radius:50%;background:#4E4A44"></span>Residential</div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="width:8px;height:8px;border-radius:50%;background:#3A3733"></span>Infrastructure</div>
+        </div>
+      </div>
+
+      <div style="position:relative;border:1px solid #262320;border-radius:6px;background:#111111;min-height:440px;overflow:hidden">
+        <div style="position:absolute;inset:0;background-image:linear-gradient(#191919 1px,transparent 1px),linear-gradient(90deg,#191919 1px,transparent 1px);background-size:56px 56px"></div>
+        <div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(193,127,36,0.07),transparent 62%)"></div>
+        <div style="position:absolute;top:22px;left:22px;display:flex;align-items:center;gap:10px;background:#C17F24;color:#12100C;border-radius:4px;padding:8px 12px">
+          <svg width="14" height="16" viewBox="0 0 26 30" fill="none" aria-hidden="true"><path d="M2 2 L2 28 L24 28" stroke="#12100C" stroke-width="3"></path><path d="M2 2 L20 13 L2 20 Z" fill="#12100C"></path></svg>
+          <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;letter-spacing:0.16em;text-transform:uppercase">Planning Toolkit</span>
+        </div>
+        <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:30px;letter-spacing:0.04em;text-transform:uppercase;color:#F2EEE8">Coming Soon</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:30px;letter-spacing:0.04em;text-transform:uppercase;color:#C17F24;margin-bottom:14px">Melbourne Construction Map</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#6E6559">Interactive map area &mdash; reserved</div>
+        </div>
+        <div style="position:absolute;bottom:22px;right:22px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.16em;color:#6E6559">37.8136&deg; S &nbsp; 144.9631&deg; E</div>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding:64px 48px 72px;background:#0F0E0D;border-bottom:1px solid #1E1E1E">
+    <div style="margin-bottom:32px">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#C17F24;margin-bottom:14px">In the meantime</div>
+      <h2 style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:38px;line-height:1.05;margin:0 0 12px;text-transform:uppercase">Melbourne project analysis, already live</h2>
+      <p style="font-size:15px;color:#8C857A;margin:0;max-width:64ch">While the map is being built, the Insights section already covers Melbourne's biggest infrastructure projects in depth.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px">
+
+      <a class="post-card" href="blog/west-gate-tunnel-delay.html" style="display:block;border-radius:6px;padding:24px;min-height:150px">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;margin-bottom:10px">Delays &amp; Claims</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:21px;line-height:1.15;text-transform:uppercase;margin-bottom:8px">West Gate Tunnel</div>
+        <div style="font-size:13.5px;line-height:1.5;color:#9A9287">How a contamination dispute became a 3-year delay.</div>
+      </a>
+
+      <a class="post-card" href="blog/metro-tunnel-budget.html" style="display:block;border-radius:6px;padding:24px;min-height:150px">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;margin-bottom:10px">Melbourne Projects</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:21px;line-height:1.15;text-transform:uppercase;margin-bottom:8px">Metro Tunnel</div>
+        <div style="font-size:13.5px;line-height:1.5;color:#9A9287">From $10.9b to $13.48b &mdash; what actually changed.</div>
+      </a>
+
+      <a class="post-card" href="blog/suburban-rail-loop-analysis.html" style="display:block;border-radius:6px;padding:24px;min-height:150px">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8C857A;margin-bottom:10px">Melbourne Projects</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:21px;line-height:1.15;text-transform:uppercase;margin-bottom:8px">Suburban Rail Loop</div>
+        <div style="font-size:13.5px;line-height:1.5;color:#9A9287">Is $36 billion even the real number?</div>
+      </a>
+
+    </div>
+  </section>
+
+  <footer style="border-top:1px solid #1E1E1E;background:#0A0A0A;padding:40px 48px 32px">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:24px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#6E6559;flex-wrap:wrap;">
+      <span>Part of the <a class="footer-link" href="index.html" style="text-transform:none;letter-spacing:normal;font-family:Archivo,sans-serif;">Planning Toolkit</a></span>
+      <span><a class="footer-link" href="privacy.html">Privacy</a> &nbsp;&middot;&nbsp; <a class="footer-link" href="mailto:Sashreek33@gmail.com">Email</a></span>
+    </div>
+  </footer>
+</div>
+</body>
+</html>
