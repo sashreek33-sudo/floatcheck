@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LeadTime</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -161,6 +162,7 @@
 <nav class="toolkit-nav">
   <div class="toolkit-nav-inner">
     <a class="toolkit-nav-brand" href="index.html">Planning <span class="tnb-accent">Toolkit</span></a>
+    <button class="toolkit-nav-burger" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
     <div class="toolkit-nav-tools">
       <a class="toolkit-nav-tool active" href="floatcheck.html">Analyse</a>
       <a class="toolkit-nav-tool" href="academy/index.html">Academy</a>
@@ -710,5 +712,6 @@ function exportCSV(){
   URL.revokeObjectURL(url);
 }
 </script>
+<script src="lib/toolkit-ui.js"></script>
 </body>
 </html>

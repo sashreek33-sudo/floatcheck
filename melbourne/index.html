@@ -143,10 +143,12 @@
 
   .mapboxgl-popup{display:none !important;}
 
-  @media (max-width:760px){
-    .toolkit-nav-inner{flex-wrap:wrap;height:auto;padding:10px 16px;}
-  }
   html{overflow-x:hidden;}
+  @media (max-width:600px){
+    .status-bar{overflow-x:auto;}
+    .status-seg:nth-of-type(3){display:none;}
+    .status-right{flex:0 0 auto;}
+  }
   @media (max-width:900px){
     .mel-body{flex-direction:column;}
     .mel-sidebar{flex:0 0 auto;width:100%;max-height:280px;}
@@ -159,6 +161,7 @@
 <nav class="toolkit-nav">
   <div class="toolkit-nav-inner">
     <a class="toolkit-nav-brand" href="../index.html">Planning <span class="tnb-accent">Toolkit</span></a>
+    <button class="toolkit-nav-burger" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
     <div class="toolkit-nav-tools">
       <a class="toolkit-nav-tool" href="../floatcheck.html">Analyse</a>
       <a class="toolkit-nav-tool" href="../academy/index.html">Academy</a>
@@ -1047,5 +1050,6 @@ renderValueFilters();
 renderStats();
 </script>
 
+<script src="../lib/toolkit-ui.js"></script>
 </body>
 </html>

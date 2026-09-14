@@ -51,12 +51,6 @@
 
   @media (max-width:900px){ .tools-grid{grid-template-columns:repeat(2,minmax(0,1fr));} }
   @media (max-width:600px){ .tools-grid{grid-template-columns:1fr;} .filter-tabs{gap:8px;} }
-  @media (max-width:760px){
-    .toolkit-nav-inner{flex-wrap:wrap;height:auto;padding:14px 20px;row-gap:10px;}
-    .toolkit-nav-tools{overflow:visible;white-space:normal;flex:1 1 100%;order:3;height:auto;border-top:1px solid #1E1E1E;padding-top:10px;}
-    .toolkit-nav-tool{height:auto;padding:6px 10px;}
-    .toolkit-nav-actions{order:2;margin-left:auto;}
-  }
   html{overflow-x:hidden;}
 </style>
 </head>
@@ -65,6 +59,7 @@
 <nav class="toolkit-nav">
   <div class="toolkit-nav-inner">
     <a class="toolkit-nav-brand" href="index.html">Planning <span class="tnb-accent">Toolkit</span></a>
+    <button class="toolkit-nav-burger" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
     <div class="toolkit-nav-tools">
       <a class="toolkit-nav-tool" href="floatcheck.html">Analyse</a>
       <a class="toolkit-nav-tool" href="academy/index.html">Academy</a>
@@ -357,5 +352,6 @@
 })();
 </script>
 
+<script src="lib/toolkit-ui.js"></script>
 </body>
 </html>

@@ -48,6 +48,28 @@
   /* Fix 1: hero image slot now the real photo, cover-fit, same gradient
      overlay the design already specified layered on top of it. */
   .hero-image-slot{background-image:url('assets/hero-melbourne.jpg');background-size:cover;background-position:center;}
+
+  /* Mobile layout - these sections are laid out as inline-styled CSS grids
+     for the desktop design; each one gets a class here purely so a mobile
+     breakpoint can override its grid-template-columns (inline style beats
+     a plain class rule, so these use !important deliberately - the only
+     property being overridden). */
+  @media (max-width:900px){
+    .rg-hero{grid-template-columns:1fr !important;}
+    .rg-hero > div:first-child{padding:48px 24px !important;}
+    .rg-hero .hero-image-slot{min-height:320px !important;border-left:none !important;border-top:1px solid #1E1E1E;}
+    .rg-stats{grid-template-columns:repeat(2,1fr) !important;}
+    .rg-stats > div{padding:24px 20px !important;}
+    .rg-tools{grid-template-columns:1fr !important;}
+    .rg-melb{grid-template-columns:1fr !important;}
+    .rg-academy{grid-template-columns:1fr !important;}
+    .rg-cta{grid-template-columns:1fr !important;}
+    .rg-footer{grid-template-columns:1fr !important;gap:32px !important;}
+  }
+  @media (max-width:600px){
+    section, footer{padding-left:20px !important;padding-right:20px !important;}
+    .rg-hero > div:first-child{padding-left:0 !important;padding-right:0 !important;}
+  }
 </style>
 </head>
 <body>
@@ -56,6 +78,7 @@
   <nav class="toolkit-nav" style="position:sticky;top:0;z-index:30;">
     <div class="toolkit-nav-inner">
       <a class="toolkit-nav-brand" href="index.html">Planning <span class="tnb-accent">Toolkit</span></a>
+      <button class="toolkit-nav-burger" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
       <div class="toolkit-nav-tools">
         <a class="toolkit-nav-tool active" href="floatcheck.html">Analyse</a>
         <a class="toolkit-nav-tool" href="academy/index.html">Academy</a>
@@ -70,7 +93,7 @@
     </div>
   </nav>
 
-  <section style="position:relative;display:grid;grid-template-columns:minmax(0,48%) minmax(0,1fr);background:#0C0C0C;border-bottom:1px solid #1E1E1E">
+  <section class="rg-hero" style="position:relative;display:grid;grid-template-columns:minmax(0,48%) minmax(0,1fr);background:#0C0C0C;border-bottom:1px solid #1E1E1E">
     <div style="padding:84px 56px 72px;display:flex;flex-direction:column;justify-content:center;position:relative;z-index:2">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:26px">
         <span style="width:30px;height:2px;background:#C17F24"></span>
@@ -93,7 +116,7 @@
     </div>
   </section>
 
-  <section style="display:grid;grid-template-columns:repeat(4,1fr);background:#0A0A0A;border-bottom:1px solid #1E1E1E">
+  <section class="rg-stats" style="display:grid;grid-template-columns:repeat(4,1fr);background:#0A0A0A;border-bottom:1px solid #1E1E1E">
     <div style="padding:34px 40px;border-right:1px solid #1A1A1A">
       <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:54px;line-height:1;letter-spacing:0.005em">4,832</div>
       <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#8C857A;margin-top:8px">Melbourne Projects</div>
@@ -124,7 +147,7 @@
         <a class="link-hover-gold" href="#all-tools" style="font-size:14px;font-weight:600;color:#8A6520;white-space:nowrap">Browse the full tool library &rarr;</a>
       </div>
 
-      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:#D6D0C6;border:1px solid #D6D0C6">
+      <div class="rg-tools" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:#D6D0C6;border:1px solid #D6D0C6">
 
         <a class="tool-card-v2" href="floatcheck.html" style="display:block;background:#FBF9F5;padding:28px;color:#14120F;position:relative;min-height:200px">
           <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px">
@@ -228,7 +251,7 @@
   </section>
 
   <section id="melbourne" style="background:#0C0C0C;padding:92px 56px;border-top:1px solid #1E1E1E;border-bottom:1px solid #1E1E1E">
-    <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.55fr);gap:52px;align-items:center">
+    <div class="rg-melb" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.55fr);gap:52px;align-items:center">
       <div>
         <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.24em;text-transform:uppercase;color:#C17F24;margin-bottom:14px">02 / Melbourne</div>
         <h2 style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:clamp(38px,4vw,56px);line-height:0.98;margin:0 0 18px;text-transform:uppercase">Every project<br>on one map</h2>
@@ -282,7 +305,7 @@
         </div>
         <a class="btn-dark-v2" href="academy/index.html" style="display:inline-flex;align-items:center;gap:30px;background:#14120F;color:#F2EEE8;font-size:15px;font-weight:600;padding:17px 24px;white-space:nowrap">Start Learning <span>&rarr;</span></a>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px">
+      <div class="rg-academy" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px">
 
         <a class="course-card-v2" href="academy/index.html" style="display:flex;flex-direction:column;justify-content:space-between;background:#141210;border:1px solid #141210;padding:28px;color:#F2EEE8;min-height:220px">
           <div>
@@ -322,7 +345,7 @@
   </section>
 
   <section style="background:#0C0C0C;padding:0 56px">
-    <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);border:1px solid #262320;margin:72px 0">
+    <div class="rg-cta" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);border:1px solid #262320;margin:72px 0">
       <div style="padding:48px 44px;background:#141210">
         <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:38px;line-height:1;text-transform:uppercase;margin-bottom:12px">Not sure which tool to use?</div>
         <p style="font-size:15px;color:#9A9287;margin:0 0 22px;max-width:380px">Find the right tool for your project with our guide.</p>
@@ -336,7 +359,7 @@
   </section>
 
   <footer style="border-top:1px solid #1E1E1E;background:#0A0A0A;padding:60px 56px 36px">
-    <div style="display:grid;grid-template-columns:minmax(0,1.4fr) repeat(3,minmax(0,1fr));gap:40px;padding-bottom:40px;border-bottom:1px solid #1A1A1A">
+    <div class="rg-footer" style="display:grid;grid-template-columns:minmax(0,1.4fr) repeat(3,minmax(0,1fr));gap:40px;padding-bottom:40px;border-bottom:1px solid #1A1A1A">
       <div>
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px">
           <svg width="24" height="28" viewBox="0 0 26 30" fill="none" aria-hidden="true"><path d="M2 2 L2 28 L24 28" stroke="#C17F24" stroke-width="2.5"></path><path d="M2 2 L20 13 L2 20 Z" fill="#C17F24"></path></svg>
@@ -381,5 +404,6 @@
     </div>
   </footer>
 </div>
+<script src="lib/toolkit-ui.js"></script>
 </body>
 </html>
