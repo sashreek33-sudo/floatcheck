@@ -69,6 +69,15 @@
   .lsr-warn{font-size:10px;letter-spacing:.08em;color:#D6A23C;margin-bottom:4px;}
   .lsr-note{font-size:9px;line-height:1.5;letter-spacing:.02em;color:#6E6961;max-width:34ch;}
 
+  .weather-block{transition:background .3s ease;}
+  .weather-block.rain-active{background:rgba(214,162,60,0.08);}
+  .weather-row{display:flex;align-items:baseline;gap:10px;margin-bottom:8px;}
+  .weather-temp{font-family:'Barlow Condensed',sans-serif;font-size:34px;font-weight:600;color:#C17F24;line-height:1;}
+  .weather-cond{font-size:11px;color:#C9C3B9;text-transform:uppercase;letter-spacing:.08em;}
+  .weather-meta{display:flex;flex-direction:column;gap:4px;font-size:10px;color:#8C8679;margin-bottom:8px;}
+  .weather-warn{background:rgba(214,162,60,0.15);border-left:2px solid #D6A23C;color:#D6A23C;font-size:10px;line-height:1.5;padding:8px;margin-bottom:8px;}
+  .weather-updated{font-size:9px;color:#5E5A53;letter-spacing:.08em;}
+
   .chip-row{display:flex;flex-wrap:wrap;gap:1px;}
   .chip-btn{background:none;border:1px solid #302C26;color:#B9B2A6;padding:6px 9px;font-size:10px;letter-spacing:.1em;cursor:pointer;flex:1 1 auto;white-space:nowrap;font-family:inherit;}
   .chip-btn.active{background:#C17F24;border-color:#C17F24;color:#0C0C0C;}
@@ -147,6 +156,7 @@
   @media (max-width:600px){
     .status-bar{overflow-x:auto;}
     .status-seg:nth-of-type(3){display:none;}
+    .status-seg:nth-of-type(4){display:none;}
     .status-right{flex:0 0 auto;}
   }
   @media (max-width:900px){
@@ -182,6 +192,7 @@
     <div class="status-seg"><span id="stat-permits" style="color:#C17F24">&mdash;</span>&nbsp;ACTIVE PERMITS</div>
     <div class="status-seg"><span id="stat-disruptions" style="color:#E05A2B">&mdash;</span>&nbsp;ROAD DISRUPTIONS</div>
     <div class="status-seg"><span id="stat-incidents-inline">0 INCIDENTS</span></div>
+    <div class="status-seg" id="stat-weather-seg" style="display:none;"><span id="stat-weather">&mdash;</span></div>
     <div class="status-right">
       <span id="conn-dot" class="warn-dot"></span>
       <span id="last-updated-text">Connecting&hellip;</span>
@@ -194,6 +205,20 @@
       <div class="side-block">
         <div class="side-title">Melbourne<br>Construction</div>
         <div class="side-sub">LIVE DATA &mdash; SEPT 2026</div>
+      </div>
+
+      <div class="side-block weather-block" id="weather-block" style="display:none;">
+        <div class="label-sm">MELBOURNE WEATHER</div>
+        <div class="weather-row">
+          <span class="weather-temp" id="weather-temp">&mdash;&deg;</span>
+          <span class="weather-cond" id="weather-cond">&mdash;</span>
+        </div>
+        <div class="weather-meta">
+          <span id="weather-wind">Wind &mdash;</span>
+          <span id="weather-rain">Rain (1h) &mdash;</span>
+        </div>
+        <div class="weather-warn" id="weather-warn" style="display:none;">&#9888; Rain activity detected &mdash; check site rain management plans</div>
+        <div class="weather-updated" id="weather-updated">&mdash;</div>
       </div>
 
       <div class="side-block">
@@ -249,6 +274,8 @@
         <div class="legend-row"><span style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:9px solid #E05A2B;display:inline-block;"></span>PLANNED ROADWORKS</div>
         <div class="legend-row"><span style="width:9px;height:9px;border-radius:50%;background:#DC2626;display:inline-block;"></span>LIVE INCIDENT</div>
         <div class="legend-row"><span style="width:12px;height:12px;color:#C17F24;display:inline-block;">&#9733;</span>MAJOR PROJECT</div>
+        <div class="legend-row"><span style="width:8px;height:8px;border-radius:50%;background:#F2EEE8;display:inline-block;"></span>PEDESTRIAN SENSOR</div>
+        <div class="legend-row"><span style="width:8px;height:8px;border-radius:50%;background:#A855F7;display:inline-block;"></span>PLANNING ZONE</div>
       </div>
 
       <button class="locate-btn" id="locate-btn">
@@ -269,15 +296,19 @@ mapboxgl.accessToken = 'pk.eyJ1Ijoic2FzaDM0MzQzNDM0IiwiYSI6ImNtdHp5Y3IzbzB1eWgye
 const GOLD = '#C17F24', ORANGE = '#E05A2B', RED = '#DC2626', GREEN = '#35C26A';
 
 const state = {
-  layers: { permits: true, roadworks: true, incidents: true, majors: true },
+  layers: { permits: true, roadworks: true, incidents: true, majors: true, pedestrian: true, airquality: true, planningzones: true },
   valueFilter: 'All',
   worksQuery: '',
   satellite: false,
   located: false,
   userLoc: null,
   sel: null,
-  layerStatus: { permits: 'loading', roadworks: 'loading', incidents: 'loading', majors: 'loading' },
-  data: { permits: null, roadworks: [], incidents: [], majors: [] },
+  layerStatus: {
+    permits: 'loading', roadworks: 'loading', incidents: 'loading', majors: 'loading',
+    pedestrian: 'loading', airquality: 'loading', planningzones: 'loading', bikeshare: 'loading'
+  },
+  data: { permits: null, roadworks: [], incidents: [], majors: [], pedestrian: [], airquality: [], planningzones: [] },
+  weather: null,
   lastUpdated: new Date()
 };
 
@@ -464,6 +495,68 @@ function initSimpleLayers(){
     map.on('mouseenter', id, function(){ map.getCanvas().style.cursor = 'pointer'; });
     map.on('mouseleave', id, function(){ map.getCanvas().style.cursor = ''; });
   });
+
+  initExtraLayers();
+}
+
+// Pedestrian sensors (small white dots), Planning Zones (small purple dots)
+// and Air Quality (circle coloured by AQI, empty unless the EPA endpoint
+// actually returns data). All three are additive, client-side-only layers —
+// none of them touch the VicDTP roadworks/incidents sources above.
+function initExtraLayers(){
+  map.addSource('pedestrian', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+  map.addLayer({
+    id: 'pedestrian-points',
+    type: 'circle',
+    source: 'pedestrian',
+    paint: {
+      'circle-color': '#F2EEE8',
+      'circle-radius': 4,
+      'circle-opacity': 0.85,
+      'circle-stroke-color': '#0C0C0C',
+      'circle-stroke-width': 1
+    }
+  });
+
+  map.addSource('planningzones', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+  map.addLayer({
+    id: 'planningzones-points',
+    type: 'circle',
+    source: 'planningzones',
+    paint: {
+      'circle-color': '#A855F7',
+      'circle-radius': 4,
+      'circle-opacity': 0.75,
+      'circle-stroke-color': '#0C0C0C',
+      'circle-stroke-width': 1
+    }
+  });
+
+  map.addSource('airquality', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+  map.addLayer({
+    id: 'airquality-points',
+    type: 'circle',
+    source: 'airquality',
+    paint: {
+      'circle-color': ['step', ['get', 'aqi'], '#35C26A', 51, '#D6A23C', 101, '#DC2626'],
+      'circle-radius': 7,
+      'circle-opacity': 0.85,
+      'circle-stroke-color': '#0C0C0C',
+      'circle-stroke-width': 1
+    }
+  });
+
+  ['pedestrian-points', 'planningzones-points', 'airquality-points'].forEach(function(id){
+    map.on('click', id, function(e){
+      if (!e.features.length) return;
+      const f = e.features[0];
+      if (id === 'pedestrian-points') openPedestrianPanel(f);
+      else if (id === 'planningzones-points') openPlanningZonePanel(f);
+      else openAirQualityPanel(f);
+    });
+    map.on('mouseenter', id, function(){ map.getCanvas().style.cursor = 'pointer'; });
+    map.on('mouseleave', id, function(){ map.getCanvas().style.cursor = ''; });
+  });
 }
 
 let pulseT = 0, pulseRaf = null;
@@ -511,8 +604,14 @@ function loadAllData(){
   loadPermits();
   markDisruptionLayersServerRequired();
   loadMajors();
+  loadPedestrians();
+  loadAirQuality();
+  loadPlanningZones();
+  loadBikeShare();
+  loadWeather();
 
   setInterval(updateLastUpdatedText, 60 * 1000);
+  setInterval(loadWeather, 10 * 60 * 1000);
   updateLastUpdatedText();
 }
 
@@ -663,6 +762,234 @@ function loadMajors(){
     });
 }
 
+// ---------- Weather (BOM first, falls back to Open-Meteo) ----------
+// BOM's per-station JSON has no CORS allowance for browser fetches from a
+// third-party origin (confirmed: same request succeeds when the page itself
+// is on bom.gov.au, and fails with a CORS-blocked "Failed to fetch" from any
+// other origin) — so in practice this always falls through to Open-Meteo,
+// which is what actually renders. The BOM attempt is kept first per spec and
+// costs nothing: it fails fast and silently.
+function fetchBomWeather(){
+  return fetch('https://www.bom.gov.au/fwo/IDV60901/IDV60901.95936.json')
+    .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function(j){
+      const obs = j.observations && j.observations.data && j.observations.data[0];
+      if (!obs) throw new Error('No observation data');
+      const rain = obs.rain_trace != null ? parseFloat(obs.rain_trace) : null;
+      return {
+        temp: obs.air_temp,
+        condition: rain > 0 ? 'Rain' : (obs.cloud && obs.cloud !== '-' ? obs.cloud : 'Clear'),
+        windSpeed: obs.wind_spd_kmh,
+        windDir: obs.wind_dir || null,
+        rainLastHour: rain,
+        source: 'BOM Melbourne (Olympic Park)'
+      };
+    });
+}
+
+function weatherCodeToText(code){
+  if (code === 0) return 'Clear';
+  if (code <= 3) return 'Partly Cloudy';
+  if (code <= 48) return 'Fog';
+  if (code <= 67) return 'Rain';
+  if (code <= 77) return 'Snow';
+  if (code <= 82) return 'Showers';
+  if (code <= 99) return 'Storm';
+  return 'Unknown';
+}
+
+function fetchOpenMeteoWeather(){
+  return fetch('https://api.open-meteo.com/v1/forecast?latitude=-37.8136&longitude=144.9631&current=temperature_2m,precipitation,windspeed_10m,winddirection_10m,weathercode&timezone=Australia/Melbourne')
+    .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function(j){
+      const c = j.current;
+      if (!c) throw new Error('No current weather block');
+      return {
+        temp: c.temperature_2m,
+        condition: weatherCodeToText(c.weathercode),
+        windSpeed: c.windspeed_10m,
+        windDir: c.winddirection_10m,
+        rainLastHour: c.precipitation,
+        source: 'Open-Meteo'
+      };
+    });
+}
+
+function loadWeather(){
+  fetchBomWeather()
+    .catch(function(){ return fetchOpenMeteoWeather(); })
+    .then(function(w){
+      state.weather = w;
+      state.weatherUpdatedAt = Date.now();
+      renderWeather();
+    })
+    .catch(function(err){
+      // Both sources failed — hide the widget silently, never show a broken state.
+      console.error('[Melbourne Map] Weather layer failed (BOM and Open-Meteo both unavailable):', err);
+      document.getElementById('weather-block').style.display = 'none';
+      document.getElementById('stat-weather-seg').style.display = 'none';
+    });
+}
+
+function renderWeather(){
+  const w = state.weather;
+  if (!w || w.temp == null) return;
+  const block = document.getElementById('weather-block');
+  block.style.display = 'block';
+  document.getElementById('weather-temp').textContent = Math.round(w.temp) + '°';
+  document.getElementById('weather-cond').textContent = w.condition;
+  document.getElementById('weather-wind').textContent = 'Wind ' + (w.windSpeed != null ? Math.round(w.windSpeed) + ' km/h' : '—') + (w.windDir != null ? ' ' + compassFromDegrees(w.windDir) : (typeof w.windDir === 'string' ? ' ' + w.windDir : ''));
+  document.getElementById('weather-rain').textContent = 'Rain (1h) ' + (w.rainLastHour != null ? w.rainLastHour + ' mm' : '—');
+
+  const rainDetected = (w.rainLastHour != null && w.rainLastHour > 0) || /rain|shower|storm/i.test(w.condition);
+  document.getElementById('weather-warn').style.display = rainDetected ? 'block' : 'none';
+  block.classList.toggle('rain-active', rainDetected);
+
+  document.getElementById('weather-updated').textContent = 'Updated just now · ' + w.source;
+
+  const seg = document.getElementById('stat-weather-seg');
+  seg.style.display = 'flex';
+  document.getElementById('stat-weather').textContent = Math.round(w.temp) + '°C ' + w.condition.toUpperCase();
+}
+
+function compassFromDegrees(deg){
+  const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+  return dirs[Math.round(deg / 22.5) % 16];
+}
+
+// ---------- Pedestrian sensors (City of Melbourne) ----------
+function loadPedestrians(){
+  setLayerStatus('pedestrian', 'loading');
+  const url = 'https://data.melbourne.vic.gov.au/api/v2/catalog/datasets/pedestrian-counting-system-monthly-counts-per-hour/records?limit=100&order_by=sensing_date%20desc,hourday%20desc';
+  fetch(url)
+    .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function(j){
+      const seen = {};
+      const list = [];
+      (j.records || []).forEach(function(rec){
+        const f = rec.record.fields;
+        if (!f.location || f.location.lat == null || f.location.lon == null) return;
+        // Keep only the latest reading per sensor (results are already newest-first).
+        if (seen[f.sensor_name]) return;
+        seen[f.sensor_name] = true;
+        list.push({
+          sensorName: f.sensor_name,
+          count: f.pedestriancount,
+          date: f.sensing_date,
+          hour: f.hourday,
+          lat: f.location.lat,
+          lng: f.location.lon
+        });
+      });
+      state.data.pedestrian = list;
+      setLayerStatus('pedestrian', 'ok');
+      refreshMapSources();
+    })
+    .catch(function(err){
+      console.error('[Melbourne Map] Pedestrian sensors layer failed:', err);
+      setLayerStatus('pedestrian', 'error');
+    });
+}
+
+// ---------- EPA Victoria air quality ----------
+// Public endpoint but gated by a subscription key (confirmed: 401 "Access
+// denied due to missing subscription key" with no key attached) — this
+// static site has nowhere safe to hold that key, so this attempt is
+// expected to fail and fall into the 'unavailable' sidebar card below.
+function loadAirQuality(){
+  setLayerStatus('airquality', 'loading');
+  fetch('https://gateway.api.epa.vic.gov.au/environmentMonitoring/v1/sites/parameters?environmentalSegment=air')
+    .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function(j){
+      const sites = (j.records || j.sites || []).map(function(s){
+        return {
+          name: s.siteName || s.name,
+          aqi: s.aqi != null ? s.aqi : (s.value != null ? s.value : null),
+          pollutant: s.mainPollutant || s.parameter || 'N/A',
+          lastUpdated: s.since || s.timestamp || null,
+          lat: s.geometry && s.geometry.coordinates ? s.geometry.coordinates[1] : (s.latitude || null),
+          lng: s.geometry && s.geometry.coordinates ? s.geometry.coordinates[0] : (s.longitude || null)
+        };
+      }).filter(function(s){ return s.lat != null && s.lng != null; });
+      if (!sites.length) throw new Error('No usable site data in response');
+      state.data.airquality = sites;
+      setLayerStatus('airquality', 'ok');
+      refreshMapSources();
+    })
+    .catch(function(err){
+      console.error('[Melbourne Map] EPA air quality layer failed (likely needs a subscription key):', err);
+      setLayerStatus('airquality', 'unavailable');
+    });
+}
+
+// ---------- DELWP planning zones (Vicmap Planning, ArcGIS) ----------
+// The URL given in the original brief (services6.arcgis.com/GB33F62SbDxJjwEL/...)
+// does not resolve ("Invalid URL" from the ArcGIS gateway) and its suggested
+// fallback (opendata.arcgis.com/datasets/victorian-planning-zones.geojson)
+// 403s. The real, currently-live Vicmap Planning service was found instead —
+// layer 3 ("Planning scheme zones - Vicmap Planning (PLAN_ZONE)") on
+// services-ap1.arcgis.com, which allows anonymous queries. Zones are
+// polygons; each one is reduced to a simple vertex-average centroid here so
+// it can be plotted as a single dot like the brief asked for.
+function polygonCentroid(rings){
+  const ring = rings[0];
+  let x = 0, y = 0;
+  for (let i = 0; i < ring.length; i++){ x += ring[i][0]; y += ring[i][1]; }
+  return [x / ring.length, y / ring.length];
+}
+
+function loadPlanningZones(){
+  setLayerStatus('planningzones', 'loading');
+  const url = 'https://services-ap1.arcgis.com/P744lA0wf4LlBZ84/ArcGIS/rest/services/Vicmap_Planning/FeatureServer/3/query' +
+    '?where=1%3D1&outFields=zone_code,zone_description,lga&f=geojson&resultRecordCount=200' +
+    '&geometry=144.94,-37.83,144.99,-37.79&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects';
+  fetch(url)
+    .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function(j){
+      const list = (j.features || []).map(function(f){
+        if (!f.geometry || f.geometry.type !== 'Polygon' || !f.geometry.coordinates.length) return null;
+        const c = polygonCentroid(f.geometry.coordinates);
+        return {
+          zoneCode: f.properties.zone_code,
+          zoneDescription: f.properties.zone_description,
+          lga: f.properties.lga,
+          lat: c[1],
+          lng: c[0]
+        };
+      }).filter(Boolean);
+      if (!list.length) throw new Error('No zone features returned');
+      state.data.planningzones = list;
+      setLayerStatus('planningzones', 'ok');
+      refreshMapSources();
+    })
+    .catch(function(err){
+      console.error('[Melbourne Map] Planning zones layer failed:', err);
+      setLayerStatus('planningzones', 'unavailable');
+    });
+}
+
+// ---------- Bike share (Melbourne Bike Share) ----------
+// The dataset named in the brief (bicycle-share-docking-locations) doesn't
+// exist in the CoM catalog. The only bike-share dataset that does exist —
+// "Melbourne Bike Share Station Readings 2011-2017" — confirms why: the
+// dock-based RACV/Victorian Government scheme ended in November 2019, and
+// that dataset itself has zero live records (historical CSV archive only).
+// There's no current City of Melbourne API for this, so it's marked
+// unavailable with the real reason rather than faked.
+function loadBikeShare(){
+  setLayerStatus('bikeshare', 'loading');
+  fetch('https://data.melbourne.vic.gov.au/api/v2/catalog/datasets/bicycle-share-docking-locations/exports/geojson?limit=5')
+    .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function(j){
+      if (!j.features || !j.features.length) throw new Error('Dataset has no records');
+      setLayerStatus('bikeshare', 'ok');
+    })
+    .catch(function(err){
+      console.error('[Melbourne Map] Bike share layer failed (program ended 2019, no live CoM dataset):', err);
+      setLayerStatus('bikeshare', 'unavailable');
+    });
+}
+
 // ---------- Source refresh + filtering ----------
 function filteredPermitFeatures(){
   if (!state.data.permits) return [];
@@ -706,6 +1033,30 @@ function refreshMapSources(){
       })
     });
   }
+  if (map.getSource('pedestrian')){
+    map.getSource('pedestrian').setData({
+      type: 'FeatureCollection',
+      features: state.data.pedestrian.map(function(p){
+        return { type: 'Feature', geometry: { type: 'Point', coordinates: [p.lng, p.lat] }, properties: p };
+      })
+    });
+  }
+  if (map.getSource('planningzones')){
+    map.getSource('planningzones').setData({
+      type: 'FeatureCollection',
+      features: state.data.planningzones.map(function(z){
+        return { type: 'Feature', geometry: { type: 'Point', coordinates: [z.lng, z.lat] }, properties: z };
+      })
+    });
+  }
+  if (map.getSource('airquality')){
+    map.getSource('airquality').setData({
+      type: 'FeatureCollection',
+      features: state.data.airquality.map(function(a){
+        return { type: 'Feature', geometry: { type: 'Point', coordinates: [a.lng, a.lat] }, properties: a };
+      })
+    });
+  }
   renderStats();
   renderLayerToggles();
 }
@@ -723,7 +1074,11 @@ const LAYER_DEFS = [
   { key: 'permits', name: 'Building Permits', color: GOLD },
   { key: 'roadworks', name: 'Planned Roadworks', color: ORANGE },
   { key: 'incidents', name: 'Live Incidents', color: RED },
-  { key: 'majors', name: 'Major Projects', color: GOLD }
+  { key: 'majors', name: 'Major Projects', color: GOLD },
+  { key: 'pedestrian', name: 'Pedestrian Activity', color: '#F2EEE8' },
+  { key: 'airquality', name: 'Air Quality', color: '#35C26A' },
+  { key: 'planningzones', name: 'Planning Zones (VIC)', color: '#A855F7' },
+  { key: 'bikeshare', name: 'Bike Share Stations', color: '#22D3EE' }
 ];
 
 function statusLabel(key){
@@ -738,22 +1093,31 @@ function layerCount(key){
   if (key === 'roadworks') return state.data.roadworks.length;
   if (key === 'incidents') return state.data.incidents.length;
   if (key === 'majors') return state.data.majors.length;
+  if (key === 'pedestrian') return state.data.pedestrian.length;
+  if (key === 'airquality') return state.data.airquality.length;
+  if (key === 'planningzones') return state.data.planningzones.length;
   return null;
 }
 
 const SERVER_REQUIRED_NOTE = 'Live disruption data needs a backend proxy to access the VicDTP API.';
+const UNAVAILABLE_NOTES = {
+  airquality: 'EPA Victoria’s monitoring API requires a subscription key that a static site has nowhere safe to hold.',
+  bikeshare: 'Melbourne Bike Share ended in November 2019 — there is no current live dataset from the City of Melbourne.'
+};
 
 function renderLayerToggles(){
   const el = document.getElementById('layer-toggles');
   el.innerHTML = '';
   LAYER_DEFS.forEach(function(d){
-    if (state.layerStatus[d.key] === 'server_required'){
+    if (state.layerStatus[d.key] === 'server_required' || state.layerStatus[d.key] === 'unavailable'){
+      const warnText = state.layerStatus[d.key] === 'server_required' ? '&#9888; Requires server &mdash; coming soon' : '&#9888; Unavailable &mdash; coming soon';
+      const note = UNAVAILABLE_NOTES[d.key] || SERVER_REQUIRED_NOTE;
       const card = document.createElement('div');
       card.className = 'layer-server-required';
       card.innerHTML =
         '<div class="lsr-head"><span class="layer-dot" style="background:' + d.color + ';opacity:.4"></span><span class="lsr-name">' + d.name + '</span></div>' +
-        '<div class="lsr-warn">&#9888; Requires server &mdash; coming soon</div>' +
-        '<div class="lsr-note">' + SERVER_REQUIRED_NOTE + '</div>';
+        '<div class="lsr-warn">' + warnText + '</div>' +
+        '<div class="lsr-note">' + note + '</div>';
       el.appendChild(card);
       return;
     }
@@ -774,8 +1138,11 @@ function renderLayerToggles(){
         permits: ['permits-clusters', 'permits-cluster-count', 'permits-recent-pulse', 'permits-points'],
         roadworks: ['roadworks-points'],
         incidents: ['incidents-pulse', 'incidents-points'],
-        majors: ['majors-points']
-      }[d.key];
+        majors: ['majors-points'],
+        pedestrian: ['pedestrian-points'],
+        airquality: ['airquality-points'],
+        planningzones: ['planningzones-points']
+      }[d.key] || [];
       layerIds.forEach(function(id){
         if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', state.layers[d.key] ? 'visible' : 'none');
       });
@@ -966,6 +1333,99 @@ function openMajorPanel(feature){
 
 function row(label, value){
   return '<div class="sel-row"><span class="sel-row-label">' + label + '</span><span class="sel-row-value">' + escapeHtml(value || 'N/A') + '</span></div>';
+}
+
+function openPedestrianPanel(feature){
+  const p = feature.properties;
+  const html =
+    '<div class="sel-head">' +
+      '<span class="sel-badge" style="background:#F2EEE8;color:#12100C">Pedestrian Sensor</span>' +
+      '<span class="sel-ref">' + escapeHtml(p.sensorName || '') + '</span>' +
+      '<button class="sel-close" id="sel-close-btn">✕</button>' +
+    '</div>' +
+    '<div class="sel-grid">' +
+      '<div class="sel-col">' +
+        '<div class="sel-title">' + escapeHtml(p.sensorName || 'Unnamed sensor') + '</div>' +
+        '<div class="sel-subtitle">City of Melbourne pedestrian counting system</div>' +
+        '<div class="sel-body-label">HOURLY COUNT</div>' +
+        '<div class="sel-body">' + (p.count != null ? p.count.toLocaleString('en-AU') + ' pedestrians' : 'N/A') + '</div>' +
+      '</div>' +
+      '<div class="sel-col">' +
+        row('DATE', p.date) +
+        row('HOUR', p.hour != null ? (p.hour + ':00') : 'N/A') +
+        row('LOCATION', p.lat.toFixed(5) + ', ' + p.lng.toFixed(5)) +
+      '</div>' +
+      '<div class="sel-col">' +
+        '<div class="sel-status-label">STATUS</div>' +
+        '<div class="sel-status-line"><span class="sel-status-dot" style="background:#F2EEE8"></span><span class="sel-status-text">LATEST READING</span></div>' +
+        '<div class="sel-note">City of Melbourne pedestrian sensor network. Most recent hourly count on file.</div>' +
+      '</div>' +
+    '</div>';
+  openSelPanel(html);
+  document.getElementById('sel-close-btn').addEventListener('click', closeSelPanel);
+}
+
+function openPlanningZonePanel(feature){
+  const p = feature.properties;
+  const html =
+    '<div class="sel-head">' +
+      '<span class="sel-badge" style="background:#A855F7">Planning Zone</span>' +
+      '<span class="sel-ref">' + escapeHtml(p.zoneCode || '') + '</span>' +
+      '<button class="sel-close" id="sel-close-btn">✕</button>' +
+    '</div>' +
+    '<div class="sel-grid">' +
+      '<div class="sel-col">' +
+        '<div class="sel-title">' + escapeHtml(p.zoneDescription || 'Unclassified zone') + '</div>' +
+        '<div class="sel-subtitle">' + escapeHtml(p.lga || '') + '</div>' +
+        '<div class="sel-body-label">ZONE CODE</div>' +
+        '<div class="sel-body">' + escapeHtml(p.zoneCode || 'N/A') + '</div>' +
+      '</div>' +
+      '<div class="sel-col">' +
+        row('ZONE', p.zoneDescription) +
+        row('LGA', p.lga) +
+        row('OVERLAY', 'Not queried') +
+      '</div>' +
+      '<div class="sel-col">' +
+        '<div class="sel-status-label">SOURCE</div>' +
+        '<div class="sel-status-line"><span class="sel-status-dot" style="background:#A855F7"></span><span class="sel-status-text">VICMAP PLANNING</span></div>' +
+        '<div class="sel-note">DELWP Vicmap Planning scheme zones. Marker plotted at the zone polygon’s centroid, not a property point.</div>' +
+      '</div>' +
+    '</div>';
+  openSelPanel(html);
+  document.getElementById('sel-close-btn').addEventListener('click', closeSelPanel);
+}
+
+function openAirQualityPanel(feature){
+  const p = feature.properties;
+  const aqi = p.aqi;
+  const band = aqi == null ? 'N/A' : aqi <= 50 ? 'GOOD' : aqi <= 100 ? 'MODERATE' : 'UNHEALTHY';
+  const color = aqi == null ? '#8C8679' : aqi <= 50 ? GREEN : aqi <= 100 ? '#D6A23C' : RED;
+  const html =
+    '<div class="sel-head">' +
+      '<span class="sel-badge" style="background:' + color + '">Air Quality</span>' +
+      '<span class="sel-ref">' + escapeHtml(p.name || '') + '</span>' +
+      '<button class="sel-close" id="sel-close-btn">✕</button>' +
+    '</div>' +
+    '<div class="sel-grid">' +
+      '<div class="sel-col">' +
+        '<div class="sel-title">' + escapeHtml(p.name || 'Unnamed station') + '</div>' +
+        '<div class="sel-subtitle">EPA Victoria monitoring station</div>' +
+        '<div class="sel-body-label">MAIN POLLUTANT</div>' +
+        '<div class="sel-body">' + escapeHtml(p.pollutant || 'N/A') + '</div>' +
+      '</div>' +
+      '<div class="sel-col">' +
+        row('AQI', aqi != null ? String(aqi) : 'N/A') +
+        row('MAIN POLLUTANT', p.pollutant) +
+        row('LAST UPDATED', p.lastUpdated) +
+      '</div>' +
+      '<div class="sel-col">' +
+        '<div class="sel-status-label">STATUS</div>' +
+        '<div class="sel-status-line"><span class="sel-status-dot" style="background:' + color + '"></span><span class="sel-status-text">' + band + '</span></div>' +
+        '<div class="sel-note">EPA Victoria environmental monitoring network.</div>' +
+      '</div>' +
+    '</div>';
+  openSelPanel(html);
+  document.getElementById('sel-close-btn').addEventListener('click', closeSelPanel);
 }
 
 // ---------- Locate me ----------
