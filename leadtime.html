@@ -147,6 +147,8 @@
   .remove-btn:hover{border-color:var(--crit);color:var(--crit);}
   .float-note{font-size:10.5px;color:var(--muted2);}
   .not-computable{color:var(--muted2);font-style:italic;}
+  .find-suppliers-link{font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:600;letter-spacing:0.04em;color:var(--accent);white-space:nowrap;}
+  .find-suppliers-link:hover{color:var(--accent-hi);}
   .manual-badge{display:inline-block;font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--muted);border:1px solid var(--muted);padding:1px 5px;margin-left:6px;letter-spacing:0.5px;}
 
   .add-panel{border:1px solid var(--line);background:var(--panel);padding:16px 18px;margin-bottom:28px;}
@@ -169,6 +171,7 @@
       <a class="toolkit-nav-tool" href="blog/index.html">Insights</a>
       <a class="toolkit-nav-tool" href="tools.html">Tools</a>
       <a class="toolkit-nav-tool" href="melbourne/index.html">Melbourne</a>
+      <a class="toolkit-nav-tool" href="procure/index.html">Procure</a>
     </div>
     <div class="toolkit-nav-actions">
       <a class="toolkit-nav-login" href="#">Log in</a>
@@ -654,8 +657,9 @@ function renderResults(){
     const daysLabel = r.daysRemaining < 0
       ? `<span class="flag overdue">${Math.abs(r.daysRemaining)}d OVERDUE</span>`
       : (r.daysRemaining <= 14 ? `<span class="flag warn">${r.daysRemaining}d</span>` : `<span class="flag ok">${r.daysRemaining}d</span>`);
+    const findSuppliers = r.daysRemaining <= 14 ? findSuppliersLink(r.taskName) : '';
     return `<tr class="${rowClass}">
-      <td>${r.materialLabel}${manualBadge}</td>
+      <td>${r.materialLabel}${manualBadge}${findSuppliers}</td>
       <td class="act-cell"><span class="act-code">${r.code}</span><br><span class="act-name">${r.taskName}</span></td>
       <td><input type="number" class="lead-input" min="0" step="1" value="${r.leadWeeks}" onchange="updateLeadWeeks(${r.id}, this.value)"> wks</td>
       <td>${fmtDate(r.earlyStart)}</td>
@@ -670,6 +674,27 @@ function renderResults(){
 function fmtDate(d){
   if(!d) return '—';
   return d.toLocaleDateString('en-AU', { day:'2-digit', month:'short', year:'numeric', timeZone:'UTC' });
+}
+
+// Simple keyword match against the P6 activity name (not the fixed
+// long-lead material label) - real activity descriptions are far more
+// likely to contain a word like "crane" or "excavat" than the handful of
+// canned material categories above. No match just links to the
+// unfiltered directory rather than guessing.
+function categoryForActivity(name){
+  const n = (name || '').toLowerCase();
+  if(n.includes('crane')) return 'crane_hire';
+  if(n.includes('concrete')) return 'concrete_supply';
+  if(n.includes('steel') || n.includes('rebar')) return 'rebar_steel';
+  if(n.includes('scaffold')) return 'scaffolding';
+  if(n.includes('excavat') || n.includes('earthwork')) return 'earthmoving';
+  return null;
+}
+
+function findSuppliersLink(activityName){
+  const cat = categoryForActivity(activityName);
+  const href = cat ? `procure/index.html?category=${cat}` : 'procure/index.html';
+  return ` <a class="find-suppliers-link" href="${href}" target="_blank" rel="noopener">Find suppliers &rarr;</a>`;
 }
 
 function exportCSV(){

@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Procure &mdash; Planning Toolkit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/toolkit-ui.css">
+<style>
+  :root{
+    --bg:#0C0C0C; --panel:#141210; --panel-raised:#1B1815; --line:#262320; --line-dashed:#3A3733;
+    --text:#F2EEE8; --body:#C9C3B9; --muted:#9A9287; --muted2:#6E6559;
+    --accent:#C17F24; --accent-hi:#E0A050; --accent-ink:#12100C;
+    --ok:#6FA285; --warn:#D6A23C;
+  }
+  html,body{margin:0;padding:0;background:#0C0C0C;color:#F2EEE8;}
+  *{box-sizing:border-box;}
+  a{color:#C17F24;text-decoration:none;}
+  a:hover{color:#E0A050;}
+  ::selection{background:#C17F24;color:#0C0C0C;}
+  html{overflow-x:hidden;}
+  body{font-family:Archivo,Helvetica,Arial,sans-serif;}
+
+  .pc-wrap{max-width:1280px;margin:0 auto;padding:56px 32px 96px;}
+
+  .pc-eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.24em;text-transform:uppercase;color:#C17F24;margin-bottom:14px;}
+  .pc-h1{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:clamp(40px,5vw,64px);line-height:0.98;margin:0 0 14px;text-transform:uppercase;}
+  .pc-sub{font-size:15px;line-height:1.6;color:var(--body);margin:0 0 36px;max-width:70ch;}
+
+  .pc-search{width:100%;max-width:480px;background:var(--panel-raised);border:1px solid var(--line);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:13px;padding:12px 16px;outline:none;margin-bottom:24px;}
+  .pc-search::placeholder{color:var(--muted2);}
+  .pc-search:focus{border-color:var(--accent);}
+
+  .pc-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px;}
+  .pc-tab{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:var(--body);background:var(--panel);border:1px solid var(--line);padding:9px 16px;cursor:pointer;transition:background .15s ease,color .15s ease,border-color .15s ease;}
+  .pc-tab:hover{border-color:var(--accent);color:var(--text);}
+  .pc-tab.active{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600;}
+
+  .pc-stats{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.08em;color:var(--muted);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:14px 0;margin-bottom:32px;}
+  .pc-stats strong{color:var(--text);font-weight:600;}
+
+  .pc-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);}
+  @media (max-width:980px){ .pc-grid{grid-template-columns:repeat(2,minmax(0,1fr));} }
+  @media (max-width:640px){ .pc-grid{grid-template-columns:1fr;} }
+
+  .pc-card{background:var(--panel);padding:22px;display:flex;flex-direction:column;gap:10px;transition:background .15s ease;}
+  .pc-card:hover{background:var(--panel-raised);}
+  .pc-card-name{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:20px;line-height:1.15;text-transform:uppercase;transition:color .15s ease;}
+  .pc-card:hover .pc-card-name{color:var(--accent);}
+  .pc-badge{display:inline-block;align-self:flex-start;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;padding:4px 8px;border:1px solid;}
+  .pc-card-address{font-size:12.5px;color:var(--body);line-height:1.5;}
+  .pc-card-row{font-size:12px;color:var(--body);}
+  .pc-card-row a{color:var(--body);}
+  .pc-card-row a:hover{color:var(--accent);}
+  .pc-stars{font-size:13px;letter-spacing:1px;color:var(--accent);}
+  .pc-stars .empty{color:#3A352E;}
+  .pc-reviews{font-size:11px;color:var(--muted2);margin-left:6px;}
+  .pc-rfq-btn{margin-top:auto;padding-top:12px;font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent-ink);background:var(--accent);border:none;padding:10px 16px;cursor:pointer;text-align:center;transition:background .15s ease;}
+  .pc-rfq-btn:hover{background:var(--accent-hi);}
+  .pc-no-results{grid-column:1/-1;padding:48px 24px;text-align:center;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:13px;}
+
+  /* ---------- RFQ modal ---------- */
+  .pc-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:100;display:none;align-items:flex-start;justify-content:center;overflow-y:auto;padding:40px 20px;}
+  .pc-modal-overlay.open{display:flex;}
+  .pc-modal{background:var(--panel);border:1px solid var(--line);max-width:960px;width:100%;position:relative;}
+  .pc-modal-head{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--line);}
+  .pc-modal-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;text-transform:uppercase;letter-spacing:0.03em;}
+  .pc-modal-close{background:none;border:1px solid var(--line);width:32px;height:32px;color:var(--body);cursor:pointer;font-size:16px;line-height:1;}
+  .pc-modal-close:hover{color:var(--text);border-color:var(--accent);}
+  .pc-modal-body{padding:24px;}
+  .pc-modal-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:28px;margin-bottom:24px;}
+  @media (max-width:760px){ .pc-modal-grid{grid-template-columns:1fr;} }
+
+  .pc-field-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;display:block;}
+  .pc-readonly{background:var(--panel-raised);border:1px solid var(--line);padding:10px 12px;font-size:13px;color:var(--text);margin-bottom:16px;}
+  .pc-field{margin-bottom:14px;}
+  .pc-field input, .pc-field textarea{width:100%;background:var(--panel-raised);border:1px solid var(--line);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:12.5px;padding:9px 11px;outline:none;}
+  .pc-field input:focus, .pc-field textarea:focus{border-color:var(--accent);}
+  .pc-field textarea{resize:vertical;min-height:44px;font-family:Archivo,sans-serif;font-size:13px;}
+
+  .pc-rfq-doc-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+  .pc-rfq-doc{background:#0A0908;border:1px solid var(--line);padding:20px;font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1.7;color:#D9D3C8;white-space:pre-wrap;word-break:break-word;max-height:360px;overflow-y:auto;}
+  .pc-modal-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;}
+  .pc-btn{font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;padding:11px 20px;cursor:pointer;border:1px solid var(--line);background:none;color:var(--text);transition:border-color .15s ease,background .15s ease,color .15s ease;}
+  .pc-btn:hover{border-color:var(--accent);}
+  .pc-btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);}
+  .pc-btn.primary:hover{background:var(--accent-hi);border-color:var(--accent-hi);}
+  .pc-copy-note{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ok);align-self:center;opacity:0;transition:opacity .2s ease;}
+  .pc-copy-note.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<nav class="toolkit-nav">
+  <div class="toolkit-nav-inner">
+    <a class="toolkit-nav-brand" href="../index.html">Planning <span class="tnb-accent">Toolkit</span></a>
+    <button class="toolkit-nav-burger" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
+    <div class="toolkit-nav-tools">
+      <a class="toolkit-nav-tool" href="../floatcheck.html">Analyse</a>
+      <a class="toolkit-nav-tool" href="../academy/index.html">Academy</a>
+      <a class="toolkit-nav-tool" href="../blog/index.html">Insights</a>
+      <a class="toolkit-nav-tool" href="../tools.html">Tools</a>
+      <a class="toolkit-nav-tool" href="../melbourne/index.html">Melbourne</a>
+      <span class="toolkit-nav-tool active">Procure</span>
+    </div>
+    <div class="toolkit-nav-actions">
+      <a class="toolkit-nav-login" href="#">Log in</a>
+      <a class="toolkit-nav-cta" href="../floatcheck.html">Get Started</a>
+    </div>
+  </div>
+</nav>
+
+<div class="pc-wrap">
+  <div class="pc-eyebrow">Procure</div>
+  <h1 class="pc-h1">Procure</h1>
+  <p class="pc-sub">Melbourne construction suppliers &mdash; find who you need, generate an RFQ, send it today.</p>
+
+  <input type="text" class="pc-search" id="pcSearch" placeholder="Search by supplier name or address&hellip;">
+
+  <div class="pc-tabs" id="pcTabs"></div>
+
+  <div class="pc-stats" id="pcStats"></div>
+
+  <div class="pc-grid" id="pcGrid"></div>
+</div>
+
+<div class="pc-modal-overlay" id="pcModalOverlay">
+  <div class="pc-modal">
+    <div class="pc-modal-head">
+      <div class="pc-modal-title">Request for Quotation</div>
+      <button class="pc-modal-close" id="pcModalClose" aria-label="Close">&#10005;</button>
+    </div>
+    <div class="pc-modal-body">
+      <div class="pc-modal-grid">
+        <div>
+          <span class="pc-field-label">Supplier Name</span>
+          <div class="pc-readonly" id="rfqSupplierName">&mdash;</div>
+          <span class="pc-field-label">Phone</span>
+          <div class="pc-readonly" id="rfqSupplierPhone">&mdash;</div>
+          <span class="pc-field-label">Website</span>
+          <div class="pc-readonly" id="rfqSupplierWebsite" style="margin-bottom:0;">&mdash;</div>
+        </div>
+        <div>
+          <div class="pc-field"><span class="pc-field-label">Your Name</span><input type="text" id="rfqYourName" placeholder="Jane Smith"></div>
+          <div class="pc-field"><span class="pc-field-label">Your Company / Project Name</span><input type="text" id="rfqCompany" placeholder="e.g. 88 Collins St Tower"></div>
+          <div class="pc-field"><span class="pc-field-label">Site Address</span><input type="text" id="rfqSiteAddress" placeholder="Site address"></div>
+          <div class="pc-field"><span class="pc-field-label">Item / Service Required</span><input type="text" id="rfqItem"></div>
+          <div class="pc-field"><span class="pc-field-label">Quantity / Scope</span><textarea id="rfqScope" placeholder="e.g. 3 days, mobile crane 50T, level 4-6"></textarea></div>
+          <div class="pc-field"><span class="pc-field-label">Required On Site Date</span><input type="date" id="rfqOnSiteDate"></div>
+          <div class="pc-field"><span class="pc-field-label">Your Phone</span><input type="text" id="rfqYourPhone" placeholder="04xx xxx xxx"></div>
+          <div class="pc-field"><span class="pc-field-label">Your Email</span><input type="email" id="rfqYourEmail" placeholder="you@company.com.au"></div>
+          <div class="pc-field" style="margin-bottom:0;"><span class="pc-field-label">Response Required By</span><input type="date" id="rfqResponseDate"></div>
+        </div>
+      </div>
+
+      <div class="pc-rfq-doc-label">Generated RFQ</div>
+      <div class="pc-rfq-doc" id="rfqDoc"></div>
+
+      <div class="pc-modal-actions">
+        <button class="pc-btn primary" id="rfqCopyBtn">Copy RFQ</button>
+        <button class="pc-btn" id="rfqEmailBtn">Open in Email</button>
+        <span class="pc-copy-note" id="rfqCopyNote">Copied to clipboard</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const CATEGORY_META = {
+  crane_hire:          { label: 'Crane Hire',                        color: '#C17F24' },
+  scaffolding:          { label: 'Scaffolding',                       color: '#E05A2B' },
+  concrete_supply:      { label: 'Concrete Supply',                   color: '#3B82F6' },
+  formwork:             { label: 'Formwork',                          color: '#A16207' },
+  earthmoving:          { label: 'Earthmoving & Plant Hire',          color: '#84CC16' },
+  waterproofing:        { label: 'Waterproofing',                     color: '#22D3EE' },
+  structural_steel:     { label: 'Structural Steel',                  color: '#64748B' },
+  concrete_pumping:     { label: 'Concrete Pumping',                  color: '#6366F1' },
+  temporary_fencing:    { label: 'Temporary Fencing',                 color: '#EAB308' },
+  surveying:            { label: 'Surveying',                         color: '#14B8A6' },
+  geotechnical:         { label: 'Geotechnical',                      color: '#B45309' },
+  traffic_management:   { label: 'Traffic Management',                color: '#DC2626' },
+  demolition:           { label: 'Demolition',                        color: '#F43F5E' },
+  waste_management:     { label: 'Waste Management & Skip Bins',      color: '#16A34A' },
+  rebar_steel:          { label: 'Rebar & Reinforcing Steel',         color: '#A855F7' }
+};
+const CATEGORY_ORDER = ['crane_hire','scaffolding','concrete_supply','formwork','earthmoving','waterproofing',
+  'structural_steel','concrete_pumping','temporary_fencing','surveying','geotechnical','traffic_management',
+  'demolition','waste_management','rebar_steel'];
+
+const state = {
+  suppliers: [],
+  category: 'all',
+  query: '',
+  selectedSupplier: null
+};
+
+function escapeHtml(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+
+function domainOnly(url){
+  try {
+    const u = new URL(url);
+    return u.hostname.replace(/^www\./, '');
+  } catch(e){
+    return url;
+  }
+}
+
+function starString(rating){
+  const filled = Math.round(rating);
+  let out = '';
+  for (let i = 0; i < 5; i++){
+    out += i < filled ? '★' : '<span class="empty">★</span>';
+  }
+  return out;
+}
+
+// ---------- URL param ----------
+function categoryFromUrl(){
+  const params = new URLSearchParams(window.location.search);
+  const c = params.get('category');
+  return (c && CATEGORY_META[c]) ? c : 'all';
+}
+
+// ---------- Load data ----------
+fetch('suppliers.json')
+  .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+  .then(function(list){
+    state.suppliers = list;
+    state.category = categoryFromUrl();
+    renderTabs();
+    renderAll();
+  })
+  .catch(function(err){
+    console.error('[Procure] Failed to load suppliers.json:', err);
+    document.getElementById('pcGrid').innerHTML = '<div class="pc-no-results">Could not load the supplier directory. Please try again shortly.</div>';
+  });
+
+// ---------- Tabs ----------
+function renderTabs(){
+  const el = document.getElementById('pcTabs');
+  el.innerHTML = '';
+  const allBtn = document.createElement('button');
+  allBtn.className = 'pc-tab' + (state.category === 'all' ? ' active' : '');
+  allBtn.textContent = 'All';
+  allBtn.dataset.cat = 'all';
+  allBtn.addEventListener('click', function(){ setCategory('all'); });
+  el.appendChild(allBtn);
+
+  CATEGORY_ORDER.forEach(function(key){
+    const btn = document.createElement('button');
+    btn.className = 'pc-tab' + (state.category === key ? ' active' : '');
+    btn.textContent = CATEGORY_META[key].label;
+    btn.dataset.cat = key;
+    btn.addEventListener('click', function(){ setCategory(key); });
+    el.appendChild(btn);
+  });
+}
+
+function setCategory(key){
+  state.category = key;
+  document.querySelectorAll('.pc-tab').forEach(function(b){
+    b.classList.toggle('active', b.dataset.cat === key);
+  });
+  renderGridAndStats();
+}
+
+document.getElementById('pcSearch').addEventListener('input', function(e){
+  state.query = e.target.value;
+  renderGridAndStats();
+});
+
+function renderAll(){
+  renderGridAndStats();
+}
+
+function filteredSuppliers(){
+  const q = state.query.trim().toLowerCase();
+  return state.suppliers
+    .filter(function(s){
+      if (state.category !== 'all' && s.category !== state.category) return false;
+      if (q && !((s.name || '').toLowerCase().indexOf(q) > -1 || (s.address || '').toLowerCase().indexOf(q) > -1)) return false;
+      return true;
+    })
+    .sort(function(a, b){ return (b.rating || 0) - (a.rating || 0); });
+}
+
+function renderGridAndStats(){
+  const list = filteredSuppliers();
+  const categoriesShown = new Set(list.map(function(s){ return s.category; })).size;
+
+  document.getElementById('pcStats').innerHTML =
+    'Showing <strong>' + list.length + '</strong> supplier' + (list.length === 1 ? '' : 's') +
+    ' across <strong>' + categoriesShown + '</strong> categor' + (categoriesShown === 1 ? 'y' : 'ies');
+
+  const grid = document.getElementById('pcGrid');
+  grid.innerHTML = '';
+  if (!list.length){
+    grid.innerHTML = '<div class="pc-no-results">No suppliers match your filters. Try a different category or search term.</div>';
+    return;
+  }
+
+  list.forEach(function(s, i){
+    const meta = CATEGORY_META[s.category] || { label: s.category, color: '#9A9287' };
+    const card = document.createElement('div');
+    card.className = 'pc-card';
+
+    const addressFirstLine = (s.address || '').split(',')[0];
+
+    let html = '';
+    html += '<div class="pc-badge" style="color:' + meta.color + ';border-color:' + meta.color + ';">' + escapeHtml(meta.label) + '</div>';
+    html += '<div class="pc-card-name">' + escapeHtml(s.name) + '</div>';
+    html += '<div class="pc-card-address">' + escapeHtml(addressFirstLine) + '</div>';
+    if (s.phone){
+      html += '<div class="pc-card-row"><a href="tel:' + escapeHtml(s.phone.replace(/\s+/g, '')) + '">' + escapeHtml(s.phone) + '</a></div>';
+    }
+    if (s.website){
+      html += '<div class="pc-card-row"><a href="' + escapeHtml(s.website) + '" target="_blank" rel="noopener">' + escapeHtml(domainOnly(s.website)) + '</a></div>';
+    }
+    const hasRating = typeof s.rating === 'number';
+    html += '<div><span class="pc-stars">' + starString(hasRating ? s.rating : 0) + '</span><span class="pc-reviews">' + (hasRating ? s.rating.toFixed(1) : 'No rating') + ' (' + (s.reviews || 0) + ')</span></div>';
+    html += '<button class="pc-rfq-btn" data-idx="' + i + '">Get RFQ &rarr;</button>';
+
+    card.innerHTML = html;
+    card.querySelector('.pc-rfq-btn').addEventListener('click', function(){ openRfqModal(s); });
+    grid.appendChild(card);
+  });
+}
+
+// ---------- RFQ modal ----------
+function workingDaysFromToday(n){
+  const d = new Date();
+  let added = 0;
+  while (added < n){
+    d.setDate(d.getDate() + 1);
+    const day = d.getDay();
+    if (day !== 0 && day !== 6) added++;
+  }
+  return d;
+}
+
+function toDateInputValue(d){
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return yyyy + '-' + mm + '-' + dd;
+}
+
+function formatDateForDoc(isoStr){
+  if (!isoStr) return 'Not specified';
+  const d = new Date(isoStr + 'T00:00:00');
+  if (isNaN(d.getTime())) return 'Not specified';
+  return d.toLocaleDateString('en-AU', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+function openRfqModal(supplier){
+  state.selectedSupplier = supplier;
+  const meta = CATEGORY_META[supplier.category] || { label: supplier.category };
+
+  document.getElementById('rfqSupplierName').textContent = supplier.name;
+  document.getElementById('rfqSupplierPhone').textContent = supplier.phone || 'Not listed';
+  const webEl = document.getElementById('rfqSupplierWebsite');
+  webEl.textContent = supplier.website ? domainOnly(supplier.website) : 'Not listed';
+
+  document.getElementById('rfqYourName').value = '';
+  document.getElementById('rfqCompany').value = '';
+  document.getElementById('rfqSiteAddress').value = '';
+  document.getElementById('rfqItem').value = meta.label;
+  document.getElementById('rfqScope').value = '';
+  document.getElementById('rfqOnSiteDate').value = '';
+  document.getElementById('rfqYourPhone').value = '';
+  document.getElementById('rfqYourEmail').value = '';
+  document.getElementById('rfqResponseDate').value = toDateInputValue(workingDaysFromToday(5));
+
+  document.getElementById('pcModalOverlay').classList.add('open');
+  document.getElementById('rfqCopyNote').classList.remove('show');
+  updateRfqDoc();
+}
+
+function closeRfqModal(){
+  document.getElementById('pcModalOverlay').classList.remove('open');
+}
+document.getElementById('pcModalClose').addEventListener('click', closeRfqModal);
+document.getElementById('pcModalOverlay').addEventListener('click', function(e){
+  if (e.target === document.getElementById('pcModalOverlay')) closeRfqModal();
+});
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape') closeRfqModal();
+});
+
+['rfqYourName','rfqCompany','rfqSiteAddress','rfqItem','rfqScope','rfqOnSiteDate','rfqYourPhone','rfqYourEmail','rfqResponseDate'].forEach(function(id){
+  document.getElementById(id).addEventListener('input', updateRfqDoc);
+});
+
+function buildRfqText(){
+  const s = state.selectedSupplier;
+  if (!s) return '';
+  const yourName = document.getElementById('rfqYourName').value.trim() || '[Your name]';
+  const company = document.getElementById('rfqCompany').value.trim() || '[Your company / project]';
+  const siteAddress = document.getElementById('rfqSiteAddress').value.trim() || 'Not specified';
+  const item = document.getElementById('rfqItem').value.trim() || 'Not specified';
+  const scope = document.getElementById('rfqScope').value.trim() || 'Not specified';
+  const onSiteDate = formatDateForDoc(document.getElementById('rfqOnSiteDate').value);
+  const yourPhone = document.getElementById('rfqYourPhone').value.trim() || 'Not specified';
+  const yourEmail = document.getElementById('rfqYourEmail').value.trim() || 'Not specified';
+  const responseDate = formatDateForDoc(document.getElementById('rfqResponseDate').value);
+  const today = new Date().toLocaleDateString('en-AU', { day: '2-digit', month: 'short', year: 'numeric' });
+  const rule = '━'.repeat(37);
+
+  return [
+    rule,
+    'REQUEST FOR QUOTATION',
+    rule,
+    'TO:      ' + s.name,
+    'FROM:    ' + yourName + ', ' + company,
+    'DATE:    ' + today,
+    rule,
+    '',
+    'PROJECT DETAILS',
+    'Site address:    ' + siteAddress,
+    'Contact:         ' + yourName,
+    'Phone:           ' + yourPhone,
+    'Email:           ' + yourEmail,
+    '',
+    'SCOPE OF SUPPLY / WORKS',
+    item,
+    '',
+    'QUANTITY / SCOPE',
+    scope,
+    '',
+    'REQUIRED ON SITE DATE',
+    onSiteDate,
+    '',
+    'PROGRAMME NOTE',
+    'Please confirm availability and provide',
+    'your best rate for the above scope.',
+    '',
+    'RESPONSE REQUIRED BY',
+    responseDate,
+    '',
+    rule,
+    'Generated by Planning Toolkit',
+    'planningtoolkit.com.au',
+    rule
+  ].join('\n');
+}
+
+function updateRfqDoc(){
+  document.getElementById('rfqDoc').textContent = buildRfqText();
+}
+
+document.getElementById('rfqCopyBtn').addEventListener('click', function(){
+  const text = buildRfqText();
+  const note = document.getElementById('rfqCopyNote');
+  function flashNote(){
+    note.classList.add('show');
+    setTimeout(function(){ note.classList.remove('show'); }, 1800);
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(flashNote).catch(function(){
+      fallbackCopy(text);
+      flashNote();
+    });
+  } else {
+    fallbackCopy(text);
+    flashNote();
+  }
+});
+
+function fallbackCopy(text){
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.left = '-9999px';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); } catch(e){}
+  document.body.removeChild(ta);
+}
+
+document.getElementById('rfqEmailBtn').addEventListener('click', function(){
+  const s = state.selectedSupplier;
+  if (!s) return;
+  const item = document.getElementById('rfqItem').value.trim() || 'Supply';
+  const company = document.getElementById('rfqCompany').value.trim() || 'Project';
+  const subject = 'Request for Quotation — ' + item + ' — ' + company;
+  const body = buildRfqText();
+  // The dataset carries no supplier email, so `to` is left blank for the
+  // user to fill in from the phone/website shown alongside the button.
+  const mailto = 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+  window.location.href = mailto;
+});
+</script>
+
+<script src="../lib/toolkit-ui.js"></script>
+</body>
+</html>
